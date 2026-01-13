@@ -20,9 +20,13 @@ use HasRoles;
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+                'name',
+        'username',
         'email',
         'password',
+        'profile_photo',
+        'is_active',
+
     ];
 
     /**

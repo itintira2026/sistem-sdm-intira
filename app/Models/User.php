@@ -106,4 +106,47 @@ class User extends Authenticatable
                     ->where('branch_id', $branchId)
                     ->delete();
     }
+
+    /**
+ * Get all gaji pokok history
+ */
+public function gajiPokokHistory()
+{
+    return $this->hasManyThrough(
+        GajihPokok::class,
+        BranchUser::class,
+        'user_id', // Foreign key on branch_user table
+        'branch_user_id', // Foreign key on gaji_pokok table
+        'id', // Local key on users table
+        'id' // Local key on branch_user table
+    );
+}
+
+/**
+ * Get gaji pokok di cabang tertentu untuk bulan tertentu
+ */
+public function getGajiPokokAt($branchId, $bulan, $tahun)
+{
+    $assignment = $this->branchAssignments()
+                       ->where('branch_id', $branchId)
+                       ->first();
+    
+    if (!$assignment) return null;
+    
+    return $assignment->getGajiPokokForMonth($bulan, $tahun);
+}
+
+/**
+ * Get gaji pokok terbaru di cabang
+ */
+public function getLatestGajiPokokAt($branchId)
+{
+    $assignment = $this->branchAssignments()
+                       ->where('branch_id', $branchId)
+                       ->first();
+    
+    if (!$assignment) return null;
+    
+    return $assignment->getLatestGajiPokok();
+}
 }

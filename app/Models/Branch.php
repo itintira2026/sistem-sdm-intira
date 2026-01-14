@@ -17,9 +17,9 @@ class Branch extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'branch_users')
-                    ->using(BranchUser::class)
-                    ->withPivot('is_manager')
-                    ->withTimestamps();
+            ->using(BranchUser::class)
+            ->withPivot('is_manager')
+            ->withTimestamps();
     }
 
     /**
@@ -36,10 +36,10 @@ class Branch extends Model
     public function activeUsers()
     {
         return $this->belongsToMany(User::class, 'branch_users')
-                    ->using(BranchUser::class)
-                    ->where('users.is_active', true)
-                    ->withPivot('is_manager')
-                    ->withTimestamps();
+            ->using(BranchUser::class)
+            ->where('users.is_active', true)
+            ->withPivot('is_manager')
+            ->withTimestamps();
     }
 
     /**
@@ -48,9 +48,9 @@ class Branch extends Model
     public function managers()
     {
         return $this->belongsToMany(User::class, 'branch_users')
-                    ->using(BranchUser::class)
-                    ->wherePivot('is_manager', true)
-                    ->withTimestamps();
+            ->using(BranchUser::class)
+            ->wherePivot('is_manager', true)
+            ->withTimestamps();
     }
 
     /**
@@ -91,8 +91,8 @@ class Branch extends Model
     public function removeUser($userId)
     {
         return $this->userAssignments()
-                    ->where('user_id', $userId)
-                    ->delete();
+            ->where('user_id', $userId)
+            ->delete();
     }
 
     /**
@@ -101,7 +101,33 @@ class Branch extends Model
     public function hasUser($userId)
     {
         return $this->userAssignments()
-                    ->where('user_id', $userId)
-                    ->exists();
+            ->where('user_id', $userId)
+            ->exists();
+    }
+
+    /**
+     * Get all gaji pokok di cabang ini
+     */
+    public function gajiPokok()
+    {
+        return $this->hasManyThrough(
+            GajihPokok::class,
+            BranchUser::class,
+            'branch_id', // Foreign key on branch_user table
+            'branch_user_id', // Foreign key on gaji_pokok table
+            'id', // Local key on branches table
+            'id' // Local key on branch_user table
+        );
+    }
+
+    /**
+     * Get total gaji pokok untuk bulan tertentu
+     */
+    public function getTotalGajiPokokForMonth($bulan, $tahun)
+    {
+        return $this->gajiPokok()
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun)
+            ->sum('amount');
     }
 }

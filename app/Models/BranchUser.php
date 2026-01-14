@@ -109,6 +109,50 @@ class BranchUser extends Pivot
         $this->update(['is_manager' => !$this->is_manager]);
     }
 
+/**
+     * Relasi ke gaji pokok
+     */
+    public function gajiPokok()
+    {
+        return $this->hasMany(GajihPokok::class);
+    }
+
+    /**
+     * Get gaji pokok untuk bulan tertentu
+     */
+    public function getGajiPokokForMonth($bulan, $tahun)
+    {
+        return $this->gajiPokok()
+                    ->where('bulan', $bulan)
+                    ->where('tahun', $tahun)
+                    ->first();
+    }
+
+    /**
+     * Get gaji pokok terbaru
+     */
+    public function getLatestGajiPokok()
+    {
+        return $this->gajiPokok()->latest()->first();
+    }
+
+    /**
+     * Set gaji pokok untuk bulan tertentu
+     */
+    public function setGajiPokok($amount, $bulan, $tahun, $keterangan = null)
+    {
+        return $this->gajiPokok()->updateOrCreate(
+            [
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+            ],
+            [
+                'amount' => $amount,
+                'keterangan' => $keterangan,
+            ]
+        );
+    }
+
 
 
     // helper

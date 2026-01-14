@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
              $table->foreignId('branch_user_id')->constrained('branch_users')->onDelete('cascade');
             $table->decimal('amount', 15, 2);
+            $table->decimal('tunjangan_makan', 15, 2);
+            $table->decimal('tunjangan_transportasi', 15, 2);
+            $table->decimal('tunjangan_jabatan', 15, 2);
+            $table->decimal('tunjangan_komunikasi', 15, 2);
             $table->tinyInteger('bulan'); // 1-12
             $table->year('tahun'); // 2024, 2025
             $table->text('keterangan')->nullable();

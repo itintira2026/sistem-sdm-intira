@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,45 +9,101 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-use HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-                'name',
+        'name',
         'username',
         'email',
         'password',
         'profile_photo',
         'is_active',
-
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_active' => 'boolean',
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Relasi many-to-many dengan Branch menggunakan BranchUser model
      */
-    protected function casts(): array
+    public function branches()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsToMany(Branch::class, 'branch_users')
+                    ->using(BranchUser::class)
+                    ->withPivot('is_manager')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get all branch assignments dengan detail
+     */
+    public function branchAssignments()
+    {
+        return $this->hasMany(BranchUser::class);
+    }
+
+    /**
+     * Cek apakah user adalah manager di cabang tertentu
+     */
+    public function isManagerAt($branchId)
+    {
+        return $this->branchAssignments()
+                    ->where('branch_id', $branchId)
+                    ->where('is_manager', true)
+                    ->exists();
+    }
+
+    /**
+     * Get cabang dimana user adalah manager
+     */
+    public function managedBranches()
+    {
+        return $this->belongsToMany(Branch::class, 'branch_users')
+                    ->using(BranchUser::class)
+                    ->wherePivot('is_manager', true)
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get assignment untuk cabang tertentu
+     */
+    public function getAssignmentFor($branchId)
+    {
+        return $this->branchAssignments()
+                    ->where('branch_id', $branchId)
+                    ->first();
+    }
+
+    /**
+     * Assign user ke branch
+     */
+    public function assignToBranch($branchId, $isManager = false)
+    {
+        return BranchUser::firstOrCreate(
+            [
+                'user_id' => $this->id,
+                'branch_id' => $branchId,
+            ],
+            [
+                'is_manager' => $isManager,
+            ]
+        );
+    }
+
+    /**
+     * Remove user dari branch
+     */
+    public function removeFromBranch($branchId)
+    {
+        return $this->branchAssignments()
+                    ->where('branch_id', $branchId)
+                    ->delete();
     }
 }

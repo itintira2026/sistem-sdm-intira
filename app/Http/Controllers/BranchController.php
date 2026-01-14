@@ -7,20 +7,14 @@ use Illuminate\Http\Request;
 
 class BranchController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $branches = Branch::all();
+        $branches = Branch::latest()->paginate(10);
 
-        return view('management_data.branch.index',compact('branches'));
+        return view('management_data.branch.index', compact('branches'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-   public function create()
+    public function create()
     {
         return view('management_data.branch.create');
     }
@@ -28,54 +22,80 @@ class BranchController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:branches,code',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string',
+            'name'      => 'required|string|max:255',
+            'code'      => 'required|string|max:50|unique:branches,code',
+            'phone'     => 'required|string|max:20',
+            'address'   => 'required|string',
             'is_active' => 'boolean',
         ]);
 
-        $branch = Branch::create([
-            'name' => $validated['name'],
-            'code' => $validated['code'],
-            'phone' => $validated['phone'],
-            'address' => $validated['address'],
-            'is_active' => $request->has('is_active') ? true : false,
+        Branch::create([
+            'name'      => $validated['name'],
+            'code'      => $validated['code'],
+            'phone'     => $validated['phone'],
+            'address'   => $validated['address'],
+            'is_active' => $validated['is_active'] ?? true,
         ]);
 
         return redirect()->route('branches.index')
-            ->with('success', 'Cabang berhasil ditambahkan!');
+            ->with('success', 'Cabang berhasil ditambahkan');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Branch $branch)
     {
-        //
+        $branch->load('users'); // jika ada relasi users
+
+        return view('management_data.branch.show', compact('branch'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Branch $branch)
     {
-        //
+        return view('management_data.branch.edit', compact('branch'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Branch $branch)
     {
-        //
+        $validated = $request->validate([
+            'name'      => 'required|string|max:255',
+            'code'      => 'required|string|max:50|unique:branches,code,' . $branch->id,
+            'phone'     => 'required|string|max:20',
+            'address'   => 'required|string',
+            'is_active' => 'boolean',
+        ]);
+
+        $branch->update([
+            'name'      => $validated['name'],
+            'code'      => $validated['code'],
+            'phone'     => $validated['phone'],
+            'address'   => $validated['address'],
+            'is_active' => $validated['is_active'] ?? $branch->is_active,
+        ]);
+
+        return redirect()->route('branches.index')
+            ->with('success', 'Cabang berhasil diperbarui');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Branch $branch)
     {
-        //
+        $branch->delete();
+
+        return redirect()->route('branches.index')
+            ->with('success', 'Cabang berhasil dihapus');
+    }
+
+    public function activate(Branch $branch)
+    {
+        $branch->update(['is_active' => true]);
+
+        return redirect()->route('branches.index')
+            ->with('success', 'Cabang berhasil diaktifkan');
+    }
+
+    public function deactivate(Branch $branch)
+    {
+        $branch->update(['is_active' => false]);
+
+        return redirect()->route('branches.index')
+            ->with('success', 'Cabang berhasil dinonaktifkan');
     }
 }

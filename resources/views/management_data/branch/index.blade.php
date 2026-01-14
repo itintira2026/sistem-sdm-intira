@@ -5,160 +5,218 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     Manajemen Cabang
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">Kelola data cabang perusahaan Anda</p>
+                <p class="text-sm text-gray-500 mt-1">
+                    Kelola data cabang perusahaan Anda
+                </p>
             </div>
-            <div class="flex gap-3">
-                <button
-                    class="px-4 py-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Import Cabang
-                </button>
-                <a href="{{ route('branches.create') }}"
-                    class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah Cabang
-                </a>
-            </div>
+
+            <a href="{{ route('branches.create') }}"
+                class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Cabang
+            </a>
         </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+
+            {{-- Alert --}}
+            @if (session('success'))
+            <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <!-- Header Section -->
-                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Daftar Cabang</h3>
 
-                    <!-- Filter Section -->
-                    <div class="flex gap-4 mb-6">
-                        <!-- Entries per page -->
-                        <div class="relative">
-                            <select
-                                class="appearance-none border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                                <option>10</option>
-                                <option>25</option>
-                                <option>50</option>
-                                <option>100</option>
-                            </select>
-                            <svg class="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">
+                        Daftar Cabang
+                    </h3>
 
-                        <!-- Status Filter -->
-                        <div class="relative">
-                            <select
-                                class="appearance-none border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                                <option>Semua Status</option>
-                                <option>Aktif</option>
-                                <option>Tidak Aktif</option>
-                            </select>
-                            <svg class="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-
-                        <!-- Search -->
-                        <div class="flex-1 relative">
-                            <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            <input type="text" placeholder="Cari nama, kode, telepon, atau alamat..."
-                                class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                        </div>
-                    </div>
-
-                    <!-- Table -->
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-gray-200">
-                                    <th class="text-left py-4 px-4 text-sm font-semibold text-gray-600 uppercase">Kode
+                                    <th class="py-4 px-4 text-left text-sm font-semibold text-gray-600 uppercase">
+                                        Kode
                                     </th>
-                                    <th class="text-left py-4 px-4 text-sm font-semibold text-gray-600 uppercase">Nama
-                                        Cabang</th>
-                                    <th class="text-left py-4 px-4 text-sm font-semibold text-gray-600 uppercase">Jumlah
-                                        User</th>
-                                    <th class="text-left py-4 px-4 text-sm font-semibold text-gray-600 uppercase">Saldo
-                                        Kas</th>
-                                    <th class="text-left py-4 px-4 text-sm font-semibold text-gray-600 uppercase">Status
+                                    <th class="py-4 px-4 text-left text-sm font-semibold text-gray-600 uppercase">
+                                        Nama Cabang
                                     </th>
-                                    <th class="text-left py-4 px-4 text-sm font-semibold text-gray-600 uppercase">Aksi
+                                    <th class="py-4 px-4 text-left text-sm font-semibold text-gray-600 uppercase">
+                                        Jumlah User
+                                    </th>
+                                    <th class="py-4 px-4 text-left text-sm font-semibold text-gray-600 uppercase">
+                                        Status
+                                    </th>
+                                    <th class="py-4 px-4 text-left text-sm font-semibold text-gray-600 uppercase">
+                                        Dibuat
+                                    </th>
+                                    <th class="py-4 px-4 text-left text-sm font-semibold text-gray-600 uppercase">
+                                        Aksi
                                     </th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                <!-- Row 1 -->
-                                @foreach ( $branches as $branch )
+                                @forelse ($branches as $branch)
+
+                                @php
+                                $branchName = $branch->name ?? 'Unknown';
+                                $branchCode = $branch->code ?? '-';
+                                $branchActive = isset($branch->is_active) ? $branch->is_active : false;
+                                $branchUsers = $branch->users ?? collect();
+                                $branchUserCount = $branchUsers->count();
+                                $branchCreated = isset($branch->created_at)
+                                ? $branch->created_at->format('d M Y')
+                                : '-';
+                                @endphp
+
                                 <tr class="border-b border-gray-100 hover:bg-gray-50">
                                     <td class="py-4 px-4">
-                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm font-medium">{{
-                                            $branch->code }}</span>
+                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm font-medium">
+                                            {{ $branchCode }}
+                                        </span>
                                     </td>
-                                    <td class="py-4 px-4 font-medium text-gray-700">{{ $branch->name }}</td>
-                                    <td class="py-4 px-4">
-                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm">3 user</span>
+
+                                    <td class="py-4 px-4 font-medium text-gray-700">
+                                        {{ $branchName }}
                                     </td>
-                                    <td class="py-4 px-4 text-gray-700">Rp 0</td>
+
                                     <td class="py-4 px-4">
-                                        <span
-                                            class="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">Aktif</span>
+                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm">
+                                            {{ $branchUserCount }} user
+                                        </span>
                                     </td>
+
                                     <td class="py-4 px-4">
-                                        <button class="text-gray-400 hover:text-gray-600">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                                            </svg>
-                                        </button>
+                                        @if ($branchActive)
+                                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">
+                                            Aktif
+                                        </span>
+                                        @else
+                                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm font-medium">
+                                            Tidak Aktif
+                                        </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="py-4 px-4 text-sm text-gray-500">
+                                        {{ $branchCreated }}
+                                    </td>
+
+                                    <td class="py-4 px-4">
+                                        <div class="relative inline-block text-left">
+
+                                            <button type="button" onclick="toggleDropdown({{ $branch->id }})"
+                                                class="text-gray-400 hover:text-gray-600">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path
+                                                        d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                                </svg>
+                                            </button>
+
+                                            <div id="dropdown-{{ $branch->id }}"
+                                                class="hidden absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                                <div class="py-1">
+
+                                                    {{-- <a href="{{ route('branches.show', $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Detail
+                                                    </a> --}}
+                                                    <a href="{{ route('branchesusers.create', $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Penempatan User
+                                                    </a>
+
+                                                    <a href="{{ route('branches.edit', $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Edit
+                                                    </a>
+
+                                                    @if ($branchActive)
+                                                    <form action="{{ route('branches.deactivate', $branch) }}"
+                                                        method="POST">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit"
+                                                            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            Nonaktifkan
+                                                        </button>
+                                                    </form>
+                                                    @else
+                                                    <form action="{{ route('branches.activate', $branch) }}"
+                                                        method="POST">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit"
+                                                            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            Aktifkan
+                                                        </button>
+                                                    </form>
+                                                    @endif
+
+                                                    <form action="{{ route('branches.destroy', $branch) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Yakin ingin menghapus cabang ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
-                                {{-- @empty
-                                <tr class="border-b border-gray-100 hover:bg-gray-50"> </tr>
-                                <td colspan="6" class="py-4 px-4 text-center text-gray-500">Tidak ada data cabang</td>
-                                </tr> --}}
 
-                                @endforeach
-                                {{-- <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="py-4 px-4">
-                                        <span
-                                            class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm font-medium">JBI-004</span>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center text-gray-500">
+                                        Data cabang belum tersedia
                                     </td>
-                                    <td class="py-4 px-4 font-medium text-gray-700">KC PATTIMURA JAMBI</td>
-                                    <td class="py-4 px-4">
-                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm">3 user</span>
-                                    </td>
-                                    <td class="py-4 px-4 text-gray-700">Rp 0</td>
-                                    <td class="py-4 px-4">
-                                        <span
-                                            class="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">Aktif</span>
-                                    </td>
-                                    <td class="py-4 px-4">
-                                        <button class="text-gray-400 hover:text-gray-600">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr> --}}
-
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Pagination --}}
+                    <div class="mt-6">
+                        {{ $branches->links() }}
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Dropdown Script --}}
+    <script>
+        function toggleDropdown(id) {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                if (el.id !== `dropdown-${id}`) {
+                    el.classList.add('hidden');
+                }
+            });
+
+            document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.relative')) {
+                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+
 </x-app-layout>

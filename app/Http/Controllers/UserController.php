@@ -21,7 +21,7 @@ class UserController extends Controller
         $roles = Role::all();
         $branches = \App\Models\Branch::all();
         
-        return view('users.create', compact('roles', 'branches'));
+        return view('management_data.user.create', compact('roles', 'branches'));
     }
 
     public function store(Request $request)
@@ -55,7 +55,7 @@ class UserController extends Controller
     {
         $user->load(['roles', 'branch']);
         
-        return view('users.show', compact('user'));
+        return view('management_data.user.show', compact('user'));
     }
 
     public function edit(User $user)
@@ -64,7 +64,7 @@ class UserController extends Controller
         $branches = \App\Models\Branch::all();
         $user->load(['roles', 'branch']);
         
-        return view('users.edit', compact('user', 'roles', 'branches'));
+        return view('management_data.user.edit', compact('user', 'roles', 'branches'));
     }
 
     public function update(Request $request, User $user)

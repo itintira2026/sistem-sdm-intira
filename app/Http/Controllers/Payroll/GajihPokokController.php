@@ -65,6 +65,11 @@ class GajihPokokController extends Controller
         ));
     }
 
+public function show()
+    {
+        
+        return view('payroll.gajih_pokok.show');
+    }
 
     public function destroy(GajihPokok $gajiPokok)
     {

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('address');
             $table->string('code')->unique();
             $table->boolean('is_active')->default(true);
-
+            // $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -37,6 +37,54 @@ class GajihPokokController extends Controller
         return view('payroll.gajih_pokok.index', compact('gajiPokoks', 'branches', 'bulan', 'tahun', 'totalGaji', 'totalKaryawan'));
     }
 
+    /**
+     * Show detail gaji pokok per cabang
+     */
+    public function detail(Request $request, Branch $branch)
+    {
+        $bulan = $request->input('bulan', Carbon::now()->month);
+        $tahun = $request->input('tahun', Carbon::now()->year);
+        
+        // Get all users di cabang ini
+        $users = $branch->userAssignments()
+                        ->with([
+                            'user.roles',
+                            'gajihPokok' => function($query) use ($bulan, $tahun) {
+                                $query->where('bulan', $bulan)
+                                      ->where('tahun', $tahun);
+                            }
+                        ])
+                        ->get()
+                        ->map(function($branchUser) use ($bulan, $tahun) {
+                            // Attach current gaji pokok
+                            $branchUser->current_gaji_pokok = $branchUser->gajihPokok
+                                ->where('bulan', $bulan)
+                                ->where('tahun', $tahun)
+                                ->first();
+                            return $branchUser;
+                        });
+        
+        // Statistics
+        $totalGajiPokok = $users->sum(function($user) {
+            return $user->current_gaji_pokok ? $user->current_gaji_pokok->amount : 0;
+        });
+        
+        $userWithGaji = $users->filter(function($user) {
+            return $user->current_gaji_pokok !== null;
+        })->count();
+        
+        $userWithoutGaji = $users->count() - $userWithGaji;
+        
+        return view('payroll.gajih_pokok.detail', compact(
+            'branch', 
+            'users', 
+            'bulan', 
+            'tahun', 
+            'totalGajiPokok',
+            'userWithGaji',
+            'userWithoutGaji'
+        ));
+    }
     public function create(Branch $branch)
     {
         $bulanSekarang = Carbon::now()->month;

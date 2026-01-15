@@ -36,24 +36,9 @@ Route::middleware('auth')->group(function () {
         ->name('branches.users.destroy');
 
     Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');
-    Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
-    Route::get('/branches/{branch}/gaji-pokok/create', [GajihPokokController::class, 'create'])
-        ->name('gaji-pokok.create');
-    Route::post('/branches/{branch}/gaji-pokok', [GajihPokokController::class, 'store'])
-        ->name('gaji-pokok.store');
-    Route::post('/branches/{branch}/gaji-pokok/bulk', [GajihPokokController::class, 'bulkStore'])
-        ->name('gaji-pokok.bulk-store');
-    Route::get('/branches/{branch}/branch-user/{branchUser}/gaji-pokok/history', [GajihPokokController::class, 'history'])
-        ->name('gaji-pokok.history');
-    Route::patch('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'update'])
-        ->name('gaji-pokok.update');
-    Route::delete('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'destroy'])
-        ->name('gaji-pokok.destroy');
-
-    // Laporan
-    Route::get('/gaji-pokok/report', [GajihPokokController::class, 'report'])
-        ->name('gaji-pokok.report');
-
+   Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
+    Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
+    Route::delete('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'destroy'])->name('gaji-pokok.destroy');
 
     Route::resource('users', App\Http\Controllers\UserController::class);
     // Activate/Deactivate User

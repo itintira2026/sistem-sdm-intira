@@ -112,15 +112,24 @@ class BranchUser extends Pivot
 /**
      * Relasi ke gaji pokok
      */
-    public function gajiPokok()
-    {
-        return $this->hasMany(GajihPokok::class);
-    }
+    // public function gajihPokok()
+    // {
+    //     return $this->hasMany(GajihPokok::class);
+    // }
+
+    public function gajihPokok()
+{
+    return $this->hasMany(
+        GajihPokok::class,
+        'branch_user_id', // FK di gajih_pokoks
+        'id'              // PK di branch_users
+    );
+}
 
     /**
      * Get gaji pokok untuk bulan tertentu
      */
-    public function getGajiPokokForMonth($bulan, $tahun)
+    public function getGajihPokokForMonth($bulan, $tahun)
     {
         return $this->gajiPokok()
                     ->where('bulan', $bulan)
@@ -131,7 +140,7 @@ class BranchUser extends Pivot
     /**
      * Get gaji pokok terbaru
      */
-    public function getLatestGajiPokok()
+    public function getLatestGajihPokok()
     {
         return $this->gajiPokok()->latest()->first();
     }
@@ -139,7 +148,7 @@ class BranchUser extends Pivot
     /**
      * Set gaji pokok untuk bulan tertentu
      */
-    public function setGajiPokok($amount, $bulan, $tahun, $keterangan = null)
+    public function setGajihPokok($amount, $bulan, $tahun, $keterangan = null)
     {
         return $this->gajiPokok()->updateOrCreate(
             [

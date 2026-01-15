@@ -44,7 +44,7 @@ class GajihPokokController extends Controller
         
         // Get users di cabang dengan gaji pokok bulan ini (jika ada)
         $users = $branch->userAssignments()
-                        ->with(['user', 'gajiPokok' => function($query) use ($bulanSekarang, $tahunSekarang) {
+                        ->with(['user', 'gajihPokok' => function($query) use ($bulanSekarang, $tahunSekarang) {
                             $query->where('bulan', $bulanSekarang)
                                   ->where('tahun', $tahunSekarang);
                         }])

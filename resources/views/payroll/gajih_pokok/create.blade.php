@@ -63,7 +63,7 @@
                                 <tbody>
                                     @forelse($users as $index => $branchUser)
                                         @php
-                                            $existingGaji = $branchUser->gajiPokok->first();
+                                            $existingGaji = $branchUser->gajihPokok->first();
                                         @endphp
                                         <tr class="border-b border-gray-100">
                                             <td class="py-4 px-4">

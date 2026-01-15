@@ -22,7 +22,7 @@
                         {{ __('Branch') }}
                     </x-nav-link>
                     <x-nav-link :href="route('gaji-pokok.index')" :active="request()->routeIs('gaji-pokok.*')">
-                        {{ __('Gaji Pokok') }}
+                        {{ __('Gaji') }}
                     </x-nav-link>
                     <x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
                         {{ __('Presensi') }}

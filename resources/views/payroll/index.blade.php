@@ -123,24 +123,24 @@
                                             <div id="dropdown-{{ $branch->id }}"
                                                 class="hidden absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                                 <div class="py-1">
-
-                                                 <a href="{{ route('gaji-pokok.detail', $branch) }}"
-    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-    Gaji Pokok Detail
-</a>
-
-                                            
                                                     <a href="{{ route('branchesusers.create', $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Slip Gaji Detail
+                                                    </a>
+                                                    <a href="{{ route('gaji-pokok.detail', $branch) }}"
                                                         class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                         Gaji Pokok Detail
                                                     </a>
+
+
+
 
                                                     <a href="{{ route('branches.edit', $branch) }}"
                                                         class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                         Potongan Detail
                                                     </a>
 
-                                                   
+
                                                 </div>
                                             </div>
                                         </div>

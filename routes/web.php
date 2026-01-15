@@ -64,6 +64,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('presensi', App\Http\Controllers\PresensiController::class);
+
+    // Import routes for branches
+    Route::get('/branches/import', [App\Http\Controllers\BranchImportController::class, 'create'])
+        ->name('branches.import.create')
+        ->middleware('auth');
+
+    Route::post('/branches/import', [App\Http\Controllers\BranchImportController::class, 'store'])
+        ->name('branches.import.store')
+        ->middleware('auth');
+
+    Route::get('/branches/import/template', [App\Http\Controllers\BranchImportController::class, 'template'])
+        ->name('branches.import.template')
+        ->middleware('auth');
 });
 
 require __DIR__ . '/auth.php';

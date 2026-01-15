@@ -9,8 +9,9 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 
-class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
+class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure, SkipsEmptyRows
 {
     use SkipsFailures;
 
@@ -24,6 +25,7 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
      */
     public function model(array $row)
     {
+
         // Normalize column names
         $normalizedRow = [];
         foreach ($row as $key => $value) {
@@ -32,6 +34,15 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
         }
 
         $this->rows[] = $normalizedRow;
+
+        if (
+            empty($normalizedRow['kode_cabang']) &&
+            empty($normalizedRow['nama_cabang']) &&
+            empty($normalizedRow['telepon']) &&
+            empty($normalizedRow['alamat'])
+        ) {
+            return null;
+        }
 
         // Create new branch
         $branch = new Branch([
@@ -50,6 +61,21 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
     /**
      * Validasi data
      */
+    // public function rules(): array
+    // {
+    //     return [
+    //         'kode_cabang' => [
+    //             'required',
+    //             'string',
+    //             'max:50',
+    //             Rule::unique('branches', 'code')->whereNull('deleted_at')
+    //         ],
+    //         'nama_cabang' => ['required', 'string', 'max:255'],
+    //         'telepon' => ['nullable', 'string', 'max:20'],
+    //         'alamat' => ['nullable', 'string'],
+    //     ];
+    // }
+
     public function rules(): array
     {
         return [
@@ -57,10 +83,15 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('branches', 'code')->whereNull('deleted_at')
+                Rule::unique('branches', 'code'),
             ],
             'nama_cabang' => ['required', 'string', 'max:255'],
-            'telepon' => ['nullable', 'string', 'max:20'],
+            // 'telepon' => ['nullable', 'string', 'max:20'],
+            'telepon' => [
+                'nullable',
+                'regex:/^[0-9+\-\s]+$/',
+                'max:20'
+            ],
             'alamat' => ['nullable', 'string'],
         ];
     }

@@ -109,7 +109,7 @@ class BranchUser extends Pivot
         $this->update(['is_manager' => !$this->is_manager]);
     }
 
-/**
+    /**
      * Relasi ke gaji pokok
      */
     // public function gajihPokok()
@@ -118,13 +118,13 @@ class BranchUser extends Pivot
     // }
 
     public function gajihPokok()
-{
-    return $this->hasMany(
-        GajihPokok::class,
-        'branch_user_id', // FK di gajih_pokoks
-        'id'              // PK di branch_users
-    );
-}
+    {
+        return $this->hasMany(
+            GajihPokok::class,
+            'branch_user_id', // FK di gajih_pokoks
+            'id'              // PK di branch_users
+        );
+    }
 
     /**
      * Get gaji pokok untuk bulan tertentu
@@ -132,9 +132,9 @@ class BranchUser extends Pivot
     public function getGajihPokokForMonth($bulan, $tahun)
     {
         return $this->gajiPokok()
-                    ->where('bulan', $bulan)
-                    ->where('tahun', $tahun)
-                    ->first();
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun)
+            ->first();
     }
 
     /**
@@ -162,41 +162,48 @@ class BranchUser extends Pivot
         );
     }
 
+    public function potongans()
+    {
+        return $this->hasMany(
+            Potongan::class,
+            'branch_user_id',
+            'id'
+        );
+    }
 
 
     // helper
     public function getFormattedAssignmentDateAttribute()
-{
-    return $this->created_at->format('d M Y H:i');
-}
+    {
+        return $this->created_at->format('d M Y H:i');
+    }
 
-/**
- * Get user name with branch info
- */
-public function getFullInfoAttribute()
-{
-    return "{$this->user->name} - {$this->branch->name}" . 
-           ($this->is_manager ? ' (Manager)' : '');
-}
+    /**
+     * Get user name with branch info
+     */
+    public function getFullInfoAttribute()
+    {
+        return "{$this->user->name} - {$this->branch->name}" .
+            ($this->is_manager ? ' (Manager)' : '');
+    }
 
-/**
- * Boot method untuk event listeners
- */
-protected static function boot()
-{
-    parent::boot();
+    /**
+     * Boot method untuk event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
 
-    // Event setelah user di-assign
-    static::created(function ($assignment) {
-        // Log atau kirim notifikasi
-        \Log::info("User {$assignment->user->name} assigned to {$assignment->branch->name}");
-    });
+        // Event setelah user di-assign
+        static::created(function ($assignment) {
+            // Log atau kirim notifikasi
+            \Log::info("User {$assignment->user->name} assigned to {$assignment->branch->name}");
+        });
 
-    // Event sebelum user di-remove
-    static::deleting(function ($assignment) {
-        // Log atau kirim notifikasi
-        \Log::info("User {$assignment->user->name} removed from {$assignment->branch->name}");
-    });
-}
-
+        // Event sebelum user di-remove
+        static::deleting(function ($assignment) {
+            // Log atau kirim notifikasi
+            \Log::info("User {$assignment->user->name} removed from {$assignment->branch->name}");
+        });
+    }
 }

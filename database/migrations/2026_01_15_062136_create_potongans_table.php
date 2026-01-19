@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('potongans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('branch_user_id')->constrained('branch_users')->onDelete('cascade');
+            $table->tinyInteger('bulan'); // 1-12
+            $table->year('tahun'); // 2024, 2025
+            $table->date('tanggal');
+            $table->string('divisi');
+            $table->string('keterangan');
+            $table->enum('jenis', ['potongan', 'tambahan']);
+            $table->decimal('amount', 15, 2);
             $table->timestamps();
         });
     }

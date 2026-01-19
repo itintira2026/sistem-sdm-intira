@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Payroll\GajihPokokController;
 use App\Http\Controllers\Payroll\PayrollController;
+use App\Http\Controllers\Payroll\PotonganController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -39,10 +40,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
     // Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
     Route::get('/gaji-pokok/detail/show', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
-//    Route::get('/gaji-pokok/{gajihPokok}', [GajiPokokController::class, 'show'])
-//      ->name('gaji-pokok.show');
+    //    Route::get('/gaji-pokok/{gajihPokok}', [GajiPokokController::class, 'show'])
+    //      ->name('gaji-pokok.show');
     Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
     Route::delete('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'destroy'])->name('gaji-pokok.destroy');
+
+    Route::get('/potongan/{branch}/detail', [PotonganController::class, 'index'])->name('potongan.index');
+    Route::get('/potongan/{branch}/create', [PotonganController::class, 'create'])->name('potongan.create');
+    Route::post('/potongan/{branch}/create', [PotonganController::class, 'store'])->name('potongan.store');
+    Route::delete('/potongan/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
 
     Route::resource('users', App\Http\Controllers\UserController::class);
     // Activate/Deactivate User

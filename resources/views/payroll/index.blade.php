@@ -127,7 +127,7 @@
                                                         class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                         Slip Gaji Detail
                                                     </a>
-                                                    <a href="{{ route('gaji-pokok.detail', $branch) }}"
+                                                    <a href="{{ route('gaji-pokok.detail', parameters: $branch) }}"
                                                         class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                         Gaji Pokok Detail
                                                     </a>
@@ -135,7 +135,7 @@
 
 
 
-                                                    <a href="{{ route('branches.edit', $branch) }}"
+                                                    <a href="{{ route('potongan.index', $branch) }}"
                                                         class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                         Potongan Detail
                                                     </a>

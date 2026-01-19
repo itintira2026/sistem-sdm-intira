@@ -181,6 +181,80 @@
 
 
 
+                                @php
+                                $branchName = $branch->name ?? 'Unknown';
+                                $branchCode = $branch->code ?? '-';
+                                $branchActive = isset($branch->is_active) ? $branch->is_active : false;
+                                $branchUsers = $branch->users ?? collect();
+                                $branchUserCount = $branchUsers->count();
+                                $branchCreated = isset($branch->created_at)
+                                ? $branch->created_at->format('d M Y')
+                                : '-';
+                                @endphp
+
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-4 px-4">
+                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm font-medium">
+                                            {{ $branchCode }}
+                                        </span>
+                                    </td>
+
+                                    <td class="py-4 px-4 font-medium text-gray-700">
+                                        {{ $branchName }}
+                                    </td>
+
+                                    <td class="py-4 px-4">
+                                        <span class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm">
+                                            {{ $branchUserCount }} user
+                                        </span>
+                                    </td>
+
+                                    <td class="py-4 px-4">
+                                        @if ($branchActive)
+                                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">
+                                            Aktif
+                                        </span>
+                                        @else
+                                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm font-medium">
+                                            Tidak Aktif
+                                        </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="py-4 px-4 text-sm text-gray-500">
+                                        {{ $branchCreated }}
+                                    </td>
+
+                                    <td class="py-4 px-4">
+                                        <div class="relative inline-block text-left">
+
+                                            <button type="button" onclick="toggleDropdown({{ $branch->id }})"
+                                                class="text-gray-400 hover:text-gray-600">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path
+                                                        d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                                </svg>
+                                            </button>
+
+                                            <div id="dropdown-{{ $branch->id }}"
+                                                class="hidden absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                                <div class="py-1">
+                                                    <a href="{{ route('gaji.show', $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Slip Gaji Detail
+                                                    </a>
+                                                    <a href="{{ route('gaji-pokok.detail', parameters: $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Gaji Pokok Detail
+                                                    </a>
+
+
+
+
+                                                    <a href="{{ route('potongan.index', $branch) }}"
+                                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        Potongan Detail
+                                                    </a>
 
                                                         <a href="{{ route('potongan.index', $branch) }}"
                                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

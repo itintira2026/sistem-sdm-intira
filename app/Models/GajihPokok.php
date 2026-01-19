@@ -22,6 +22,10 @@ class GajihPokok extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'tunjangan_makan' => 'decimal:2',
+        'tunjangan_transportasi' => 'decimal:2',
+        'tunjangan_jabatan' => 'decimal:2',
+        'tunjangan_komunikasi' => 'decimal:2',
         'bulan' => 'integer',
         'tahun' => 'integer',
     ];
@@ -72,6 +76,18 @@ class GajihPokok extends Model
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 
+    public function getTotalTunjanganAttribute()
+    {
+        return $this->tunjangan_makan + 
+               $this->tunjangan_transportasi + 
+               $this->tunjangan_jabatan + 
+               $this->tunjangan_komunikasi;
+    }
+
+    public function getTotalGajiKotorAttribute()
+    {
+        return $this->amount + $this->total_tunjangan;
+    }
     /**
      * Get nama bulan
      */

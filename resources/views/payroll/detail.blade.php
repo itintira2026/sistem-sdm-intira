@@ -3,11 +3,8 @@
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Detail Gaji Pokok - {{ $branch->name }}
+                    Detail Gaji - {{ $branch->name }}
                 </h2>
-                {{-- <p class="text-sm text-gray-500 mt-1">
-                    Periode: {{ Carbon\Carbon::create()->month($bulan)->format('F') }} {{ $tahun }}
-                </p> --}}
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('gaji.index') }}"
@@ -19,13 +16,7 @@
                     Kembali
                 </a>
 
-                <a href="{{ route('gaji-pokok.create', ['branch' => $branch->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
-                    class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah
-                </a>
+               
             </div>
         </div>
     </x-slot>

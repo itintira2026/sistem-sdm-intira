@@ -65,6 +65,16 @@ class GajihPokokController extends Controller
         ));
     }
 
+public function show(GajihPokok $gajihPokok)
+    {
+         $gajihPokok->load([
+        'branchUser.user.roles',
+        'branchUser.branch'
+    ]);
+    
+    return view('payroll.gajih_pokok.show', compact('gajihPokok'));
+
+    }
 
     public function destroy(GajihPokok $gajiPokok)
     {

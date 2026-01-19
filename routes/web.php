@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');
     // Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
     Route::get('/gaji-pokok/detail/show', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
+//    Route::get('/gaji-pokok/{gajihPokok}', [GajiPokokController::class, 'show'])
+//      ->name('gaji-pokok.show');
     Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
     Route::delete('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'destroy'])->name('gaji-pokok.destroy');
 

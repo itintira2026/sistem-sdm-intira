@@ -221,10 +221,11 @@
                                     <td class="py-4 px-4">
 
                                         {{-- --}}
-                                        <a href="{{ route('gaji-pokok.show', $) }}"
+                                        <a href="{{ route('gaji-pokok.show', $branchUser->current_gaji_pokok->id) }}"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                             Detail
                                         </a>
+
                                     </td>
                                 </tr>
                                 @empty

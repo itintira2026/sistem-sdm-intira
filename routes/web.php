@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
         ->name('branches.users.destroy');
 
     Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');
-   Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
+    Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
     Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
     Route::delete('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'destroy'])->name('gaji-pokok.destroy');
 
@@ -63,6 +63,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/branches/import/template', [App\Http\Controllers\BranchImportController::class, 'template'])
         ->name('branches.import.template')
+        ->middleware('auth');
+
+    Route::post('/import/users', [App\Http\Controllers\UserImportController::class, 'import'])
+        ->name('users.import.import')
         ->middleware('auth');
 });
 

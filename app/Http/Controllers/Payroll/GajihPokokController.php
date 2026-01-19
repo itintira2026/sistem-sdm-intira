@@ -8,6 +8,9 @@ use App\Models\Branch;
 use App\Models\GajihPokok;
 use App\Models\BranchUser;
 use Carbon\Carbon;
+// use Maatwebsite\Excel\Facades\Excel;
+// use App\Imports\GajihPokokImport;
+// use Throwable;
 
 class GajihPokokController extends Controller
 {
@@ -135,6 +138,63 @@ class GajihPokokController extends Controller
 
         return view('payroll.gajih_pokok.show', compact('gajihPokok'));
     }
+
+    // public function import(Request $request)
+    // {
+    //     // ===============================
+    //     // VALIDASI FILE
+    //     // ===============================
+    //     $request->validate([
+    //         'file' => 'required|file|mimes:xlsx,xls|max:10240',
+    //     ]);
+
+    //     $import = new GajihPokokImport();
+
+    //     try {
+    //         Excel::import($import, $request->file('file'));
+    //     } catch (Throwable $e) {
+    //         // ERROR FATAL (misal file rusak)
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Gagal memproses file: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+
+    //     // ===============================
+    //     // AMBIL HASIL IMPORT
+    //     // ===============================
+    //     $successCount = $import->getSuccessCount();
+    //     $failures     = $import->failures();
+    //     $errorCount   = count($failures);
+
+    //     // ===============================
+    //     // JIKA ADA ERROR PARSIAL
+    //     // ===============================
+    //     if ($errorCount > 0) {
+    //         return response()->json([
+    //             'success'        => false, // penting → biar modal tidak auto-close
+    //             'message'        => 'Import selesai dengan beberapa error',
+    //             'inserted'       => $successCount,
+    //             'error_count'    => $errorCount,
+    //             'errors'         => collect($failures)->map(function ($failure) {
+    //                 return [
+    //                     'row'     => $failure->row(),
+    //                     'column'  => $failure->attribute(),
+    //                     'message' => implode(', ', $failure->errors()),
+    //                 ];
+    //             })->values(),
+    //         ], 200);
+    //     }
+
+    //     // ===============================
+    //     // JIKA SEMUA BERHASIL
+    //     // ===============================
+    //     return response()->json([
+    //         'success'  => true,
+    //         'message'  => "Import gaji berhasil ({$successCount} data)",
+    //         'inserted' => $successCount,
+    //     ], 200);
+    // }
 
     public function destroy(GajihPokok $gajiPokok)
     {

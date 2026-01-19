@@ -8,7 +8,7 @@ class GajihPokok extends Model
 {
     protected $table = 'gajih_pokoks';
 
-     protected $fillable = [
+    protected $fillable = [
         'branch_user_id',
         'amount',
         'tunjangan_makan',
@@ -94,10 +94,18 @@ class GajihPokok extends Model
     public function getNamaBulanAttribute()
     {
         $bulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
-            4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
-            10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         return $bulan[$this->bulan] ?? '';
     }
@@ -131,7 +139,7 @@ class GajihPokok extends Model
      */
     public function scopeForBranch($query, $branchId)
     {
-        return $query->whereHas('branchUser', function($q) use ($branchId) {
+        return $query->whereHas('branchUser', function ($q) use ($branchId) {
             $q->where('branch_id', $branchId);
         });
     }
@@ -141,7 +149,7 @@ class GajihPokok extends Model
      */
     public function scopeForUser($query, $userId)
     {
-        return $query->whereHas('branchUser', function($q) use ($userId) {
+        return $query->whereHas('branchUser', function ($q) use ($userId) {
             $q->where('user_id', $userId);
         });
     }

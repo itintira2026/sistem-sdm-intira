@@ -21,7 +21,7 @@
                     <x-nav-link :href="route('branches.index')" :active="request()->routeIs('branches.*')">
                         {{ __('Branch') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('gaji.index')" :active="request()->routeIs('gaji-pokok.*')">
+                    <x-nav-link :href="route('gaji.index')" :active="request()->routeIs('gaji.*')">
                         {{ __('Gaji') }}
                     </x-nav-link>
                     <x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">

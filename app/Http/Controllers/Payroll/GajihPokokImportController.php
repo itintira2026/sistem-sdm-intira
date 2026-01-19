@@ -13,10 +13,10 @@ class GajihPokokImportController extends Controller
     /**
      * Menampilkan form import
      */
-    public function create()
-    {
-        return view('gaji_pokok.import');
-    }
+    // public function create()
+    // {
+    //     return view('gaji_pokok.import');
+    // }
 
     /**
      * Proses import gaji pokok

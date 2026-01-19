@@ -20,6 +20,15 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    Route::post('/import/users', [App\Http\Controllers\UserImportController::class, 'import'])
+        ->name('users.import.import')
+        ->middleware('auth');
+
+    Route::post('/branches/import', [App\Http\Controllers\BranchImportController::class, 'store'])
+        ->name('branches.import.store')
+        ->middleware('auth');
+
     Route::resource('branches', App\Http\Controllers\BranchController::class);
     Route::patch('branches/{branch}/activate', [BranchController::class, 'activate'])
         ->name('branches.activate');
@@ -52,6 +61,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
     Route::delete('/gaji-pokok/{gajiPokok}', [GajihPokokController::class, 'destroy'])->name('gaji-pokok.destroy');
 
+    Route::post('/gaji-pokok-import', [GajihPokokImportController::class, 'store'])->name('gaji-pokok.import');
+    Route::get('/gaji-pokok/template', [GajihPokokImportController::class, 'template'])->name('gaji-pokok.template');
 
     Route::get('/potongan/{branch}/detail', [PotonganController::class, 'index'])->name('potongan.index');
     Route::get('/potongan/{branch}/create', [PotonganController::class, 'create'])->name('potongan.create');
@@ -71,29 +82,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('presensi', App\Http\Controllers\PresensiController::class);
 
-    // Import routes for branches
-    // Route::get('/branches/import', [App\Http\Controllers\BranchImportController::class, 'create'])
-    //     ->name('branches.import.create')
-    //     ->middleware('auth');
 
-    Route::post('/branches/import', [App\Http\Controllers\BranchImportController::class, 'store'])
-        ->name('branches.import.store')
-        ->middleware('auth');
 
-    // Route::get('/branches/import/template', [App\Http\Controllers\BranchImportController::class, 'template'])
-    //     ->name('branches.import.template')
-    //     ->middleware('auth');
 
-    Route::post('/import/users', [App\Http\Controllers\UserImportController::class, 'import'])
-        ->name('users.import.import')
-        ->middleware('auth');
 
-    // Route::post('/gaji-pokok/import', [GajihPokokController::class, 'import'])
-    //     ->name('gaji-pokok.import');
-    // Route::prefix('gaji-pokok-import')->group(function () {
-    // Route::get('/import', [App\Http\Controllers\Payroll\GajihPokokImportController::class, 'create'])->name('gaji_pokok.import.form');
-    Route::post('gaji-pokok/import', [GajihPokokImportController::class, 'store'])->name('gaji-pokok.import');
-    Route::get('gaji-pokok/template', [GajihPokokImportController::class, 'template'])->name('gaji-pokok.template');
+
     // });
 });
 

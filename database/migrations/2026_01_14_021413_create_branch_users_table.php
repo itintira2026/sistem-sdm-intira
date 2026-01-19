@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('is_manager')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

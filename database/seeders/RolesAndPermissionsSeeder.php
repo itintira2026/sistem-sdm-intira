@@ -18,7 +18,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // ===========================
         $permissions = [
             'asign:permission',
-            
+
             'manage:status_penempatan',
             'manage:cabang',
             'manage:akad',
@@ -51,12 +51,12 @@ class RolesAndPermissionsSeeder extends Seeder
         // ===========================
         // 2. ROLES
         // ===========================
-        $frontOffice = Role::firstOrCreate(['name' => 'Front Office']);
-        $areaManager  = Role::firstOrCreate(['name' => 'Area Manager']);
-        $headOffice   = Role::firstOrCreate(['name' => 'Head Office']);
+        $fo = Role::firstOrCreate(['name' => 'fo']);
+        $manager  = Role::firstOrCreate(['name' => 'manager']);
+        $finance  = Role::firstOrCreate(['name' => 'finance']);
+        $hr  = Role::firstOrCreate(['name' => 'hr']);
+        $superadmin   = Role::firstOrCreate(['name' => 'superadmin']);
 
-       $headOffice->givePermissionTo(Permission::all());
-
-
+        $superadmin->givePermissionTo(Permission::all());
     }
 }

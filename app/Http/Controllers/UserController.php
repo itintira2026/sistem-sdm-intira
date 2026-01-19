@@ -8,19 +8,53 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index()
+    // public function index()
+    // {
+    //     $users = User::with('roles')->latest()->paginate(10);
+    //     $roles = Role::all();
+
+    //     return view('management_data.user.index', compact('users', 'roles'));
+    // }
+
+    public function index(Request $request)
     {
-        $users = User::with('roles')->latest()->paginate(10);
+        $perPage = $request->get('per_page', 10);
+        $role    = $request->get('role');
+        $search  = $request->get('search');
+
+        $users = User::with(['roles', 'branchAssignments.branch'])
+            ->when($role, function ($query) use ($role) {
+                $query->whereHas('roles', function ($q) use ($role) {
+                    $q->where('name', $role);
+                });
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString(); // 🔥 penting
+
         $roles = Role::all();
-        
-        return view('management_data.user.index', compact('users', 'roles'));
+
+        return view('management_data.user.index', compact(
+            'users',
+            'roles',
+            'perPage',
+            'role',
+            'search'
+        ));
     }
 
     public function create()
     {
         $roles = Role::all();
         $branches = \App\Models\Branch::all();
-        
+
         return view('management_data.user.create', compact('roles', 'branches'));
     }
 
@@ -54,7 +88,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['roles', 'branch']);
-        
+
         return view('management_data.user.show', compact('user'));
     }
 
@@ -63,7 +97,7 @@ class UserController extends Controller
         $roles = Role::all();
         $branches = \App\Models\Branch::all();
         $user->load(['roles', 'branch']);
-        
+
         return view('management_data.user.edit', compact('user', 'roles', 'branches'));
     }
 
@@ -100,7 +134,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        
+
         return redirect()->route('users.index')
             ->with('success', 'Pengguna berhasil dihapus');
     }
@@ -108,7 +142,7 @@ class UserController extends Controller
     public function activate(User $user)
     {
         $user->update(['is_active' => true]);
-        
+
         return redirect()->route('users.index')
             ->with('success', 'Pengguna berhasil diaktifkan');
     }
@@ -116,7 +150,7 @@ class UserController extends Controller
     public function deactivate(User $user)
     {
         $user->update(['is_active' => false]);
-        
+
         return redirect()->route('users.index')
             ->with('success', 'Pengguna berhasil dinonaktifkan');
     }

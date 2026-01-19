@@ -42,7 +42,7 @@
                 <div class="p-6">
                     <h3 class="mb-6 text-lg font-semibold text-gray-800">Data Pengguna</h3>
 
-                    <div class="flex gap-4 mb-6">
+                    {{-- <div class="flex gap-4 mb-6">
                         <div class="relative">
                             <select
                                 class="px-4 py-2 pr-10 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500">
@@ -74,7 +74,53 @@
                             <input type="text" placeholder="Cari nama, email, atau username..."
                                 class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                         </div>
-                    </div>
+                    </div> --}}
+                    <form method="GET" action="{{ route('users.index') }}" class="flex gap-4 mb-6">
+                        {{-- PER PAGE --}}
+                        <div class="relative">
+                            <select name="per_page" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border border-gray-300 rounded-lg appearance-none focus:ring-teal-500">
+                                @foreach ([10, 25, 50, 100] as $size)
+                                    <option value="{{ $size }}"
+                                        {{ request('per_page', 10) == $size ? 'selected' : '' }}>
+                                        {{ $size }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- ROLE --}}
+                        <div class="relative">
+                            <select name="role" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border border-gray-300 rounded-lg appearance-none focus:ring-teal-500">
+                                <option value="">Semua Role</option>
+                                @foreach ($roles as $r)
+                                    <option value="{{ $r->name }}"
+                                        {{ request('role') == $r->name ? 'selected' : '' }}>
+                                        {{ ucfirst($r->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- SEARCH --}}
+                        <div class="relative flex-1">
+                            <svg class="absolute w-5 h-5 text-gray-400 left-3 top-3" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Cari nama, email, atau username..."
+                                class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-teal-500" />
+                        </div>
+
+                        <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                            Cari
+                        </button>
+                    </form>
+
 
                     <div class="overflow-x-auto">
                         <table class="w-full">

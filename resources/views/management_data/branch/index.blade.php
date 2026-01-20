@@ -178,7 +178,7 @@
                                                 </button>
 
                                                 <div id="dropdown-{{ $branch->id }}"
-                                                    class="absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                    class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
 
                                                         {{-- <a href="{{ route('branches.show', $branch) }}"
@@ -467,158 +467,6 @@
     </div>
 
     <script>
-        // // Fungsi untuk membuka modal import
-        // function openImportModal() {
-        //     document.getElementById('importModal').classList.remove('hidden');
-        // }
-
-        // // Fungsi untuk menutup modal import
-        // function closeImportModal() {
-        //     document.getElementById('importModal').classList.add('hidden');
-        //     resetForm();
-        // }
-
-        // // Reset form
-        // function resetForm() {
-        //     document.getElementById('fileInput').value = '';
-        //     document.getElementById('fileName').classList.add('hidden');
-        //     document.getElementById('importButton').disabled = true;
-        //     document.getElementById('progressContainer').classList.add('hidden');
-        //     document.getElementById('progressBar').style.width = '0%';
-        //     document.getElementById('progressPercent').textContent = '0%';
-        // }
-
-        // // Event listener untuk tombol-tombol modal
-        // document.addEventListener('DOMContentLoaded', function() {
-        //     // Tombol close modal
-        //     document.getElementById('closeModal').addEventListener('click', closeImportModal);
-
-        //     // Tombol batal
-        //     document.getElementById('cancelButton').addEventListener('click', closeImportModal);
-
-        //     // Tombol browse file
-        //     document.getElementById('browseButton').addEventListener('click', function() {
-        //         document.getElementById('fileInput').click();
-        //     });
-
-        //     // Area drop file
-        //     const dropArea = document.getElementById('dropArea');
-
-        //     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        //         dropArea.addEventListener(eventName, preventDefaults, false);
-        //     });
-
-        //     function preventDefaults(e) {
-        //         e.preventDefault();
-        //         e.stopPropagation();
-        //     }
-
-        //     ['dragenter', 'dragover'].forEach(eventName => {
-        //         dropArea.addEventListener(eventName, highlight, false);
-        //     });
-
-        //     ['dragleave', 'drop'].forEach(eventName => {
-        //         dropArea.addEventListener(eventName, unhighlight, false);
-        //     });
-
-        //     function highlight() {
-        //         dropArea.classList.add('border-teal-500', 'bg-teal-50');
-        //     }
-
-        //     function unhighlight() {
-        //         dropArea.classList.remove('border-teal-500', 'bg-teal-50');
-        //     }
-
-        //     // Handle drop file
-        //     dropArea.addEventListener('drop', handleDrop, false);
-
-        //     function handleDrop(e) {
-        //         const dt = e.dataTransfer;
-        //         const files = dt.files;
-        //         handleFiles(files);
-        //     }
-
-        //     // Handle file input change
-        //     document.getElementById('fileInput').addEventListener('change', function() {
-        //         handleFiles(this.files);
-        //     });
-
-        //     // Fungsi untuk menangani file yang dipilih
-        //     function handleFiles(files) {
-        //         if (files.length > 0) {
-        //             const file = files[0];
-        //             const allowedExtensions = /(\.csv|\.xlsx|\.xls)$/i;
-
-        //             if (!allowedExtensions.exec(file.name)) {
-        //                 alert('Format file tidak didukung. Harap unggah file CSV atau Excel.');
-        //                 return;
-        //             }
-
-        //             // Tampilkan nama file
-        //             document.getElementById('selectedFileName').textContent = file.name;
-        //             document.getElementById('fileName').classList.remove('hidden');
-
-        //             // Aktifkan tombol import
-        //             document.getElementById('importButton').disabled = false;
-        //         }
-        //     }
-
-        //     // Tombol import (simulasi proses upload)
-        //     document.getElementById('importButton').addEventListener('click', function() {
-        //         const fileInput = document.getElementById('fileInput');
-
-        //         if (!fileInput.files.length) {
-        //             alert('Silakan pilih file terlebih dahulu.');
-        //             return;
-        //         }
-
-        //         // Tampilkan progress bar
-        //         document.getElementById('progressContainer').classList.remove('hidden');
-
-        //         // Simulasi proses upload
-        //         simulateUpload();
-        //     });
-
-        //     // Fungsi untuk simulasi proses upload
-        //     function simulateUpload() {
-        //         let progress = 0;
-        //         const progressBar = document.getElementById('progressBar');
-        //         const progressPercent = document.getElementById('progressPercent');
-        //         const importButton = document.getElementById('importButton');
-
-        //         importButton.disabled = true;
-        //         importButton.textContent = 'Mengimport...';
-
-        //         const interval = setInterval(() => {
-        //             progress += 5;
-        //             if (progress > 100) progress = 100;
-
-        //             progressBar.style.width = `${progress}%`;
-        //             progressPercent.textContent = `${progress}%`;
-
-        //             if (progress >= 100) {
-        //                 clearInterval(interval);
-
-        //                 // Tampilkan pesan sukses setelah 500ms
-        //                 setTimeout(() => {
-        //                     alert('Import berhasil! Data pengguna telah ditambahkan.');
-        //                     closeImportModal();
-
-        //                     // Di sini bisa ditambahkan kode untuk refresh data tabel
-        //                     // location.reload(); // atau gunakan AJAX untuk update data
-        //                 }, 500);
-        //             }
-        //         }, 100);
-        //     }
-
-        //     // Tutup modal saat klik di luar area modal
-        //     document.getElementById('importModal').addEventListener('click', function(e) {
-        //         if (e.target === this) {
-        //             closeImportModal();
-        //         }
-        //     });
-        // });
-
         // Fungsi untuk membuka modal import
         function openImportModal() {
             console.log('Opening import modal');
@@ -928,21 +776,31 @@
         });
 
         function toggleDropdown(id) {
+            event.stopPropagation();
+
+            const button = event.currentTarget;
+            const dropdown = document.getElementById(`dropdown-${id}`);
+
+            // Tutup dropdown lain
             document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                if (el.id !== `dropdown-${id}`) {
-                    el.classList.add('hidden');
-                }
+                if (el !== dropdown) el.classList.add('hidden');
             });
 
-            document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+            // Toggle
+            dropdown.classList.toggle('hidden');
+
+            if (!dropdown.classList.contains('hidden')) {
+                const rect = button.getBoundingClientRect();
+
+                dropdown.style.top = `${rect.bottom + 8}px`;
+                dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+            }
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                    el.classList.add('hidden');
-                });
-            }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
         });
     </script>
 

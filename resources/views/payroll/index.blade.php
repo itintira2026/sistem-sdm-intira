@@ -65,7 +65,7 @@
                         Daftar Cabang
                     </h3>
 
-                    <form method="GET" action="{{ route('branches.index') }}" class="flex flex-wrap gap-4 mb-6">
+                    <form method="GET" action="{{ route('gaji.index') }}" class="flex flex-wrap gap-4 mb-6">
 
                         {{-- PER PAGE --}}
                         <div>
@@ -186,16 +186,19 @@
                                         <td class="px-4 py-4">
                                             <div class="relative inline-block text-left">
 
+                                                {{-- <button type="button" onclick="toggleDropdown({{ $branch->id }})"
+                                                    class="text-gray-400 hover:text-gray-600"> --}}
                                                 <button type="button" onclick="toggleDropdown({{ $branch->id }})"
                                                     class="text-gray-400 hover:text-gray-600">
+
                                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                         <path
                                                             d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                                     </svg>
                                                 </button>
-
+                                                {{-- absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 --}}
                                                 <div id="dropdown-{{ $branch->id }}"
-                                                    class="absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                    class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
                                                         <a href="{{ route('gaji.show', $branch) }}"
                                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -501,22 +504,49 @@
 
 
 
+        // function toggleDropdown(id) {
+        //     document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+        //         if (el.id !== `dropdown-${id}`) {
+        //             el.classList.add('hidden');
+        //         }
+        //     });
+
+        //     document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+        // }
+
+        // document.addEventListener('click', function(e) {
+        //     if (!e.target.closest('.relative')) {
+        //         document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+        //             el.classList.add('hidden');
+        //         });
+        //     }
+        // });
         function toggleDropdown(id) {
+            event.stopPropagation();
+
+            const button = event.currentTarget;
+            const dropdown = document.getElementById(`dropdown-${id}`);
+
+            // Tutup dropdown lain
             document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                if (el.id !== `dropdown-${id}`) {
-                    el.classList.add('hidden');
-                }
+                if (el !== dropdown) el.classList.add('hidden');
             });
 
-            document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+            // Toggle
+            dropdown.classList.toggle('hidden');
+
+            if (!dropdown.classList.contains('hidden')) {
+                const rect = button.getBoundingClientRect();
+
+                dropdown.style.top = `${rect.bottom + 8}px`;
+                dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+            }
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                    el.classList.add('hidden');
-                });
-            }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
         });
     </script>
 

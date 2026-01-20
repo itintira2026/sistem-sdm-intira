@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
         ->name('branches.users.destroy');
 
 
-    Route::get('/payroll/detail/show', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
+  Route::get('/gaji-pokok/{gajihPokok}', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
 
     Route::get('/payroll/{branch}/show', [PayrollController::class, 'show'])->name('gaji.show');
     Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');

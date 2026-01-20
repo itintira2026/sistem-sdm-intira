@@ -129,16 +129,97 @@ class GajihPokokController extends Controller
         return redirect()->route('gaji-pokok.detail', ['branch' => $branch->id, 'bulan' => $validated['bulan'], 'tahun' => $validated['tahun']])
             ->with('success', 'Gaji pokok berhasil ditambahkan!');
     }
-    public function show(GajihPokok $gajihPokok)
+    // public function show(GajihPokok $gajihPokok)
+    // {
+    //     // Load relasi yang diperlukan
+    //     $gajihPokok->load([
+    //         'branchUser.user.roles',
+    //         'branchUser.branch',
+    //         'branchUser.potongans' => function($query) use ($gajihPokok) {
+    //             $query->where('bulan', $gajihPokok->bulan)
+    //                   ->where('tahun', $gajihPokok->tahun)
+    //                   ->orderBy('tanggal', 'asc');
+    //         }
+    //     ]);
+
+    //     // Get potongan & tambahan
+    //     $potongans = $gajihPokok->branchUser->potongans
+    //                             ->where('bulan', $gajihPokok->bulan)
+    //                             ->where('tahun', $gajihPokok->tahun);
+
+    //     // Hitung total potongan & tambahan
+    //     $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
+    //     $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
+        
+    //     // Hitung gaji
+    //     $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
+    //     $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
+
+    //     // Get riwayat gaji pokok (3 bulan terakhir)
+    //     $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
+    //                              ->orderBy('tahun', 'desc')
+    //                              ->orderBy('bulan', 'desc')
+    //                              ->take(3)
+    //                              ->get();
+
+    //     return view('payroll.gajih_pokok.show', compact(
+    //         'gajihPokok',
+    //         'potongans',
+    //         'totalPotongan',
+    //         'totalTambahan',
+    //         'gajiKotor',
+    //         'gajiBersih',
+    //         'riwayatGaji'
+    //     ));
+    // }
+    // ... method lainnya
+
+    public function show($id)
     {
-        $gajihPokok->load([
-            'branchUser.user.roles',
-            'branchUser.branch'
-        ]);
+        // Find gaji pokok dengan eager loading yang benar
+        $gajihPokok = GajihPokok::with([
+            'branchUser' => function($query) {
+                $query->with(['user.roles', 'branch']);
+            }
+        ])->findOrFail($id);
 
-        return view('payroll.gajih_pokok.show', compact('gajihPokok'));
+        // Pastikan branchUser ada
+        if (!$gajihPokok->branchUser) {
+            return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
+        }
+
+        // Get potongan & tambahan
+        $potongans = $gajihPokok->branchUser->potongans()
+                                ->where('bulan', $gajihPokok->bulan)
+                                ->where('tahun', $gajihPokok->tahun)
+                                ->orderBy('tanggal', 'asc')
+                                ->get();
+
+        // Hitung total potongan & tambahan
+        $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
+        $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
+        
+        // Hitung gaji
+        $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
+        $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
+
+        // Get riwayat gaji pokok (3 bulan terakhir)
+        $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
+                                 ->orderBy('tahun', 'desc')
+                                 ->orderBy('bulan', 'desc')
+                                 ->take(3)
+                                 ->get();
+
+        return view('payroll.gajih_pokok.show', compact(
+            'gajihPokok',
+            'potongans',
+            'totalPotongan',
+            'totalTambahan',
+            'gajiKotor',
+            'gajiBersih',
+            'riwayatGaji'
+        ));
     }
-
     // public function import(Request $request)
     // {
     //     // ===============================

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Payroll\PotonganImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchUserController;
@@ -69,6 +70,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/potongan/{branch}/create', [PotonganController::class, 'store'])->name('potongan.store');
     Route::delete('/potongan/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
 
+    Route::post('/potongan-import', [PotonganImportController::class, 'store'])->name('potongan.import');
+    Route::get('/potongan/template', [PotonganImportController::class, 'template'])->name('potongan.template');
 
     Route::resource('users', App\Http\Controllers\UserController::class);
     // Activate/Deactivate User

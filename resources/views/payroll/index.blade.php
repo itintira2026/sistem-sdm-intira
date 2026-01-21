@@ -21,10 +21,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    Import Gaji Pokok
+                    Import Gaji
                 </button>
 
-                <button
+                {{-- <button
                     onclick="openImportModal({
     title: 'Import Potongan',
     action: '{{ route('potongan.import') }}'
@@ -35,15 +35,15 @@
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     Import Potongan
-                </button>
+                </button> --}}
 
-                <a href="{{ route('branches.create') }}"
+                {{-- <a href="{{ route('branches.create') }}"
                     class="flex items-center gap-2 px-4 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     Tambah Gaji
-                </a>
+                </a> --}}
             </div>
         </div>
     </x-slot>
@@ -200,10 +200,6 @@
                                                 <div id="dropdown-{{ $branch->id }}"
                                                     class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
-                                                        <a href="{{ route('gaji.show', $branch) }}"
-                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            Slip Gaji Detail
-                                                        </a>
                                                         <a href="{{ route('gaji-pokok.detail', parameters: $branch) }}"
                                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                             Gaji Pokok Detail
@@ -251,7 +247,7 @@
                     {{-- <h3 class="text-xl font-semibold text-gray-800">Import Data Gaji Pokok</h3> --}}
                     <h3 id="importModalTitle" class="text-lg font-semibold"></h3>
 
-                    <p class="mt-1 text-sm text-gray-500">Unggah file untuk menambahkan data Gaji Pokok secara massal
+                    <p class="mt-1 text-sm text-gray-500">Unggah file untuk menambahkan data Gaji secara massal
                     </p>
                 </div>
                 <button id="closeModal" type="button" class="text-gray-400 hover:text-gray-600">

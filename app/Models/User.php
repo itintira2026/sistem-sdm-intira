@@ -70,6 +70,11 @@ class User extends Authenticatable
         // FO / non manager
         return $branches->first()->name;
     }
+    public function gajihPokoks()
+    {
+        return $this->hasMany(GajihPokok::class, 'user_id');
+    }
+
 
 
     /**

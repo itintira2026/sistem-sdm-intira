@@ -212,26 +212,55 @@
                                         </td>
                                         <td class="px-4 py-4">
                                             <span class="text-sm font-medium text-blue-600">
-                                                {{ $branchUser->current_gaji_pokok->periode }}
+                                                {{-- {{ $branchUser->current_gaji_pokok->periode }} --}}
+                                                @if ($branchUser->current_gaji_pokok)
+                                                    {{ $branchUser->current_gaji_pokok->periode }}
+                                                @else
+                                                    <span class="italic text-gray-400">-</span>
+                                                @endif
                                             </span>
                                         </td>
-                                        <td class="px-4 py-4">
+                                        {{-- <td class="px-4 py-4">
                                             <span class="font-semibold text-gray-900">
                                                 Rp
                                                 {{ number_format($branchUser->current_gaji_pokok->amount, 0, ',', '.') }}
                                             </span>
+                                        </td> --}}
+                                        <td class="px-4 py-4">
+                                            @if ($branchUser->current_gaji_pokok)
+                                                <span class="font-semibold text-gray-900">
+                                                    Rp
+                                                    {{ number_format($branchUser->current_gaji_pokok->amount, 0, ',', '.') }}
+                                                </span>
+                                            @else
+                                                <span class="italic text-gray-400">Belum diinput</span>
+                                            @endif
                                         </td>
+
                                         <td class="px-4 py-4 text-sm text-gray-600">
                                             {{ $branchUser->current_gaji_pokok->keterangan ?? '-' }}
                                         </td>
-                                        <td class="px-4 py-4">
+                                        {{-- <td class="px-4 py-4">
 
                                             <a href="{{ route('gaji-pokok.show', $branchUser->current_gaji_pokok->id) }}"
                                                 class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                 Detail
                                             </a>
 
+                                        </td> --}}
+                                        <td class="px-4 py-4">
+                                            @if ($branchUser->current_gaji_pokok)
+                                                <a href="{{ route('gaji-pokok.show', $branchUser->current_gaji_pokok->id) }}"
+                                                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    Detail
+                                                </a>
+                                            @else
+                                                <span class="text-sm italic text-gray-400">
+                                                    Belum ada gaji
+                                                </span>
+                                            @endif
                                         </td>
+
                                     </tr>
                                 @empty
                                     <tr>

@@ -8,9 +8,6 @@ use App\Models\Branch;
 use App\Models\GajihPokok;
 use App\Models\BranchUser;
 use Carbon\Carbon;
-// use Maatwebsite\Excel\Facades\Excel;
-// use App\Imports\GajihPokokImport;
-// use Throwable;
 
 class GajihPokokController extends Controller
 {
@@ -67,26 +64,27 @@ class GajihPokokController extends Controller
             'userWithoutGaji'
         ));
     }
+
     public function create(Request $request, Branch $branch)
     {
-        $bulan = $request->input('bulan', Carbon::now()->month);
-        $tahun = $request->input('tahun', Carbon::now()->year);
-        $branchUserId = $request->input('branch_user_id');
+        // $bulan = $request->input('bulan', Carbon::now()->month);
+        // $tahun = $request->input('tahun', Carbon::now()->year);
+        // $branchUserId = $request->input('branch_user_id');
 
-        // Get specific user atau semua user di cabang
-        if ($branchUserId) {
-            $branchUser = BranchUser::with(['user.roles'])->findOrFail($branchUserId);
-            $users = collect([$branchUser]);
-        } else {
-            // Get users yang belum punya gaji pokok di periode ini
-            $users = $branch->userAssignments()
-                ->with(['user.roles'])
-                ->whereDoesntHave('gajihPokok', function ($query) use ($bulan, $tahun) {
-                    $query->where('bulan', $bulan)
-                        ->where('tahun', $tahun);
-                })
-                ->get();
-        }
+        // // Get specific user atau semua user di cabang
+        // if ($branchUserId) {
+        //     $branchUser = BranchUser::with(['user.roles'])->findOrFail($branchUserId);
+        //     $users = collect([$branchUser]);
+        // } else {
+        //     // Get users yang belum punya gaji pokok di periode ini
+        //     $users = $branch->userAssignments()
+        //         ->with(['user.roles'])
+        //         ->whereDoesntHave('gajihPokok', function ($query) use ($bulan, $tahun) {
+        //             $query->where('bulan', $bulan)
+        //                 ->where('tahun', $tahun);
+        //         })
+        //         ->get();
+        // }
 
         return view('payroll.gajih_pokok.create', compact('branch', 'users', 'bulan', 'tahun', 'branchUserId'));
     }
@@ -129,56 +127,13 @@ class GajihPokokController extends Controller
         return redirect()->route('gaji-pokok.detail', ['branch' => $branch->id, 'bulan' => $validated['bulan'], 'tahun' => $validated['tahun']])
             ->with('success', 'Gaji pokok berhasil ditambahkan!');
     }
-    // public function show(GajihPokok $gajihPokok)
-    // {
-    //     // Load relasi yang diperlukan
-    //     $gajihPokok->load([
-    //         'branchUser.user.roles',
-    //         'branchUser.branch',
-    //         'branchUser.potongans' => function($query) use ($gajihPokok) {
-    //             $query->where('bulan', $gajihPokok->bulan)
-    //                   ->where('tahun', $gajihPokok->tahun)
-    //                   ->orderBy('tanggal', 'asc');
-    //         }
-    //     ]);
 
-    //     // Get potongan & tambahan
-    //     $potongans = $gajihPokok->branchUser->potongans
-    //                             ->where('bulan', $gajihPokok->bulan)
-    //                             ->where('tahun', $gajihPokok->tahun);
-
-    //     // Hitung total potongan & tambahan
-    //     $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
-    //     $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
-        
-    //     // Hitung gaji
-    //     $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
-    //     $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
-
-    //     // Get riwayat gaji pokok (3 bulan terakhir)
-    //     $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
-    //                              ->orderBy('tahun', 'desc')
-    //                              ->orderBy('bulan', 'desc')
-    //                              ->take(3)
-    //                              ->get();
-
-    //     return view('payroll.gajih_pokok.show', compact(
-    //         'gajihPokok',
-    //         'potongans',
-    //         'totalPotongan',
-    //         'totalTambahan',
-    //         'gajiKotor',
-    //         'gajiBersih',
-    //         'riwayatGaji'
-    //     ));
-    // }
-    // ... method lainnya
 
     public function show($id)
     {
         // Find gaji pokok dengan eager loading yang benar
         $gajihPokok = GajihPokok::with([
-            'branchUser' => function($query) {
+            'branchUser' => function ($query) {
                 $query->with(['user.roles', 'branch']);
             }
         ])->findOrFail($id);
@@ -190,25 +145,25 @@ class GajihPokokController extends Controller
 
         // Get potongan & tambahan
         $potongans = $gajihPokok->branchUser->potongans()
-                                ->where('bulan', $gajihPokok->bulan)
-                                ->where('tahun', $gajihPokok->tahun)
-                                ->orderBy('tanggal', 'asc')
-                                ->get();
+            ->where('bulan', $gajihPokok->bulan)
+            ->where('tahun', $gajihPokok->tahun)
+            ->orderBy('tanggal', 'asc')
+            ->get();
 
         // Hitung total potongan & tambahan
         $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
         $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
-        
+
         // Hitung gaji
         $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
         $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
 
         // Get riwayat gaji pokok (3 bulan terakhir)
         $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
-                                 ->orderBy('tahun', 'desc')
-                                 ->orderBy('bulan', 'desc')
-                                 ->take(3)
-                                 ->get();
+            ->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->take(3)
+            ->get();
 
         return view('payroll.gajih_pokok.show', compact(
             'gajihPokok',
@@ -220,62 +175,6 @@ class GajihPokokController extends Controller
             'riwayatGaji'
         ));
     }
-    // public function import(Request $request)
-    // {
-    //     // ===============================
-    //     // VALIDASI FILE
-    //     // ===============================
-    //     $request->validate([
-    //         'file' => 'required|file|mimes:xlsx,xls|max:10240',
-    //     ]);
-
-    //     $import = new GajihPokokImport();
-
-    //     try {
-    //         Excel::import($import, $request->file('file'));
-    //     } catch (Throwable $e) {
-    //         // ERROR FATAL (misal file rusak)
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Gagal memproses file: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-
-    //     // ===============================
-    //     // AMBIL HASIL IMPORT
-    //     // ===============================
-    //     $successCount = $import->getSuccessCount();
-    //     $failures     = $import->failures();
-    //     $errorCount   = count($failures);
-
-    //     // ===============================
-    //     // JIKA ADA ERROR PARSIAL
-    //     // ===============================
-    //     if ($errorCount > 0) {
-    //         return response()->json([
-    //             'success'        => false, // penting → biar modal tidak auto-close
-    //             'message'        => 'Import selesai dengan beberapa error',
-    //             'inserted'       => $successCount,
-    //             'error_count'    => $errorCount,
-    //             'errors'         => collect($failures)->map(function ($failure) {
-    //                 return [
-    //                     'row'     => $failure->row(),
-    //                     'column'  => $failure->attribute(),
-    //                     'message' => implode(', ', $failure->errors()),
-    //                 ];
-    //             })->values(),
-    //         ], 200);
-    //     }
-
-    //     // ===============================
-    //     // JIKA SEMUA BERHASIL
-    //     // ===============================
-    //     return response()->json([
-    //         'success'  => true,
-    //         'message'  => "Import gaji berhasil ({$successCount} data)",
-    //         'inserted' => $successCount,
-    //     ], 200);
-    // }
 
     public function destroy(GajihPokok $gajiPokok)
     {

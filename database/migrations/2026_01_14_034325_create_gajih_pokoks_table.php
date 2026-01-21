@@ -13,20 +13,21 @@ return new class extends Migration
     {
         Schema::create('gajih_pokoks', function (Blueprint $table) {
             $table->id();
-             $table->foreignId('branch_user_id')->constrained('branch_users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->decimal('amount', 15, 2);
             $table->decimal('tunjangan_makan', 15, 2);
             $table->decimal('tunjangan_transportasi', 15, 2);
             $table->decimal('tunjangan_jabatan', 15, 2);
             $table->decimal('tunjangan_komunikasi', 15, 2);
+            $table->decimal('potongan_bpjs', 15, 2);
+            $table->decimal('total_revenue', 15, 2);
             $table->tinyInteger('bulan'); // 1-12
             $table->year('tahun'); // 2024, 2025
             $table->text('keterangan')->nullable();
             $table->timestamps();
 
             // Prevent duplicate - satu user di satu cabang hanya bisa punya 1 gaji pokok per bulan
-            $table->unique(['branch_user_id', 'bulan', 'tahun']);
-           
+            $table->unique(['user_id', 'bulan', 'tahun']);
         });
     }
 

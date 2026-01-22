@@ -10,6 +10,7 @@ use App\Http\Controllers\Payroll\GajihPokokController;
 // use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\Payroll\PotonganController;
+use App\Http\Controllers\PresensiImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,7 +50,7 @@ Route::middleware('auth')->group(function () {
         ->name('branches.users.destroy');
 
 
-  Route::get('/gaji-pokok/{gajihPokok}', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
+    Route::get('/gaji-pokok/{gajihPokok}', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
 
     Route::get('/payroll/{branch}/show', [PayrollController::class, 'show'])->name('gaji.show');
     Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');
@@ -84,6 +85,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('presensi', App\Http\Controllers\PresensiController::class);
+    Route::post('/presensi-import', [PresensiImportController::class, 'store'])->name('presensi.import');
+    Route::get('/presensi/template', [PresensiImportController::class, 'template'])->name('presensi.template');
 
 
 

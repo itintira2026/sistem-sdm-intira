@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('presensis', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->date('tanggal');
+            $table->enum('status', ['CHECK_IN', 'CHECK_OUT', 'ISTIRAHAT_IN', 'ISTIRAHAT_OUT']);
+            $table->time('jam');
+            $table->string('wilayah');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }

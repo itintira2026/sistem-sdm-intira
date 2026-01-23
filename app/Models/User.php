@@ -75,6 +75,11 @@ class User extends Authenticatable
         return $this->hasMany(GajihPokok::class, 'user_id');
     }
 
+    public function presensis()
+    {
+        return $this->hasMany(\App\Models\Presensi::class);
+    }
+
 
 
     /**

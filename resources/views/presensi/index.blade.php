@@ -3,10 +3,10 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                    Manajemen Cabang
+                    Manajemen Presensi Karyawan
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    Kelola data cabang perusahaan Anda
+                    Kelola data presensi karyawan Anda di sini.
                 </p>
             </div>
 
@@ -20,28 +20,188 @@
                     </svg>
                     Import Presensi
                 </button>
-                {{-- <a href="{{ route('branches.create') }}"
-                    class="flex items-center gap-2 px-4 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah Cabang
-                </a> --}}
             </div>
-
-            {{-- <a href="{{ route('branches.create') }}"
-                class="flex items-center gap-2 px-4 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Tambah Cabang
-            </a> --}}
         </div>
     </x-slot>
 
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <h1>hello world</h1>
+
+            {{-- Alert --}}
+            @if (session('success'))
+                <div class="p-4 mb-4 text-green-700 bg-green-100 rounded-lg">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="bg-white shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="mb-6 text-lg font-semibold text-gray-800">
+                        Daftar Presensi
+                    </h3>
+                    <form method="GET" class="flex flex-wrap gap-4 mb-6">
+
+                        {{-- PER PAGE --}}
+                        <div>
+                            <select name="per_page" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border rounded-lg">
+                                @foreach ([10, 25, 50, 100] as $size)
+                                    <option value="{{ $size }}"
+                                        {{ request('per_page', 10) == $size ? 'selected' : '' }}>
+                                        {{ $size }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        {{-- STATUS PRESENSI --}}
+                        <div>
+                            <select name="status_presensi" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border rounded-lg">
+                                <option value="">Semua Status</option>
+                                <option value="LENGKAP" {{ request('status_presensi') == 'LENGKAP' ? 'selected' : '' }}>
+                                    Lengkap
+                                </option>
+                                <option value="TIDAK_LENGKAP"
+                                    {{ request('status_presensi') == 'TIDAK_LENGKAP' ? 'selected' : '' }}>
+                                    Tidak Lengkap
+                                </option>
+                                <option value="BELUM_ABSEN"
+                                    {{ request('status_presensi') == 'BELUM_ABSEN' ? 'selected' : '' }}>
+                                    Belum Absen
+                                </option>
+                            </select>
+                        </div>
+
+
+                        {{-- TANGGAL --}}
+                        <div>
+                            <input type="date" name="tanggal" value="{{ request('tanggal', $tanggal) }}"
+                                onchange="this.form.submit()" class="px-4 py-2 border rounded-lg">
+                        </div>
+
+                        {{-- SEARCH --}}
+                        <div class="relative flex-1 min-w-[250px]">
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Cari nama karyawan..." class="w-full px-4 py-2 border rounded-lg">
+                        </div>
+
+                        <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                            Cari
+                        </button>
+                    </form>
+
+                    {{-- TABLE --}}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
+                                        Nama
+                                    </th>
+                                    <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
+                                        Status
+                                    </th>
+                                    <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
+                                        Jam Presensi
+                                    </th>
+                                    <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
+                                        Telat
+                                    </th>
+                                    <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
+                                        Aksi
+                                    </th>
+                                    {{-- <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
+                                        Aksi
+                                    </th> --}}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($users as $row)
+                                    <tr class="border-t">
+                                        <td class="px-4 py-3">
+                                            {{ $row->name ?? '-' }}
+                                        </td>
+
+                                        {{-- STATUS --}}
+                                        <td class="px-4 py-3">
+                                            @if ($row->presensi_status === 'LENGKAP')
+                                                <span class="px-2 py-1 text-green-700 bg-green-100 rounded">
+                                                    Lengkap
+                                                </span>
+                                            @elseif ($row->presensi_status === 'BELUM_ABSEN')
+                                                <span class="px-2 py-1 text-gray-700 bg-gray-200 rounded">
+                                                    Belum Absen
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-1 text-yellow-700 bg-yellow-100 rounded">
+                                                    Tidak Lengkap
+                                                </span>
+                                            @endif
+                                        </td>
+
+                                        {{-- JAM --}}
+                                        <td class="px-4 py-3 text-xs">
+                                            CI: {{ $row->presensi_jam['CHECK_IN'] ?? '-' }} |
+                                            IO: {{ $row->presensi_jam['ISTIRAHAT_OUT'] ?? '-' }} |
+                                            II: {{ $row->presensi_jam['ISTIRAHAT_IN'] ?? '-' }} |
+                                            CO: {{ $row->presensi_jam['CHECK_OUT'] ?? '-' }}
+                                        </td>
+
+                                        {{-- TELAT --}}
+                                        <td class="px-4 py-3">
+                                            @if (count($row->presensi_telat))
+                                                <span class="text-red-600">
+                                                    {{ implode(', ', $row->presensi_telat) }}
+                                                </span>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        {{-- AKSI --}}
+                                        {{-- <a href="#" class="text-blue-600 hover:underline">
+                                            Detail
+                                        </a> --}}
+                                        <td class="px-4 py-3">
+                                            <div class="relative inline-block text-left">
+                                                <button type="button" onclick="toggleDropdown({{ $row->id }})"
+                                                    class="text-gray-400 hover:text-gray-600">
+
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path
+                                                            d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                                    </svg>
+                                                </button>
+                                                {{-- absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 --}}
+                                                <div id="dropdown-{{ $row->id }}"
+                                                    class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                    <div class="py-1">
+                                                        {{-- <a href=""
+                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            Detail
+                                                        </a> --}}
+                                                        <a href="{{ route('presensi.show', $row->id) }}"
+                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            Detail
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <div class="mt-6">
+                            {{ $users->withQueryString()->links() }}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {{-- <h1>hello world</h1> --}}
+            {{-- FILTER TANGGAL --}}
         </div>
     </div>
 
@@ -465,21 +625,31 @@
         });
 
         function toggleDropdown(id) {
+            event.stopPropagation();
+
+            const button = event.currentTarget;
+            const dropdown = document.getElementById(`dropdown-${id}`);
+
+            // Tutup dropdown lain
             document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                if (el.id !== `dropdown-${id}`) {
-                    el.classList.add('hidden');
-                }
+                if (el !== dropdown) el.classList.add('hidden');
             });
 
-            document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+            // Toggle
+            dropdown.classList.toggle('hidden');
+
+            if (!dropdown.classList.contains('hidden')) {
+                const rect = button.getBoundingClientRect();
+
+                dropdown.style.top = `${rect.bottom + 8}px`;
+                dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+            }
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                    el.classList.add('hidden');
-                });
-            }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
         });
     </script>
 

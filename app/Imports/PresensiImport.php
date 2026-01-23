@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\User;
 use App\Models\Presensi;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\{
@@ -60,12 +61,39 @@ class PresensiImport implements
         // ===============================
         // NORMALISASI TANGGAL & JAM
         // ===============================
+        // try {
+        //     $tanggal = Carbon::parse($data['tanggal'])->format('Y-m-d');
+        //     $jam     = Carbon::parse($data['jam'])->format('H:i:s');
+        // } catch (\Exception $e) {
+        //     throw new \Exception("Format tanggal/jam tidak valid untuk {$data['nama']}");
+        // }
         try {
-            $tanggal = Carbon::parse($data['tanggal'])->format('Y-m-d');
-            $jam     = Carbon::parse($data['jam'])->format('H:i:s');
+
+            // ==========================
+            // TANGGAL
+            // ==========================
+            if (is_numeric($data['tanggal'])) {
+                $tanggal = Carbon::instance(
+                    ExcelDate::excelToDateTimeObject($data['tanggal'])
+                )->format('Y-m-d');
+            } else {
+                $tanggal = Carbon::parse($data['tanggal'])->format('Y-m-d');
+            }
+
+            // ==========================
+            // JAM
+            // ==========================
+            if (is_numeric($data['jam'])) {
+                $jam = Carbon::instance(
+                    ExcelDate::excelToDateTimeObject($data['jam'])
+                )->format('H:i:s');
+            } else {
+                $jam = Carbon::parse($data['jam'])->format('H:i:s');
+            }
         } catch (\Exception $e) {
             throw new \Exception("Format tanggal/jam tidak valid untuk {$data['nama']}");
         }
+
 
         // ===============================
         // CEGAH DUPLIKASI EVENT

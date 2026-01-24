@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('daily_contents', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->date('tanggal');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }

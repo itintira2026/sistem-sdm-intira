@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('contact90s', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('nama_nasabah');
+            $table->string('akun_or_notelp');
+            $table->enum('sosmed', ['DM_IG', 'CHAT_WA', 'INBOX_FB', 'MRKT_PLACE_FB', 'TIKTOK']);
+            $table->enum('situasi', ['tdk_merespon', 'merespon', 'tertarik', 'closing']);
+            $table->boolean('validasi_am')->default(false);
+            $table->string('keterangan')->nullable();
+            $table->date('tanggal');
             $table->timestamps();
         });
     }

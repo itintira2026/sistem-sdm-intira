@@ -22,6 +22,11 @@ class Branch extends Model
             ->withTimestamps();
     }
 
+    public function dailyContents()
+    {
+        return $this->hasMany(DailyContent::class);
+    }
+
     /**
      * Get all user assignments dengan detail
      */

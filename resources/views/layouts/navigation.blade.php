@@ -27,6 +27,9 @@
                     <x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
                         {{ __('Presensi') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('daily-contents.index')" :active="request()->routeIs('daily-contents.*')">
+                        {{ __('Daily Content') }}
+                    </x-nav-link>
                 </div>
             </div>
 

@@ -27,6 +27,9 @@ Route::middleware('auth')->group(function () {
         ->name('users.import.import')
         ->middleware('auth');
 
+    Route::get('/branches/search', [BranchController::class, 'search'])
+        ->name('branches.search');
+
     Route::post('/branches/import', [App\Http\Controllers\BranchImportController::class, 'store'])
         ->name('branches.import.store')
         ->middleware('auth');
@@ -88,8 +91,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/presensi-import', [PresensiImportController::class, 'store'])->name('presensi.import');
     Route::get('/presensi/template', [PresensiImportController::class, 'template'])->name('presensi.template');
 
+    Route::resource('daily-contents', App\Http\Controllers\DailyContentController::class);
 
-
+    // routes/web.php
 
 
 

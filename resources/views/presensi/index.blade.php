@@ -91,7 +91,7 @@
                     </form>
 
                     {{-- TABLE --}}
-                    <div class="overflow-x-auto">
+                    {{-- <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -110,9 +110,6 @@
                                     <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
                                         Aksi
                                     </th>
-                                    {{-- <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
-                                        Aksi
-                                    </th> --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -121,8 +118,6 @@
                                         <td class="px-4 py-3">
                                             {{ $row->name ?? '-' }}
                                         </td>
-
-                                        {{-- STATUS --}}
                                         <td class="px-4 py-3">
                                             @if ($row->presensi_status === 'LENGKAP')
                                                 <span class="px-2 py-1 text-green-700 bg-green-100 rounded">
@@ -138,16 +133,12 @@
                                                 </span>
                                             @endif
                                         </td>
-
-                                        {{-- JAM --}}
                                         <td class="px-4 py-3 text-xs">
                                             CI: {{ $row->presensi_jam['CHECK_IN'] ?? '-' }} |
                                             IO: {{ $row->presensi_jam['ISTIRAHAT_OUT'] ?? '-' }} |
                                             II: {{ $row->presensi_jam['ISTIRAHAT_IN'] ?? '-' }} |
                                             CO: {{ $row->presensi_jam['CHECK_OUT'] ?? '-' }}
                                         </td>
-
-                                        {{-- TELAT --}}
                                         <td class="px-4 py-3">
                                             @if (count($row->presensi_telat))
                                                 <span class="text-red-600">
@@ -157,11 +148,6 @@
                                                 -
                                             @endif
                                         </td>
-
-                                        {{-- AKSI --}}
-                                        {{-- <a href="#" class="text-blue-600 hover:underline">
-                                            Detail
-                                        </a> --}}
                                         <td class="px-4 py-3">
                                             <div class="relative inline-block text-left">
                                                 <button type="button" onclick="toggleDropdown({{ $row->id }})"
@@ -172,19 +158,13 @@
                                                             d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                                     </svg>
                                                 </button>
-                                                {{-- absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 --}}
                                                 <div id="dropdown-{{ $row->id }}"
                                                     class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
-                                                        {{-- <a href=""
-                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            Detail
-                                                        </a> --}}
                                                         <a href="{{ route('presensi.show', $row->id) }}"
                                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                             Detail
                                                         </a>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -197,7 +177,87 @@
                             {{ $users->withQueryString()->links() }}
                         </div>
 
+                    </div> --}}
+                    <div class="relative w-full overflow-x-auto md:overflow-x-visible custom-scrollbar">
+
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="px-4 py-4 min-w-[180px] text-left text-gray-600 uppercase">Nama</th>
+                                    <th class="px-4 py-4 min-w-[140px] text-left text-gray-600 uppercase">Status</th>
+                                    <th class="px-4 py-4 min-w-[320px] text-left text-gray-600 uppercase">Jam Presensi
+                                    </th>
+                                    <th class="px-4 py-4 min-w-[160px] text-left text-gray-600 uppercase">Telat</th>
+                                    <th class="px-4 py-4 min-w-[80px] text-left text-gray-600 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach ($users as $row)
+                                    <tr class="border-t">
+                                        <td class="px-4 py-3">{{ $row->name ?? '-' }}</td>
+
+                                        <td class="px-4 py-3">
+                                            @if ($row->presensi_status === 'LENGKAP')
+                                                <span
+                                                    class="px-2 py-1 text-green-700 bg-green-100 rounded">Lengkap</span>
+                                            @elseif ($row->presensi_status === 'BELUM_ABSEN')
+                                                <span class="px-2 py-1 text-gray-700 bg-gray-200 rounded">Belum
+                                                    Absen</span>
+                                            @else
+                                                <span class="px-2 py-1 text-yellow-700 bg-yellow-100 rounded">Tidak
+                                                    Lengkap</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3 text-xs whitespace-nowrap">
+                                            CI: {{ $row->presensi_jam['CHECK_IN'] ?? '-' }} |
+                                            IO: {{ $row->presensi_jam['ISTIRAHAT_OUT'] ?? '-' }} |
+                                            II: {{ $row->presensi_jam['ISTIRAHAT_IN'] ?? '-' }} |
+                                            CO: {{ $row->presensi_jam['CHECK_OUT'] ?? '-' }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            @if (count($row->presensi_telat))
+                                                <span class="text-red-600">
+                                                    {{ implode(', ', $row->presensi_telat) }}
+                                                </span>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            <div class="relative inline-block text-left">
+                                                <button type="button" onclick="toggleDropdown({{ $row->id }})"
+                                                    class="text-gray-400 hover:text-gray-600">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path
+                                                            d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                                    </svg>
+                                                </button>
+
+                                                <div id="dropdown-{{ $row->id }}"
+                                                    class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                    <div class="py-1">
+                                                        <a href="{{ route('presensi.show', $row->id) }}"
+                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            Detail
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <div class="mt-6">
+                            {{ $users->withQueryString()->links() }}
+                        </div>
                     </div>
+
                 </div>
             </div>
             {{-- <h1>hello world</h1> --}}

@@ -131,7 +131,7 @@
 
 
                     {{-- TABLE --}}
-                    <div class="overflow-x-auto">
+                    {{-- <div class="max-w-full overflow-x-auto custom-scrollbar">
                         <table class="min-w-full text-sm">
                             <thead>
                                 <tr class="border-b">
@@ -155,7 +155,61 @@
                             <tbody>
                                 @foreach ($branches as $branch)
                                     <tr class="border-t">
-                                        {{-- <td class="px-4 py-3">{{ $branch->code }}</td> --}}
+                                        <td class="px-4 py-4">
+                                            <span
+                                                class="px-3 py-1 text-sm font-medium rounded bg-cyan-100 text-cyan-700">
+                                                {{ $branch->code }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3">{{ $branch->name }}</td>
+
+                                        <td class="px-4 py-3">
+                                            @if ($branch->konten_status === 'TERPENUHI')
+                                                <span
+                                                    class="px-2 py-1 text-green-700 bg-green-100 rounded">Terpenuhi</span>
+                                            @elseif ($branch->konten_jumlah === 0)
+                                                <span class="px-2 py-1 text-gray-700 bg-gray-200 rounded">Belum
+                                                    Ada</span>
+                                            @else
+                                                <span class="px-2 py-1 text-yellow-700 bg-yellow-100 rounded">
+                                                    Baru {{ $branch->konten_jumlah }} Konten
+                                                </span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3">{{ $branch->konten_jumlah }}</td>
+                                        <td class="px-4 py-3">
+                                            <a href="{{ route('daily-contents.show', $branch->id) }}?tanggal={{ $tanggal }}"
+                                                class="text-blue-600 hover:underline">
+                                                Detail
+                                            </a>
+                                        </td>
+
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <div class="mt-6">
+                            {{ $branches->withQueryString()->links() }}
+                        </div>
+
+                    </div> --}}
+                    <div class="relative w-full overflow-x-auto md:overflow-x-visible custom-scrollbar">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="px-4 py-4 min-w-[120px] text-left text-gray-600 uppercase">Kode</th>
+                                    <th class="px-4 py-4 min-w-[200px] text-left text-gray-600 uppercase">Nama Cabang
+                                    </th>
+                                    <th class="px-4 py-4 min-w-[160px] text-left text-gray-600 uppercase">Status</th>
+                                    <th class="px-4 py-4 min-w-[100px] text-left text-gray-600 uppercase">Jumlah</th>
+                                    <th class="px-4 py-4 min-w-[100px] text-left text-gray-600 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($branches as $branch)
+                                    <tr class="border-t">
                                         <td class="px-4 py-4">
                                             <span
                                                 class="px-3 py-1 text-sm font-medium rounded bg-cyan-100 text-cyan-700">
@@ -180,19 +234,12 @@
 
                                         <td class="px-4 py-3">{{ $branch->konten_jumlah }}</td>
 
-                                        {{-- <td class="px-4 py-3">
-                                            <a href="{{ route('daily-contents.show', [$branch->id, 'tanggal' => $tanggal]) }}"
-                                                class="text-blue-600 hover:underline">
-                                                Detail
-                                            </a>
-                                        </td> --}}
                                         <td class="px-4 py-3">
                                             <a href="{{ route('daily-contents.show', $branch->id) }}?tanggal={{ $tanggal }}"
                                                 class="text-blue-600 hover:underline">
                                                 Detail
                                             </a>
                                         </td>
-
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -201,8 +248,8 @@
                         <div class="mt-6">
                             {{ $branches->withQueryString()->links() }}
                         </div>
-
                     </div>
+
                 </div>
             </div>
             {{-- <h1>hello world</h1> --}}

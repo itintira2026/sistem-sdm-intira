@@ -56,6 +56,21 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+                        {{-- <x-dropdown-link :href="route('users.index')">
+                            {{ __('User') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('branches.index')">
+                            {{ __('Branch') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('gaji.index')">
+                            {{ __('Gaji') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('presensi.index')">
+                            {{ __('Presensi') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('daily-contents.index')">
+                            {{ __('Daily Content') }}
+                        </x-dropdown-link> --}}
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -105,6 +120,21 @@
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('users.index')">
+                    {{ __('Users') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('branches.index')">
+                    {{ __('Branches') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('gaji.index')">
+                    {{ __('Gaji') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('presensi.index')">
+                    {{ __('Presensi') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('daily-contents.index')">
+                    {{ __('Daily Contents') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

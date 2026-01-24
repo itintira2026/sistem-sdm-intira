@@ -80,8 +80,10 @@
                     </form>
 
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
+                    {{-- <div class="overflow-x-auto">
+                        <table class="w-full"> --}}
+                    <div class="relative w-full overflow-x-auto md:overflow-x-visible custom-scrollbar">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">Nama

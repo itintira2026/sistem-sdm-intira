@@ -109,9 +109,11 @@
                         </button>
                     </form>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
+                    {{-- <div class="overflow-x-auto">
+                        <table class="w-full"> --}}
+                    <div class="relative w-full overflow-x-auto md:overflow-x-visible custom-scrollbar">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
+                            {{-- <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
                                         Kode
@@ -132,7 +134,18 @@
                                         Aksi
                                     </th>
                                 </tr>
+                            </thead> --}}
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="px-4 py-4 min-w-[120px] text-left">Kode</th>
+                                    <th class="px-4 py-4 min-w-[220px] text-left">Nama Cabang</th>
+                                    <th class="px-4 py-4 min-w-[150px] text-left">Jumlah User</th>
+                                    <th class="px-4 py-4 min-w-[120px] text-left">Status</th>
+                                    <th class="px-4 py-4 min-w-[140px] text-left">Dibuat</th>
+                                    <th class="px-4 py-4 min-w-[80px] text-left">Aksi</th>
+                                </tr>
                             </thead>
+
 
                             <tbody>
                                 @forelse ($branches as $branch)
@@ -148,24 +161,24 @@
                                     @endphp
 
                                     <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             <span
                                                 class="px-3 py-1 text-sm font-medium rounded bg-cyan-100 text-cyan-700">
                                                 {{ $branchCode }}
                                             </span>
                                         </td>
 
-                                        <td class="px-4 py-4 font-medium text-gray-700">
+                                        <td class="px-4 py-4 font-medium text-gray-700 whitespace-nowrap">
                                             {{ $branchName }}
                                         </td>
 
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             <span class="px-3 py-1 text-sm rounded bg-cyan-100 text-cyan-700">
                                                 {{ $branchUserCount }} user
                                             </span>
                                         </td>
 
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             @if ($branchActive)
                                                 <span
                                                     class="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded">
@@ -179,15 +192,12 @@
                                             @endif
                                         </td>
 
-                                        <td class="px-4 py-4 text-sm text-gray-500">
+                                        <td class="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
                                             {{ $branchCreated }}
                                         </td>
 
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             <div class="relative inline-block text-left">
-
-                                                {{-- <button type="button" onclick="toggleDropdown({{ $branch->id }})"
-                                                    class="text-gray-400 hover:text-gray-600"> --}}
                                                 <button type="button" onclick="toggleDropdown({{ $branch->id }})"
                                                     class="text-gray-400 hover:text-gray-600">
 
@@ -196,7 +206,6 @@
                                                             d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                                     </svg>
                                                 </button>
-                                                {{-- absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 --}}
                                                 <div id="dropdown-{{ $branch->id }}"
                                                     class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
@@ -225,6 +234,88 @@
                                     </tr>
                                 @endforelse
                             </tbody>
+                            {{-- <tbody>
+                                @forelse ($branches as $branch)
+                                    @forelse ($branches as $branch)
+                                        @php
+                                            $branchName = $branch->name ?? 'Unknown';
+                                            $branchCode = $branch->code ?? '-';
+                                            $branchActive = isset($branch->is_active) ? $branch->is_active : false;
+                                            $branchUsers = $branch->users ?? collect();
+                                            $branchUserCount = $branchUsers->count();
+                                            $branchCreated = isset($branch->created_at)
+                                                ? $branch->created_at->format('d M Y')
+                                                : '-';
+                                        @endphp
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-3 py-1 text-sm font-medium rounded bg-cyan-100 text-cyan-700">
+                                                    {{ $branchCode }}
+                                                </span>
+                                            </td>
+
+                                            <td class="px-4 py-4 font-medium text-gray-700 whitespace-nowrap">
+                                                {{ $branchName }}
+                                            </td>
+
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-3 py-1 text-sm rounded bg-cyan-100 text-cyan-700">
+                                                    {{ $branchUserCount }} user
+                                                </span>
+                                            </td>
+
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                @if ($branchActive)
+                                                    <span
+                                                        class="px-3 py-1 text-sm text-green-700 bg-green-100 rounded">Aktif</span>
+                                                @else
+                                                    <span
+                                                        class="px-3 py-1 text-sm text-red-700 bg-red-100 rounded">Tidak
+                                                        Aktif</span>
+                                                @endif
+                                            </td>
+
+                                            <td class="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                {{ $branchCreated }}
+                                            </td>
+
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <div class="relative inline-block text-left">
+                                                    <button type="button"
+                                                        onclick="toggleDropdown({{ $branch->id }})"
+                                                        class="text-gray-400 hover:text-gray-600">
+                                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path
+                                                                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div id="dropdown-{{ $branch->id }}"
+                                                        class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                        <div class="py-1">
+                                                            <a href="{{ route('gaji-pokok.detail', $branch) }}"
+                                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                Gaji Pokok Detail
+                                                            </a>
+                                                            <a href="{{ route('potongan.index', $branch) }}"
+                                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                Potongan Detail
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="py-6 text-center text-gray-500">
+                                                Data cabang belum tersedia
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                            </tbody> --}}
+
                         </table>
                     </div>
 

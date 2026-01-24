@@ -116,42 +116,13 @@ class DailyContentController extends Controller
 
         return back()->with('success', 'Konten berhasil ditambahkan');
     }
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'branch_id'     => 'required|exists:branches,id',
-    //         'tanggal'       => 'required|date',
-    //         'jumlah_konten' => 'required|integer|min:0',
-    //         'keterangan'    => 'nullable|string',
-    //     ]);
-
-    //     // ==========================
-    //     // SIMPAN / UPDATE DATA
-    //     // 1 CABANG = 1 DATA PER HARI
-    //     // ==========================
-    //     DailyContent::updateOrCreate(
-    //         [
-    //             'branch_id' => $request->branch_id,
-    //             'tanggal'   => $request->tanggal,
-    //         ],
-    //         [
-    //             'jumlah_konten' => $request->jumlah_konten,
-    //             'keterangan'    => $request->keterangan,
-    //         ]
-    //     );
-
-    //     return back()->with('success', 'Data konten harian berhasil disimpan');
-    // }
 
 
 
     /**
      * Display the specified resource.
      */
-    public function show(DailyContent $dailyContent)
-    {
-        //
-    }
+    // public function show(DailyContent $dailyContent) {}
 
     /**
      * Show the form for editing the specified resource.
@@ -164,11 +135,44 @@ class DailyContentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, DailyContent $dailyContent)
+    // public function update(Request $request, DailyContent $dailyContent)
+    // {
+    //     //
+    // }
+
+    public function show(Request $request, String $branchId)
     {
-        //
+        // dd($request->all());
+        $branch = Branch::findOrFail($branchId);
+        // dd($branch->code);
+        $tanggal = $request->get('tanggal', now()->toDateString());
+
+        $contents = DailyContent::where('branch_id', $branchId)
+            ->whereDate('tanggal', $tanggal)
+            ->orderBy('created_at')
+            ->get();
+
+        // dd($contents, $branch, $tanggal);
+
+        return view('daily_content.show', compact(
+            'branch',
+            'tanggal',
+            'contents'
+        ));
     }
 
+    public function update(Request $request, DailyContent $dailyContent)
+    {
+        $request->validate([
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        $dailyContent->update([
+            'keterangan' => $request->keterangan,
+        ]);
+
+        return back()->with('success', 'Konten berhasil diperbarui');
+    }
     /**
      * Remove the specified resource from storage.
      */

@@ -180,12 +180,19 @@
 
                                         <td class="px-4 py-3">{{ $branch->konten_jumlah }}</td>
 
-                                        <td class="px-4 py-3">
+                                        {{-- <td class="px-4 py-3">
                                             <a href="{{ route('daily-contents.show', [$branch->id, 'tanggal' => $tanggal]) }}"
                                                 class="text-blue-600 hover:underline">
                                                 Detail
                                             </a>
+                                        </td> --}}
+                                        <td class="px-4 py-3">
+                                            <a href="{{ route('daily-contents.show', $branch->id) }}?tanggal={{ $tanggal }}"
+                                                class="text-blue-600 hover:underline">
+                                                Detail
+                                            </a>
                                         </td>
+
                                     </tr>
                                 @endforeach
                             </tbody>

@@ -10,6 +10,7 @@ use App\Http\Controllers\Payroll\GajihPokokController;
 // use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\Payroll\PotonganController;
+use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiImportController;
 use Illuminate\Support\Facades\Route;
 
@@ -87,9 +88,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('presensi', App\Http\Controllers\PresensiController::class);
+    Route::resource('presensi', PresensiController::class);
     Route::post('/presensi-import', [PresensiImportController::class, 'store'])->name('presensi.import');
     Route::get('/presensi/template', [PresensiImportController::class, 'template'])->name('presensi.template');
+
+    Route::post('/presensi/{user}/izin', [PresensiController::class, 'storeIzin'])->name('presensi.izin');
+    Route::post('/presensi/{user}/sakit', [PresensiController::class, 'storeSakit'])->name('presensi.sakit');
 
     Route::resource('daily-contents', App\Http\Controllers\DailyContentController::class);
 

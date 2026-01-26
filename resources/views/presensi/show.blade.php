@@ -83,35 +83,6 @@
 
         </div>
     </div>
-    {{-- <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-40">
-
-        <div class="w-full max-w-md p-6 bg-white rounded-lg shadow">
-            <h3 class="mb-4 text-lg font-semibold">Edit Jam Presensi</h3>
-
-            <form method="POST" action="{{ route('presensi.update', $user->id) }}">
-                @csrf
-                @method('PUT')
-
-                <input type="hidden" name="tanggal" value="{{ $tanggal }}">
-                <input type="hidden" name="status" id="editStatus">
-
-                <div class="mb-4">
-                    <label class="block mb-1 text-sm font-medium">Jam</label>
-                    <input type="time" name="jam" id="editJam" class="w-full px-3 py-2 border rounded-lg"
-                        required>
-                </div>
-
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 border rounded-lg">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div> --}}
 
     <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-40">
 
@@ -144,12 +115,7 @@
                 {{-- KETERANGAN --}}
                 <div class="mb-4">
                     <label class="block mb-1 text-sm font-medium">Keterangan</label>
-                    <select name="keterangan" class="w-full px-3 py-2 border rounded-lg" id="editKeterangan">
-                        <option value="">Hadir</option>
-                        <option value="IZIN">Izin</option>
-                        <option value="SAKIT">Sakit</option>
-                        <option value="TANPA_KETERANGAN">Tanpa Keterangan</option>
-                    </select>
+                    <input name="keterangan" class="w-full px-3 py-2 border rounded-lg" id="editKeterangan" />
                 </div>
 
                 <div class="flex justify-end gap-2">

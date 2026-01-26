@@ -54,6 +54,7 @@
                             </select>
                         </div>
                         {{-- STATUS PRESENSI --}}
+                        {{-- 🔥 STATUS PRESENSI - UPDATE FILTER --}}
                         <div>
                             <select name="status_presensi" onchange="this.form.submit()"
                                 class="px-4 py-2 pr-10 border rounded-lg">
@@ -69,8 +70,32 @@
                                     {{ request('status_presensi') == 'BELUM_ABSEN' ? 'selected' : '' }}>
                                     Belum Absen
                                 </option>
+                                <option value="IZIN_CUTI"
+                                    {{ request('status_presensi') == 'IZIN_CUTI' ? 'selected' : '' }}>
+                                    Izin/Cuti
+                                </option>
+                                <option value="SAKIT" {{ request('status_presensi') == 'SAKIT' ? 'selected' : '' }}>
+                                    Sakit
+                                </option>
                             </select>
                         </div>
+                        {{-- <div>
+                            <select name="status_presensi" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border rounded-lg">
+                                <option value="">Semua Status</option>
+                                <option value="LENGKAP" {{ request('status_presensi') == 'LENGKAP' ? 'selected' : '' }}>
+                                    Lengkap
+                                </option>
+                                <option value="TIDAK_LENGKAP"
+                                    {{ request('status_presensi') == 'TIDAK_LENGKAP' ? 'selected' : '' }}>
+                                    Tidak Lengkap
+                                </option>
+                                <option value="BELUM_ABSEN"
+                                    {{ request('status_presensi') == 'BELUM_ABSEN' ? 'selected' : '' }}>
+                                    Belum Absen
+                                </option>
+                            </select>
+                        </div> --}}
 
 
                         {{-- TANGGAL --}}
@@ -197,7 +222,7 @@
                                     <tr class="border-t">
                                         <td class="px-4 py-3">{{ $row->name ?? '-' }}</td>
 
-                                        <td class="px-4 py-3">
+                                        {{-- <td class="px-4 py-3">
                                             @if ($row->presensi_status === 'LENGKAP')
                                                 <span
                                                     class="px-2 py-1 text-green-700 bg-green-100 rounded">Lengkap</span>
@@ -207,6 +232,29 @@
                                             @else
                                                 <span class="px-2 py-1 text-yellow-700 bg-yellow-100 rounded">Tidak
                                                     Lengkap</span>
+                                            @endif
+                                        </td> --}}
+                                        <td class="px-4 py-3">
+                                            @if ($row->presensi_status === 'LENGKAP')
+                                                <span class="px-2 py-1 text-green-700 bg-green-100 rounded">
+                                                    Lengkap
+                                                </span>
+                                            @elseif ($row->presensi_status === 'SAKIT')
+                                                <span class="px-2 py-1 text-red-700 bg-red-100 rounded">
+                                                    Sakit
+                                                </span>
+                                            @elseif ($row->presensi_status === 'IZIN_CUTI')
+                                                <span class="px-2 py-1 text-blue-700 bg-blue-100 rounded">
+                                                    Izin/Cuti
+                                                </span>
+                                            @elseif ($row->presensi_status === 'BELUM_ABSEN')
+                                                <span class="px-2 py-1 text-gray-700 bg-gray-200 rounded">
+                                                    Belum Absen
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-1 text-yellow-700 bg-yellow-100 rounded">
+                                                    Tidak Lengkap
+                                                </span>
                                             @endif
                                         </td>
 
@@ -242,8 +290,72 @@
                                                     <div class="py-1">
                                                         <a href="{{ route('presensi.show', $row->id) }}"
                                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
                                                             Detail
                                                         </a>
+                                                        {{-- <a href="{{ route('presensi.show', $row->id) }}"
+                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                            Cuti
+                                                        </a>
+                                                        <a href="{{ route('presensi.show', $row->id) }}"
+                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                            </svg>
+                                                            Sakit
+                                                        </a> --}}
+
+                                                        <!-- 🔥 CUTI/IZIN - LANGSUNG SUBMIT -->
+                                                        <form action="{{ route('presensi.izin', $row->id) }}"
+                                                            method="POST" class="inline">
+                                                            @csrf
+                                                            <input type="hidden" name="tanggal"
+                                                                value="{{ request('tanggal', now()->toDateString()) }}">
+                                                            <button type="submit"
+                                                                onclick="return confirm('Yakin input izin/cuti untuk {{ $row->name }} pada {{ \Carbon\Carbon::parse(request('tanggal', now()->toDateString()))->format('d M Y') }}?')"
+                                                                class="flex items-center w-full gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">
+                                                                <svg class="w-4 h-4" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round"
+                                                                        stroke-linejoin="round" stroke-width="2"
+                                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                                Cuti/Izin
+                                                            </button>
+                                                        </form>
+
+                                                        <!-- 🔥 SAKIT - LANGSUNG SUBMIT -->
+                                                        <form action="{{ route('presensi.sakit', $row->id) }}"
+                                                            method="POST" class="inline">
+                                                            @csrf
+                                                            <input type="hidden" name="tanggal"
+                                                                value="{{ request('tanggal', now()->toDateString()) }}">
+                                                            <button type="submit"
+                                                                onclick="return confirm('Yakin input sakit untuk {{ $row->name }} pada {{ \Carbon\Carbon::parse(request('tanggal', now()->toDateString()))->format('d M Y') }}?')"
+                                                                class="flex items-center w-full gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">
+                                                                <svg class="w-4 h-4" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round"
+                                                                        stroke-linejoin="round" stroke-width="2"
+                                                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                                </svg>
+                                                                Sakit
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>
@@ -283,7 +395,8 @@
             </div>
 
             <!-- Modal Content -->
-            <form id="importForm" action="{{ route('presensi.import') }}" method="POST" enctype="multipart/form-data">
+            <form id="importForm" action="{{ route('presensi.import') }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
 
                 <div class="mb-6">

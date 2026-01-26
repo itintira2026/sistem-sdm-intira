@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
+        <div class="grid items-center justify-between grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Manajemen Presensi Karyawan
                 </h2>
@@ -10,7 +10,7 @@
                 </p>
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex justify-start gap-3 md:justify-end">
                 <!-- Ganti tombol import yang sudah ada dengan yang ini -->
                 <button onclick="openImportModal()"
                     class="flex items-center gap-2 px-4 py-2 text-green-600 transition bg-green-100 rounded-lg hover:bg-green-200">

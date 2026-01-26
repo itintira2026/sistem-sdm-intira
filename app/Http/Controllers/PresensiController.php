@@ -19,9 +19,6 @@ class PresensiController extends Controller
 
     public function index(Request $request)
     {
-        // ==========================
-        // FILTER INPUT
-        // ==========================
         $tanggal  = $request->input('tanggal', now()->toDateString());
         $search   = $request->input('search');
         $perPage  = (int) $request->input('per_page', 10);
@@ -29,18 +26,62 @@ class PresensiController extends Controller
         // 🔥 [BARU] FILTER STATUS PRESENSI
         $statusFilter = $request->input('status_presensi');
 
-        // ==========================
-        // QUERY USER AKTIF
-        // ==========================
         $query = User::where('is_active', true);
+        // $query = User::where('is_active', true)
+        //     ->withCount([
+        //         'presensis as total_presensi' => function ($q) use ($tanggal) {
+        //             $q->whereDate('tanggal', $tanggal);
+        //         },
+        //         'presensis as check_in' => function ($q) use ($tanggal) {
+        //             $q->whereDate('tanggal', $tanggal)
+        //                 ->where('status', 'CHECK_IN');
+        //         },
+        //         'presensis as istirahat_out' => function ($q) use ($tanggal) {
+        //             $q->whereDate('tanggal', $tanggal)
+        //                 ->where('status', 'ISTIRAHAT_OUT');
+        //         },
+        //         'presensis as istirahat_in' => function ($q) use ($tanggal) {
+        //             $q->whereDate('tanggal', $tanggal)
+        //                 ->where('status', 'ISTIRAHAT_IN');
+        //         },
+        //         'presensis as check_out' => function ($q) use ($tanggal) {
+        //             $q->whereDate('tanggal', $tanggal)
+        //                 ->where('status', 'CHECK_OUT');
+        //         },
+        //     ]);
+
+        // if ($statusFilter === 'BELUM_ABSEN') {
+        //     $query->having('total_presensi', '=', 0);
+        // }
+
+        // if ($statusFilter === 'LENGKAP') {
+        //     $query->havingRaw('
+        //         check_in = 1 AND
+        //         istirahat_out = 1 AND
+        //         istirahat_in = 1 AND
+        //         check_out = 1
+        //     ');
+        // }
+
+        // if ($statusFilter === 'TIDAK_LENGKAP') {
+        //     $query->having('total_presensi', '>', 0)
+        //         ->havingRaw('
+        //         NOT (
+        //         check_in = 1 AND
+        //         istirahat_out = 1 AND
+        //         istirahat_in = 1 AND
+        //         check_out = 1
+        //         )
+        //     ');
+        // }
+
+
+
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%");
         }
 
-        // ==========================
-        // PAGINATION + PRESENSI
-        // ==========================
         $users = $query
             ->with(['presensis' => function ($q) use ($tanggal) {
                 $q->whereDate('tanggal', $tanggal);
@@ -48,10 +89,12 @@ class PresensiController extends Controller
             ->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
+        // $users = $query
+        //     ->orderBy('name')
+        //     ->paginate($perPage)
+        //     ->withQueryString();
 
-        // ==========================
-        // TRANSFORM DATA (LOGIKA LAMA)
-        // ==========================
+
         $users->getCollection()->transform(function ($user) {
 
             // GROUP BY STATUS
@@ -89,10 +132,6 @@ class PresensiController extends Controller
             if (!empty($jam['CHECK_IN']) && $jam['CHECK_IN'] > '08:00:00') {
                 $telat[] = 'CHECK_IN';
             }
-
-            // if (!empty($jam['ISTIRAHAT_IN']) && $jam['ISTIRAHAT_IN'] > '13:00:00') {
-            //     $telat[] = 'ISTIRAHAT_IN';
-            // }
 
             // ISTIRAHAT IN (BEDA JUMAT)
             if (!empty($jam['ISTIRAHAT_IN'])) {

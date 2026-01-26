@@ -6,110 +6,92 @@ use App\Models\Presensi;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PresensiController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    // public function index()
-    // {
-    //     return view('presensi.index');
-    // }
-
     public function index(Request $request)
     {
         $tanggal  = $request->input('tanggal', now()->toDateString());
         $search   = $request->input('search');
         $perPage  = (int) $request->input('per_page', 10);
-
-        // 🔥 [BARU] FILTER STATUS PRESENSI
         $statusFilter = $request->input('status_presensi');
 
         $query = User::where('is_active', true);
-        // $query = User::where('is_active', true)
-        //     ->withCount([
-        //         'presensis as total_presensi' => function ($q) use ($tanggal) {
-        //             $q->whereDate('tanggal', $tanggal);
-        //         },
-        //         'presensis as check_in' => function ($q) use ($tanggal) {
-        //             $q->whereDate('tanggal', $tanggal)
-        //                 ->where('status', 'CHECK_IN');
-        //         },
-        //         'presensis as istirahat_out' => function ($q) use ($tanggal) {
-        //             $q->whereDate('tanggal', $tanggal)
-        //                 ->where('status', 'ISTIRAHAT_OUT');
-        //         },
-        //         'presensis as istirahat_in' => function ($q) use ($tanggal) {
-        //             $q->whereDate('tanggal', $tanggal)
-        //                 ->where('status', 'ISTIRAHAT_IN');
-        //         },
-        //         'presensis as check_out' => function ($q) use ($tanggal) {
-        //             $q->whereDate('tanggal', $tanggal)
-        //                 ->where('status', 'CHECK_OUT');
-        //         },
-        //     ]);
-
-        // if ($statusFilter === 'BELUM_ABSEN') {
-        //     $query->having('total_presensi', '=', 0);
-        // }
-
-        // if ($statusFilter === 'LENGKAP') {
-        //     $query->havingRaw('
-        //         check_in = 1 AND
-        //         istirahat_out = 1 AND
-        //         istirahat_in = 1 AND
-        //         check_out = 1
-        //     ');
-        // }
-
-        // if ($statusFilter === 'TIDAK_LENGKAP') {
-        //     $query->having('total_presensi', '>', 0)
-        //         ->havingRaw('
-        //         NOT (
-        //         check_in = 1 AND
-        //         istirahat_out = 1 AND
-        //         istirahat_in = 1 AND
-        //         check_out = 1
-        //         )
-        //     ');
-        // }
-
-
-
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $users = $query
-            ->with(['presensis' => function ($q) use ($tanggal) {
-                $q->whereDate('tanggal', $tanggal);
-            }])
-            ->orderBy('name')
-            ->paginate($perPage)
-            ->withQueryString();
-        // $users = $query
-        //     ->orderBy('name')
-        //     ->paginate($perPage)
-        //     ->withQueryString();
+        // 🔥 PINDAHKAN EAGER LOADING KE SINI (SEBELUM PAGINATION)
+        $query->with(['presensis' => function ($q) use ($tanggal) {
+            $q->whereDate('tanggal', $tanggal);
+        }]);
 
+        // 🔥 FILTER STATUS SEBELUM PAGINATION
+        if ($statusFilter) {
+            $query->get()->filter(function ($user) use ($statusFilter) {
+                // GROUP BY STATUS
+                $grouped = $user->presensis->keyBy('status');
+
+                $required = ['CHECK_IN', 'ISTIRAHAT_OUT', 'ISTIRAHAT_IN', 'CHECK_OUT'];
+                $missing = collect($required)->diff($grouped->keys());
+
+                // TENTUKAN STATUS
+                if ($grouped->isEmpty()) {
+                    $status = 'BELUM_ABSEN';
+                } elseif ($missing->isEmpty()) {
+                    $status = 'LENGKAP';
+                } else {
+                    $status = 'TIDAK_LENGKAP';
+                }
+
+                return $status === $statusFilter;
+            });
+
+            // 🔥 UBAH QUERY JADI COLLECTION LALU PAGINATE MANUAL
+            $allUsers = $query->get();
+
+            $filtered = $allUsers->filter(function ($user) use ($statusFilter) {
+                $grouped = $user->presensis->keyBy('status');
+                $required = ['CHECK_IN', 'ISTIRAHAT_OUT', 'ISTIRAHAT_IN', 'CHECK_OUT'];
+                $missing = collect($required)->diff($grouped->keys());
+
+                if ($grouped->isEmpty()) {
+                    $status = 'BELUM_ABSEN';
+                } elseif ($missing->isEmpty()) {
+                    $status = 'LENGKAP';
+                } else {
+                    $status = 'TIDAK_LENGKAP';
+                }
+
+                return $status === $statusFilter;
+            });
+
+            // MANUAL PAGINATION
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+            $users = new LengthAwarePaginator(
+                $currentItems,
+                $filtered->count(),
+                $perPage,
+                $currentPage,
+                ['path' => LengthAwarePaginator::resolveCurrentPath(), 'query' => $request->query()]
+            );
+        } else {
+            // 🔥 JIKA TIDAK ADA FILTER, PAGINATION NORMAL
+            $users = $query->orderBy('name')->paginate($perPage)->withQueryString();
+        }
 
         $users->getCollection()->transform(function ($user) {
-
-            // GROUP BY STATUS
             $grouped = $user->presensis->keyBy('status');
-
-            $required = [
-                'CHECK_IN',
-                'ISTIRAHAT_OUT',
-                'ISTIRAHAT_IN',
-                'CHECK_OUT',
-            ];
-
+            $required = ['CHECK_IN', 'ISTIRAHAT_OUT', 'ISTIRAHAT_IN', 'CHECK_OUT'];
             $missing = collect($required)->diff($grouped->keys());
 
-            // STATUS PRESENSI
             if ($grouped->isEmpty()) {
                 $status = 'BELUM_ABSEN';
             } elseif ($missing->isEmpty()) {
@@ -118,7 +100,6 @@ class PresensiController extends Controller
                 $status = 'TIDAK_LENGKAP';
             }
 
-            // RINGKASAN JAM
             $jam = [
                 'CHECK_IN'      => $grouped['CHECK_IN']->jam ?? null,
                 'ISTIRAHAT_OUT' => $grouped['ISTIRAHAT_OUT']->jam ?? null,
@@ -126,33 +107,20 @@ class PresensiController extends Controller
                 'CHECK_OUT'     => $grouped['CHECK_OUT']->jam ?? null,
             ];
 
-            // DETEKSI TELAT
             $telat = [];
-
             if (!empty($jam['CHECK_IN']) && $jam['CHECK_IN'] > '08:00:00') {
                 $telat[] = 'CHECK_IN';
             }
 
-            // ISTIRAHAT IN (BEDA JUMAT)
             if (!empty($jam['ISTIRAHAT_IN'])) {
-
-                // Ambil hari dari tanggal presensi
                 $hari = Carbon::parse($user->presensis->first()->tanggal)->dayOfWeek;
-
-                // Default jam masuk istirahat
-                $batasIstirahat = '13:00:00';
-
-                // 🔥 Khusus Jumat
-                if ($hari === Carbon::FRIDAY) {
-                    $batasIstirahat = '14:00:00';
-                }
+                $batasIstirahat = ($hari === Carbon::FRIDAY) ? '14:00:00' : '13:00:00';
 
                 if ($jam['ISTIRAHAT_IN'] > $batasIstirahat) {
                     $telat[] = 'ISTIRAHAT_IN';
                 }
             }
 
-            // INJECT KE OBJECT USER (BUKAN RETURN OBJECT BARU)
             $user->presensi_status = $status;
             $user->presensi_jam    = $jam;
             $user->presensi_telat  = $telat;
@@ -160,22 +128,113 @@ class PresensiController extends Controller
             return $user;
         });
 
-        if ($statusFilter) {
-            $filtered = $users->getCollection()
-                ->filter(fn($user) => $user->presensi_status === $statusFilter)
-                ->values();
-
-            // replace collection pagination
-            $users->setCollection($filtered);
-        }
-
-        // dd($users, $tanggal);
-
-        return view('presensi.index', compact(
-            'users',
-            'tanggal'
-        ));
+        return view('presensi.index', compact('users', 'tanggal'));
     }
+
+    // public function index(Request $request)
+    // {
+    //     $tanggal  = $request->input('tanggal', now()->toDateString());
+    //     $search   = $request->input('search');
+    //     $perPage  = (int) $request->input('per_page', 10);
+
+    //     // 🔥 [BARU] FILTER STATUS PRESENSI
+    //     $statusFilter = $request->input('status_presensi');
+
+    //     $query = User::where('is_active', true);
+
+    //     if ($search) {
+    //         $query->where('name', 'like', "%{$search}%");
+    //     }
+
+    //     $users = $query
+    //         ->with(['presensis' => function ($q) use ($tanggal) {
+    //             $q->whereDate('tanggal', $tanggal);
+    //         }])
+    //         ->orderBy('name')
+    //         ->paginate($perPage)
+    //         ->withQueryString();
+
+    //     $users->getCollection()->transform(function ($user) {
+
+    //         // GROUP BY STATUS
+    //         $grouped = $user->presensis->keyBy('status');
+
+    //         $required = [
+    //             'CHECK_IN',
+    //             'ISTIRAHAT_OUT',
+    //             'ISTIRAHAT_IN',
+    //             'CHECK_OUT',
+    //         ];
+
+    //         $missing = collect($required)->diff($grouped->keys());
+
+    //         // STATUS PRESENSI
+    //         if ($grouped->isEmpty()) {
+    //             $status = 'BELUM_ABSEN';
+    //         } elseif ($missing->isEmpty()) {
+    //             $status = 'LENGKAP';
+    //         } else {
+    //             $status = 'TIDAK_LENGKAP';
+    //         }
+
+    //         // RINGKASAN JAM
+    //         $jam = [
+    //             'CHECK_IN'      => $grouped['CHECK_IN']->jam ?? null,
+    //             'ISTIRAHAT_OUT' => $grouped['ISTIRAHAT_OUT']->jam ?? null,
+    //             'ISTIRAHAT_IN'  => $grouped['ISTIRAHAT_IN']->jam ?? null,
+    //             'CHECK_OUT'     => $grouped['CHECK_OUT']->jam ?? null,
+    //         ];
+
+    //         // DETEKSI TELAT
+    //         $telat = [];
+
+    //         if (!empty($jam['CHECK_IN']) && $jam['CHECK_IN'] > '08:00:00') {
+    //             $telat[] = 'CHECK_IN';
+    //         }
+
+    //         // ISTIRAHAT IN (BEDA JUMAT)
+    //         if (!empty($jam['ISTIRAHAT_IN'])) {
+
+    //             // Ambil hari dari tanggal presensi
+    //             $hari = Carbon::parse($user->presensis->first()->tanggal)->dayOfWeek;
+
+    //             // Default jam masuk istirahat
+    //             $batasIstirahat = '13:00:00';
+
+    //             // 🔥 Khusus Jumat
+    //             if ($hari === Carbon::FRIDAY) {
+    //                 $batasIstirahat = '14:00:00';
+    //             }
+
+    //             if ($jam['ISTIRAHAT_IN'] > $batasIstirahat) {
+    //                 $telat[] = 'ISTIRAHAT_IN';
+    //             }
+    //         }
+
+    //         // INJECT KE OBJECT USER (BUKAN RETURN OBJECT BARU)
+    //         $user->presensi_status = $status;
+    //         $user->presensi_jam    = $jam;
+    //         $user->presensi_telat  = $telat;
+
+    //         return $user;
+    //     });
+
+    //     if ($statusFilter) {
+    //         $filtered = $users->getCollection()
+    //             ->filter(fn($user) => $user->presensi_status === $statusFilter)
+    //             ->values();
+
+    //         // replace collection pagination
+    //         $users->setCollection($filtered);
+    //     }
+
+    //     // dd($users, $tanggal);
+
+    //     return view('presensi.index', compact(
+    //         'users',
+    //         'tanggal'
+    //     ));
+    // }
 
 
 

@@ -8,12 +8,12 @@ use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Contact90Controller;
 use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\GajihPokokController;
-// use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\Payroll\PotonganController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiImportController;
 use Illuminate\Support\Facades\Route;
+// use App\Http\Controllers\Payroll\GajihPokokImportController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -128,7 +128,8 @@ use Illuminate\Support\Facades\Route;
 
 // require __DIR__ . '/auth.php';
 
-Route::get('/', fn() => view('welcome'));
+
+Route::get('/', fn() => view('auth.login'));
 
 Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])

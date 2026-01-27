@@ -47,7 +47,53 @@
                         @csrf
 
                         {{-- 🔥 SUPERADMIN: PILIH FO --}}
-                        @if (Auth::user()->hasRole('superadmin') && isset($foList))
+                        {{-- 🔥 SUPERADMIN & MANAGER: PILIH FO --}}
+                        @if ((Auth::user()->hasRole('superadmin') || Auth::user()->hasRole('manager')) && isset($foList))
+                            <div
+                                class="p-4 mb-6 rounded-lg {{ Auth::user()->hasRole('superadmin') ? 'bg-yellow-50' : 'bg-blue-50' }}">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">
+                                    @if (Auth::user()->hasRole('superadmin'))
+                                        🔐 Superadmin Mode: Input Atas Nama FO <span class="text-red-600">*</span>
+                                    @else
+                                        👨‍💼 Manager Mode: Input Atas Nama FO di Cabang Anda <span
+                                            class="text-red-600">*</span>
+                                    @endif
+                                </label>
+                                <select name="user_id" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
+                                    <option value="">-- Pilih FO --</option>
+                                    @foreach ($foList as $fo)
+                                        <option value="{{ $fo->id }}"
+                                            {{ old('user_id') == $fo->id ? 'selected' : '' }}>
+                                            {{ $fo->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('user_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">
+                                    Tanggal <span class="text-red-600">*</span>
+                                </label>
+                                <input type="date" name="tanggal" value="{{ old('tanggal', now()->toDateString()) }}"
+                                    required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
+                                @error('tanggal')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @else
+                            <div class="p-4 mb-6 rounded-lg bg-blue-50">
+                                <p class="text-sm text-blue-800">
+                                    📅 Tanggal: <span class="font-semibold">{{ now()->format('d M Y') }}</span>
+                                    (Otomatis hari ini)
+                                </p>
+                            </div>
+                        @endif
+                        {{-- @if (Auth::user()->hasRole('superadmin') && isset($foList))
                             <div class="p-4 mb-6 rounded-lg bg-yellow-50">
                                 <label class="block mb-2 text-sm font-medium text-gray-700">
                                     🔐 Superadmin Mode: Input Atas Nama FO <span class="text-red-600">*</span>
@@ -86,7 +132,7 @@
                                     hari ini)
                                 </p>
                             </div>
-                        @endif
+                        @endif --}}
 
                         {{-- NAMA NASABAH --}}
                         <div class="mb-6">

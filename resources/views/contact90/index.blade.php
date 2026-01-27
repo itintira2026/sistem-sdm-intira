@@ -120,9 +120,129 @@
                         Daftar Kontak Hari Ini
                     </h3>
 
+                    {{-- 🔥 FILTER GABUNGAN (Satu Form) --}}
+                    <form method="GET" class="mb-6">
+
+                        {{-- 🔥 SUPERADMIN & MANAGER: PILIH FO (di dalam form yang sama) --}}
+                        @if ((Auth::user()->hasRole('superadmin') || Auth::user()->hasRole('manager')) && isset($foList))
+                            <div
+                                class="p-4 mb-4 rounded-lg {{ Auth::user()->hasRole('superadmin') ? 'bg-yellow-50' : 'bg-blue-50' }}">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">
+                                    @if (Auth::user()->hasRole('superadmin'))
+                                        🔐 Superadmin Mode: Lihat Kontak FO
+                                    @else
+                                        👨‍💼 Manager Mode: Lihat Kontak FO di Cabang Anda
+                                    @endif
+                                </label>
+                                <select name="user_id" onchange="this.form.submit()"
+                                    class="w-full px-4 py-2 border rounded-lg">
+                                    <option value="{{ Auth::id() }}">-- Kontak Saya --</option>
+                                    @foreach ($foList as $fo)
+                                        <option value="{{ $fo->id }}"
+                                            {{ request('user_id') == $fo->id ? 'selected' : '' }}>
+                                            {{ $fo->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        {{-- FILTER ROW --}}
+                        <div class="flex flex-wrap gap-4">
+                            {{-- PER PAGE --}}
+                            <div>
+                                <select name="per_page" onchange="this.form.submit()"
+                                    class="px-4 py-2 pr-10 border rounded-lg">
+                                    @foreach ([10, 25, 50, 100] as $size)
+                                        <option value="{{ $size }}"
+                                            {{ request('per_page', 10) == $size ? 'selected' : '' }}>
+                                            {{ $size }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- SOSMED --}}
+                            <div>
+                                <select name="sosmed" onchange="this.form.submit()"
+                                    class="px-4 py-2 pr-10 border rounded-lg">
+                                    <option value="">Semua Platform</option>
+                                    <option value="DM_IG" {{ request('sosmed') == 'DM_IG' ? 'selected' : '' }}>
+                                        DM Instagram
+                                    </option>
+                                    <option value="CHAT_WA" {{ request('sosmed') == 'CHAT_WA' ? 'selected' : '' }}>
+                                        Chat WhatsApp
+                                    </option>
+                                    <option value="INBOX_FB" {{ request('sosmed') == 'INBOX_FB' ? 'selected' : '' }}>
+                                        Inbox Facebook
+                                    </option>
+                                    <option value="MRKT_PLACE_FB"
+                                        {{ request('sosmed') == 'MRKT_PLACE_FB' ? 'selected' : '' }}>
+                                        Marketplace Facebook
+                                    </option>
+                                    <option value="TIKTOK" {{ request('sosmed') == 'TIKTOK' ? 'selected' : '' }}>
+                                        TikTok
+                                    </option>
+                                </select>
+                            </div>
+
+                            {{-- SITUASI --}}
+                            <div>
+                                <select name="situasi" onchange="this.form.submit()"
+                                    class="px-4 py-2 pr-10 border rounded-lg">
+                                    <option value="">Semua Situasi</option>
+                                    <option value="tdk_merespon"
+                                        {{ request('situasi') == 'tdk_merespon' ? 'selected' : '' }}>
+                                        Tidak Merespon
+                                    </option>
+                                    <option value="merespon" {{ request('situasi') == 'merespon' ? 'selected' : '' }}>
+                                        Merespon
+                                    </option>
+                                    <option value="tertarik" {{ request('situasi') == 'tertarik' ? 'selected' : '' }}>
+                                        Tertarik
+                                    </option>
+                                    <option value="closing" {{ request('situasi') == 'closing' ? 'selected' : '' }}>
+                                        Closing
+                                    </option>
+                                </select>
+                            </div>
+
+                            {{-- STATUS VALIDASI --}}
+                            <div>
+                                <select name="validasi" onchange="this.form.submit()"
+                                    class="px-4 py-2 pr-10 border rounded-lg">
+                                    <option value="">Semua Status</option>
+                                    <option value="1" {{ request('validasi') === '1' ? 'selected' : '' }}>
+                                        Sudah Validasi
+                                    </option>
+                                    <option value="0" {{ request('validasi') === '0' ? 'selected' : '' }}>
+                                        Belum Validasi
+                                    </option>
+                                </select>
+                            </div>
+
+                            {{-- TANGGAL --}}
+                            <div>
+                                <input type="date" name="tanggal" value="{{ request('tanggal', $tanggal) }}"
+                                    onchange="this.form.submit()" class="px-4 py-2 border rounded-lg">
+                            </div>
+
+                            {{-- SEARCH --}}
+                            <div class="relative flex-1 min-w-[250px]">
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    placeholder="Cari nama nasabah atau akun..."
+                                    class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+
+                            <button type="submit"
+                                class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                                Cari
+                            </button>
+                        </div>
+                    </form>
+
                     {{-- FILTER --}}
-                    <form method="GET" class="flex flex-wrap gap-4 mb-6">
-                        {{-- PER PAGE --}}
+                    {{-- <form method="GET" class="flex flex-wrap gap-4 mb-6">
                         <div>
                             <select name="per_page" onchange="this.form.submit()"
                                 class="px-4 py-2 pr-10 border rounded-lg">
@@ -135,7 +255,6 @@
                             </select>
                         </div>
 
-                        {{-- SOSMED --}}
                         <div>
                             <select name="sosmed" onchange="this.form.submit()"
                                 class="px-4 py-2 pr-10 border rounded-lg">
@@ -159,7 +278,6 @@
                             </select>
                         </div>
 
-                        {{-- SITUASI --}}
                         <div>
                             <select name="situasi" onchange="this.form.submit()"
                                 class="px-4 py-2 pr-10 border rounded-lg">
@@ -180,7 +298,6 @@
                             </select>
                         </div>
 
-                        {{-- STATUS VALIDASI --}}
                         <div>
                             <select name="validasi" onchange="this.form.submit()"
                                 class="px-4 py-2 pr-10 border rounded-lg">
@@ -194,13 +311,11 @@
                             </select>
                         </div>
 
-                        {{-- TANGGAL --}}
                         <div>
                             <input type="date" name="tanggal" value="{{ request('tanggal', $tanggal) }}"
                                 onchange="this.form.submit()" class="px-4 py-2 border rounded-lg">
                         </div>
 
-                        {{-- SEARCH --}}
                         <div class="relative flex-1 min-w-[250px]">
                             <input type="text" name="search" value="{{ request('search') }}"
                                 placeholder="Cari nama nasabah atau akun..."
@@ -210,10 +325,38 @@
                         <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
                             Cari
                         </button>
-                    </form>
+                    </form> --}}
 
                     {{-- 🔥 SUPERADMIN: PILIH FO --}}
-                    @if (Auth::user()->hasRole('superadmin') && isset($foList))
+                    {{-- 🔥 SUPERADMIN & MANAGER: PILIH FO --}}
+                    {{-- @if ((Auth::user()->hasRole('superadmin') || Auth::user()->hasRole('manager')) && isset($foList))
+                        <form method="GET"
+                            class="p-4 mb-6 rounded-lg {{ Auth::user()->hasRole('superadmin') ? 'bg-yellow-50' : 'bg-blue-50' }}">
+                            <label class="block mb-2 text-sm font-medium text-gray-700">
+                                @if (Auth::user()->hasRole('superadmin'))
+                                    🔐 Superadmin Mode: Lihat Kontak FO
+                                @else
+                                    👨‍💼 Manager Mode: Lihat Kontak FO di Cabang Anda
+                                @endif
+                            </label>
+                            <div class="flex gap-3">
+                                <select name="user_id" class="flex-1 px-4 py-2 border rounded-lg">
+                                    <option value="{{ Auth::id() }}">-- Kontak Saya --</option>
+                                    @foreach ($foList as $fo)
+                                        <option value="{{ $fo->id }}"
+                                            {{ request('user_id') == $fo->id ? 'selected' : '' }}>
+                                            {{ $fo->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="submit"
+                                    class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                                    Lihat
+                                </button>
+                            </div>
+                        </form>
+                    @endif --}}
+                    {{-- @if (Auth::user()->hasRole('superadmin') && isset($foList))
                         <form method="GET" class="p-4 mb-6 rounded-lg bg-yellow-50">
                             <label class="block mb-2 text-sm font-medium text-gray-700">
                                 🔐 Superadmin Mode: Lihat Kontak FO
@@ -234,7 +377,7 @@
                                 </button>
                             </div>
                         </form>
-                    @endif
+                    @endif --}}
 
                     {{-- TABLE --}}
                     <div class="relative w-full overflow-x-auto md:overflow-x-visible">

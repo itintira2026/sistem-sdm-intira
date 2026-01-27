@@ -20,6 +20,7 @@ class Contact90Controller extends Controller
     /**
      * Dashboard & List Kontak FO
      */
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -30,15 +31,31 @@ class Contact90Controller extends Controller
         $validasiFilter = $request->input('validasi');
         $perPage = (int) $request->input('per_page', 10);
 
-        // Query untuk FO (hanya lihat kontak sendiri)
-        // Superadmin bisa lihat semua dengan pilih user
+        // 🔥 TENTUKAN USER_ID YANG AKAN DITAMPILKAN
         if ($user->hasRole('superadmin')) {
             $selectedUserId = $request->input('user_id', $user->id);
-            $query = Contact90::where('user_id', $selectedUserId);
+        } elseif ($user->hasRole('manager')) {
+            // 🔥 MANAGER: bisa pilih FO di cabangnya
+            $selectedUserId = $request->input('user_id', $user->id);
+
+            // Validasi: FO yang dipilih harus dari cabang yang di-manage
+            if ($selectedUserId != $user->id) {
+                $managedBranchIds = $user->managedBranches->pluck('id');
+                $foInManagedBranch = BranchUser::where('user_id', $selectedUserId)
+                    ->whereIn('branch_id', $managedBranchIds)
+                    ->exists();
+
+                if (!$foInManagedBranch) {
+                    abort(403, 'FO ini tidak berada di cabang yang Anda kelola.');
+                }
+            }
         } else {
-            $query = Contact90::where('user_id', $user->id);
+            // FO: hanya bisa lihat kontak sendiri
+            $selectedUserId = $user->id;
         }
 
+        // Query kontak
+        $query = Contact90::where('user_id', $selectedUserId);
         $query->whereDate('tanggal', $tanggal);
 
         // Filter Search
@@ -68,40 +85,47 @@ class Contact90Controller extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        // $allData = Contact90::all();
-        // dd($allData);
-
-        // Statistik Dashboard
+        // 🔥 STATISTIK DASHBOARD - berdasarkan selectedUserId
         $stats = [
-            'total' => Contact90::where('user_id', $user->id)
+            'total' => Contact90::where('user_id', $selectedUserId)
                 ->whereDate('tanggal', $tanggal)
+                // ->where('validasi_manager', true)
                 ->count(),
             'target' => 90,
-            'validated' => Contact90::where('user_id', $user->id)
+            'validated' => Contact90::where('user_id', $selectedUserId)
                 ->whereDate('tanggal', $tanggal)
                 ->where('validasi_manager', true)
                 ->count(),
-            'pending' => Contact90::where('user_id', $user->id)
+            'pending' => Contact90::where('user_id', $selectedUserId)
                 ->whereDate('tanggal', $tanggal)
                 ->where('validasi_manager', false)
                 ->count(),
-            'closing' => Contact90::where('user_id', $user->id)
+            'closing' => Contact90::where('user_id', $selectedUserId)
                 ->whereDate('tanggal', $tanggal)
                 ->where('situasi', 'closing')
                 ->count(),
-            'tertarik' => Contact90::where('user_id', $user->id)
+            'tertarik' => Contact90::where('user_id', $selectedUserId)
                 ->whereDate('tanggal', $tanggal)
                 ->where('situasi', 'tertarik')
                 ->count(),
         ];
 
-        // Untuk superadmin: list semua FO
+        // 🔥 LIST FO untuk dropdown (Superadmin & Manager)
         $foList = null;
         if ($user->hasRole('superadmin')) {
             $foList = User::role('fo')->orderBy('name')->get();
-        }
+        } elseif ($user->hasRole('manager')) {
+            // Manager: hanya FO di cabang yang dia kelola
+            $managedBranchIds = $user->managedBranches->pluck('id');
+            $foUserIds = BranchUser::whereIn('branch_id', $managedBranchIds)
+                ->whereHas('user', function ($q) {
+                    $q->role('fo');
+                })
+                ->pluck('user_id')
+                ->unique();
 
-        // dd($contacts);
+            $foList = User::whereIn('id', $foUserIds)->orderBy('name')->get();
+        }
 
         return view('contact90.index', compact(
             'contacts',
@@ -110,22 +134,136 @@ class Contact90Controller extends Controller
             'foList'
         ));
     }
+    // public function index(Request $request)
+    // {
+    //     $user = Auth::user();
+    //     $tanggal = $request->input('tanggal', now()->toDateString());
+    //     $search = $request->input('search');
+    //     $sosmedFilter = $request->input('sosmed');
+    //     $situasiFilter = $request->input('situasi');
+    //     $validasiFilter = $request->input('validasi');
+    //     $perPage = (int) $request->input('per_page', 10);
+
+    //     // Query untuk FO (hanya lihat kontak sendiri)
+    //     // Superadmin bisa lihat semua dengan pilih user
+    //     if ($user->hasRole('superadmin')) {
+    //         $selectedUserId = $request->input('user_id', $user->id);
+    //         $query = Contact90::where('user_id', $selectedUserId);
+    //     } else {
+    //         $query = Contact90::where('user_id', $user->id);
+    //     }
+
+    //     $query->whereDate('tanggal', $tanggal);
+
+    //     // Filter Search
+    //     if ($search) {
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('nama_nasabah', 'like', "%{$search}%")
+    //                 ->orWhere('akun_or_notelp', 'like', "%{$search}%");
+    //         });
+    //     }
+
+    //     // Filter Sosmed
+    //     if ($sosmedFilter) {
+    //         $query->where('sosmed', $sosmedFilter);
+    //     }
+
+    //     // Filter Situasi
+    //     if ($situasiFilter) {
+    //         $query->where('situasi', $situasiFilter);
+    //     }
+
+    //     // Filter Validasi
+    //     if ($validasiFilter !== null) {
+    //         $query->where('validasi_manager', $validasiFilter === '1');
+    //     }
+
+    //     $contacts = $query->orderBy('created_at', 'desc')
+    //         ->paginate($perPage)
+    //         ->withQueryString();
+
+    //     // $allData = Contact90::all();
+    //     // dd($allData);
+
+    //     // Statistik Dashboard
+    //     $stats = [
+    //         'total' => Contact90::where('user_id', $user->id)
+    //             ->whereDate('tanggal', $tanggal)
+    //             ->count(),
+    //         'target' => 90,
+    //         'validated' => Contact90::where('user_id', $user->id)
+    //             ->whereDate('tanggal', $tanggal)
+    //             ->where('validasi_manager', true)
+    //             ->count(),
+    //         'pending' => Contact90::where('user_id', $user->id)
+    //             ->whereDate('tanggal', $tanggal)
+    //             ->where('validasi_manager', false)
+    //             ->count(),
+    //         'closing' => Contact90::where('user_id', $user->id)
+    //             ->whereDate('tanggal', $tanggal)
+    //             ->where('situasi', 'closing')
+    //             ->count(),
+    //         'tertarik' => Contact90::where('user_id', $user->id)
+    //             ->whereDate('tanggal', $tanggal)
+    //             ->where('situasi', 'tertarik')
+    //             ->count(),
+    //     ];
+
+    //     // Untuk superadmin: list semua FO
+    //     $foList = null;
+    //     if ($user->hasRole('superadmin')) {
+    //         $foList = User::role('fo')->orderBy('name')->get();
+    //     }
+
+    //     // dd($contacts);
+
+    //     return view('contact90.index', compact(
+    //         'contacts',
+    //         'tanggal',
+    //         'stats',
+    //         'foList'
+    //     ));
+    // }
 
     /**
      * Form Create Kontak
      */
+
     public function create()
     {
         $user = Auth::user();
 
-        // Untuk superadmin: tampilkan dropdown FO
+        // 🔥 LIST FO untuk dropdown
         $foList = null;
         if ($user->hasRole('superadmin')) {
             $foList = User::role('fo')->orderBy('name')->get();
+        } elseif ($user->hasRole('manager')) {
+            // Manager: hanya FO di cabang yang dia kelola
+            $managedBranchIds = $user->managedBranches->pluck('id');
+            $foUserIds = BranchUser::whereIn('branch_id', $managedBranchIds)
+                ->whereHas('user', function ($q) {
+                    $q->role('fo');
+                })
+                ->pluck('user_id')
+                ->unique();
+
+            $foList = User::whereIn('id', $foUserIds)->orderBy('name')->get();
         }
 
         return view('contact90.create', compact('foList'));
     }
+    // public function create()
+    // {
+    //     $user = Auth::user();
+
+    //     // Untuk superadmin: tampilkan dropdown FO
+    //     $foList = null;
+    //     if ($user->hasRole('superadmin')) {
+    //         $foList = User::role('fo')->orderBy('name')->get();
+    //     }
+
+    //     return view('contact90.create', compact('foList'));
+    // }
 
     /**
      * Store Kontak Baru
@@ -134,9 +272,9 @@ class Contact90Controller extends Controller
     {
         $user = Auth::user();
 
-        // Validasi
+        // 🔥 VALIDASI
         $validated = $request->validate([
-            'user_id' => $user->hasRole('superadmin') ? 'required|exists:users,id' : 'nullable',
+            'user_id' => ($user->hasRole('superadmin') || $user->hasRole('manager')) ? 'required|exists:users,id' : 'nullable',
             'nama_nasabah' => [
                 'required',
                 'string',
@@ -148,14 +286,33 @@ class Contact90Controller extends Controller
             'sosmed' => 'required|in:DM_IG,CHAT_WA,INBOX_FB,MRKT_PLACE_FB,TIKTOK',
             'situasi' => 'required|in:tdk_merespon,merespon,tertarik,closing',
             'keterangan' => 'nullable|string|max:500',
-            'tanggal' => $user->hasRole('superadmin') ? 'required|date' : 'nullable',
+            'tanggal' => ($user->hasRole('superadmin') || $user->hasRole('manager')) ? 'required|date' : 'nullable',
         ], [
             'nama_nasabah.unique' => 'Nasabah "' . $request->nama_nasabah . '" sudah diinput pada tanggal ' . Carbon::parse($request->input('tanggal', now()->toDateString()))->format('d M Y') . '. Tidak boleh duplikat.',
         ]);
 
-        // Tentukan user_id dan tanggal
-        $userId = $user->hasRole('superadmin') ? $request->user_id : $user->id;
-        $tanggal = $user->hasRole('superadmin') ? $request->tanggal : now()->toDateString();
+        // 🔥 TENTUKAN USER_ID DAN TANGGAL
+        if ($user->hasRole('superadmin')) {
+            $userId = $request->user_id;
+            $tanggal = $request->tanggal;
+        } elseif ($user->hasRole('manager')) {
+            $userId = $request->user_id;
+            $tanggal = $request->tanggal;
+
+            // Validasi: FO yang dipilih harus dari cabang yang di-manage
+            $managedBranchIds = $user->managedBranches->pluck('id');
+            $foInManagedBranch = BranchUser::where('user_id', $userId)
+                ->whereIn('branch_id', $managedBranchIds)
+                ->exists();
+
+            if (!$foInManagedBranch) {
+                return back()->withErrors(['user_id' => 'FO yang dipilih tidak berada di cabang yang Anda kelola.'])->withInput();
+            }
+        } else {
+            // FO: otomatis pakai user sendiri dan hari ini
+            $userId = $user->id;
+            $tanggal = now()->toDateString();
+        }
 
         // Create
         Contact90::create([
@@ -171,6 +328,47 @@ class Contact90Controller extends Controller
         return redirect()->route('contact90.index', ['tanggal' => $tanggal])
             ->with('success', 'Kontak berhasil ditambahkan!');
     }
+    // public function store(Request $request)
+    // {
+    //     $user = Auth::user();
+
+    //     // Validasi
+    //     $validated = $request->validate([
+    //         'user_id' => $user->hasRole('superadmin') ? 'required|exists:users,id' : 'nullable',
+    //         'nama_nasabah' => [
+    //             'required',
+    //             'string',
+    //             'max:255',
+    //             Rule::unique('contact90s')
+    //                 ->where('tanggal', $request->input('tanggal', now()->toDateString()))
+    //         ],
+    //         'akun_or_notelp' => 'required|string|max:255',
+    //         'sosmed' => 'required|in:DM_IG,CHAT_WA,INBOX_FB,MRKT_PLACE_FB,TIKTOK',
+    //         'situasi' => 'required|in:tdk_merespon,merespon,tertarik,closing',
+    //         'keterangan' => 'nullable|string|max:500',
+    //         'tanggal' => $user->hasRole('superadmin') ? 'required|date' : 'nullable',
+    //     ], [
+    //         'nama_nasabah.unique' => 'Nasabah "' . $request->nama_nasabah . '" sudah diinput pada tanggal ' . Carbon::parse($request->input('tanggal', now()->toDateString()))->format('d M Y') . '. Tidak boleh duplikat.',
+    //     ]);
+
+    //     // Tentukan user_id dan tanggal
+    //     $userId = $user->hasRole('superadmin') ? $request->user_id : $user->id;
+    //     $tanggal = $user->hasRole('superadmin') ? $request->tanggal : now()->toDateString();
+
+    //     // Create
+    //     Contact90::create([
+    //         'user_id' => $userId,
+    //         'nama_nasabah' => $validated['nama_nasabah'],
+    //         'akun_or_notelp' => $validated['akun_or_notelp'],
+    //         'sosmed' => $validated['sosmed'],
+    //         'situasi' => $validated['situasi'],
+    //         'keterangan' => $validated['keterangan'],
+    //         'tanggal' => $tanggal,
+    //     ]);
+
+    //     return redirect()->route('contact90.index', ['tanggal' => $tanggal])
+    //         ->with('success', 'Kontak berhasil ditambahkan!');
+    // }
 
     /**
      * Form Edit Kontak
@@ -246,152 +444,6 @@ class Contact90Controller extends Controller
         return redirect()->route('contact90.index', ['tanggal' => $tanggal])
             ->with('success', 'Kontak berhasil dihapus!');
     }
-
-    // ==============================
-    // MANAGER SECTION
-    // ==============================
-
-    /**
-     * Dashboard Tim untuk Manager
-     */
-    // public function managerDashboard(Request $request)
-    // {
-    //     $tanggal = $request->input('tanggal', now()->toDateString());
-
-    //     // Total FO
-    //     $totalFo = User::role('fo')->count();
-
-    //     // Total Kontak Hari Ini
-    //     $totalKontak = Contact90::whereDate('tanggal', $tanggal)->count();
-
-    //     // Target (90 x jumlah FO)
-    //     $target = $totalFo * 90;
-
-    //     // Belum Validasi
-    //     $belumValidasi = Contact90::whereDate('tanggal', $tanggal)
-    //         ->where('validasi_manager', false)
-    //         ->count();
-
-    //     // Sudah Validasi
-    //     $sudahValidasi = Contact90::whereDate('tanggal', $tanggal)
-    //         ->where('validasi_manager', true)
-    //         ->count();
-
-    //     // Breakdown Situasi
-    //     $closing = Contact90::whereDate('tanggal', $tanggal)->where('situasi', 'closing')->count();
-    //     $tertarik = Contact90::whereDate('tanggal', $tanggal)->where('situasi', 'tertarik')->count();
-    //     $merespon = Contact90::whereDate('tanggal', $tanggal)->where('situasi', 'merespon')->count();
-    //     $tdkMerespon = Contact90::whereDate('tanggal', $tanggal)->where('situasi', 'tdk_merespon')->count();
-
-    //     return view('contact90.manager.dashboard', compact(
-    //         'tanggal',
-    //         'totalFo',
-    //         'totalKontak',
-    //         'target',
-    //         'belumValidasi',
-    //         'sudahValidasi',
-    //         'closing',
-    //         'tertarik',
-    //         'merespon',
-    //         'tdkMerespon'
-    //     ));
-    // }
-
-    /**
-     * Daftar FO untuk Manager
-     */
-    // public function managerFoList(Request $request)
-    // {
-    //     $tanggal = $request->input('tanggal', now()->toDateString());
-    //     $search = $request->input('search');
-
-    //     $query = User::role('fo');
-
-    //     if ($search) {
-    //         $query->where('name', 'like', "%{$search}%");
-    //     }
-
-    //     $foList = $query->orderBy('name')->get()->map(function ($fo) use ($tanggal) {
-    //         $total = Contact90::where('user_id', $fo->id)
-    //             ->whereDate('tanggal', $tanggal)
-    //             ->count();
-
-    //         $validated = Contact90::where('user_id', $fo->id)
-    //             ->whereDate('tanggal', $tanggal)
-    //             ->where('validasi_manager', true)
-    //             ->count();
-
-    //         $pending = $total - $validated;
-
-    //         $fo->kontak_total = $total;
-    //         $fo->kontak_validated = $validated;
-    //         $fo->kontak_pending = $pending;
-
-    //         return $fo;
-    //     });
-
-    //     return view('contact90.manager.folist', compact('foList', 'tanggal'));
-    // }
-
-    // /**
-    //  * Detail Kontak per FO untuk Manager
-    //  */
-    // public function managerFoDetail(Request $request, User $user)
-    // {
-    //     $tanggal = $request->input('tanggal', now()->toDateString());
-    //     $sosmedFilter = $request->input('sosmed');
-    //     $situasiFilter = $request->input('situasi');
-    //     $validasiFilter = $request->input('validasi');
-    //     $perPage = (int) $request->input('per_page', 25);
-
-    //     $query = Contact90::where('user_id', $user->id)
-    //         ->whereDate('tanggal', $tanggal);
-
-    //     if ($sosmedFilter) {
-    //         $query->where('sosmed', $sosmedFilter);
-    //     }
-
-    //     if ($situasiFilter) {
-    //         $query->where('situasi', $situasiFilter);
-    //     }
-
-    //     if ($validasiFilter !== null) {
-    //         $query->where('validasi_manager', $validasiFilter === '1');
-    //     }
-
-    //     $contacts = $query->orderBy('validasi_manager')
-    //         ->orderBy('created_at', 'desc')
-    //         ->paginate($perPage)
-    //         ->withQueryString();
-
-    //     return view('contact90.manager.fodetail', compact('user', 'contacts', 'tanggal'));
-    // }
-
-    // /**
-    //  * Validasi Kontak (Single)
-    //  */
-    // public function validate(Contact90 $contact90)
-    // {
-    //     $contact90->update(['validasi_manager' => true]);
-
-    //     return back()->with('success', 'Kontak berhasil divalidasi!');
-    // }
-
-    // /**
-    //  * Validasi Kontak (Bulk)
-    //  */
-    // public function validateBulk(Request $request)
-    // {
-    //     $request->validate([
-    //         'contact_ids' => 'required|array',
-    //         'contact_ids.*' => 'exists:contact90s,id',
-    //     ]);
-
-    //     Contact90::whereIn('id', $request->contact_ids)
-    //         ->update(['validasi_manager' => true]);
-
-    //     return back()->with('success', count($request->contact_ids) . ' kontak berhasil divalidasi!');
-    // }
 
     // ==============================
     // MANAGER SECTION

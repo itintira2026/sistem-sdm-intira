@@ -146,7 +146,7 @@ Route::middleware('auth')->group(function () {
 
     // Route::middleware('role:fo|manager|superadmin|hr|marketing')->group(function () {
 
-    Route::middleware('role:fo|superadmin')->group(function () {
+    Route::middleware('role:fo|superadmin|manager')->group(function () {
         /*
         |--------------------------------------------------------------------------
         | CONTACT 90 – FO AREA

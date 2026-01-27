@@ -80,8 +80,6 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Presensi::class);
     }
 
-
-
     /**
      * Cek apakah user adalah manager di cabang tertentu
      */
@@ -181,5 +179,10 @@ class User extends Authenticatable
         if (!$assignment) return null;
 
         return $assignment->getLatestGajiPokok();
+    }
+
+    public function contact90s()
+    {
+        return $this->hasMany(Contact90::class);
     }
 }

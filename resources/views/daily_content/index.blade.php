@@ -55,7 +55,7 @@
                         </div>
 
                         {{-- TANGGAL --}}
-                        <div>
+                        <div class="">
                             <label class="block mb-1 text-sm font-medium text-gray-700">
                                 Tanggal
                             </label>

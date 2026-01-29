@@ -231,10 +231,10 @@ Route::middleware('auth')->group(function () {
         | PAYROLL
         |--------------------------------------------------------------------------
         */
-        Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');
+        Route::get('/gaji-pokok', [PayrollController::class, 'index'])->name('gaji-pokok.index');
         Route::get('/payroll/{branch}/show', [PayrollController::class, 'show'])->name('gaji.show');
 
-        Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
+        // Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
         Route::get('/gaji-pokok/{branch}/create', [GajihPokokController::class, 'create'])->name('gaji-pokok.create');
         Route::post('/gaji-pokok/{branch}', [GajihPokokController::class, 'store'])->name('gaji-pokok.store');
         Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');

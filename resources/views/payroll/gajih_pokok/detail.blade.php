@@ -7,7 +7,7 @@
                 </h2>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('gaji.index') }}"
+                <a href="{{ route('gaji-pokok.index') }}"
                     class="flex items-center gap-2 px-4 py-2 text-white transition bg-gray-500 rounded-lg hover:bg-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

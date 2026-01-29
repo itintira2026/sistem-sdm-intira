@@ -65,7 +65,7 @@
                         Daftar Cabang
                     </h3>
 
-                    <form method="GET" action="{{ route('gaji.index') }}" class="flex flex-wrap gap-4 mb-6">
+                    <form method="GET" action="{{ route('gaji-pokok.index') }}" class="flex flex-wrap gap-4 mb-6">
 
                         {{-- PER PAGE --}}
                         <div>

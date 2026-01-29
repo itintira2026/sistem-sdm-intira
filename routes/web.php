@@ -12,6 +12,7 @@ use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\Payroll\PotonganController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiImportController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\Payroll\GajihPokokImportController;
 

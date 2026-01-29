@@ -267,8 +267,25 @@ class GajihPokokController extends Controller
 
 
     public function show($id)
-    {
-        // Find gaji pokok dengan eager loading yang benar
+{
+    // Cek apakah ada parameter bulan dan tahun dari request
+    $requestedBulan = request('bulan');
+    $requestedTahun = request('tahun');
+    
+    // Find gaji pokok pertama untuk mendapatkan branch_user_id
+    $initialGajihPokok = GajihPokok::with([
+        'branchUser' => function($query) {
+            $query->with(['user.roles', 'branch']);
+        }
+    ])->findOrFail($id);
+    
+    // Pastikan branchUser ada
+    if (!$initialGajihPokok->branchUser) {
+        return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
+    }
+    
+    // Jika ada parameter bulan dan tahun, ambil data untuk periode tersebut
+    if ($requestedBulan && $requestedTahun) {
         $gajihPokok = GajihPokok::with([
             'branchUser' => function ($query) {
                 $query->with(['user.roles', 'branch']);
@@ -313,6 +330,39 @@ class GajihPokokController extends Controller
         ));
     }
 
+    // Get potongan & tambahan untuk periode yang sedang ditampilkan
+    $potongans = $gajihPokok->branchUser->potongans()
+                            ->where('bulan', $gajihPokok->bulan)
+                            ->where('tahun', $gajihPokok->tahun)
+                            ->orderBy('tanggal', 'asc')
+                            ->get();
+
+    // Hitung total potongan & tambahan
+    $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
+    $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
+    
+    // Hitung gaji
+    $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
+    $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
+
+    // Get riwayat gaji pokok (6 bulan terakhir)
+    $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
+                             ->orderBy('tahun', 'desc')
+                             ->orderBy('bulan', 'desc')
+                             ->take(6)
+                             ->get();
+
+    return view('payroll.gajih_pokok.show', compact(
+        'gajihPokok',
+        'potongans',
+        'totalPotongan',
+        'totalTambahan',
+        'gajiKotor',
+        'gajiBersih',
+        'riwayatGaji',
+        'initialGajihPokok' // Kirim juga data awal untuk referensi ID
+    ));
+}
     public function destroy(GajihPokok $gajiPokok)
     {
         $gajiPokok->delete();

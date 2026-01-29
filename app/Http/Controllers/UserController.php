@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -92,43 +96,83 @@ class UserController extends Controller
         return view('management_data.user.show', compact('user'));
     }
 
-    public function edit(User $user)
+ public function edit(User $user)
     {
         $roles = Role::all();
-        $branches = \App\Models\Branch::all();
-        $user->load(['roles', 'branch']);
+        $branches = Branch::all();
+        $user->load(['roles', 'branches']);
 
         return view('management_data.user.edit', compact('user', 'roles', 'branches'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($user->id)
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id)
+            ],
+            'phone' => 'nullable|string|max:20',
             'role' => 'required|exists:roles,name',
-            'branch_id' => 'nullable|exists:branches,id',
-            'is_active' => 'boolean',
+            'branches' => 'required|array|min:1',
+            'branches.*' => 'exists:branches,id',
+            'password' => 'nullable|string|min:8|confirmed',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'is_active' => 'nullable|boolean',
+            'branch_managers' => 'nullable|array',
+            'branch_managers.*' => 'boolean',
         ]);
 
-        $user->update([
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-            'email' => $validated['email'],
-            'branch_id' => $validated['branch_id'] ?? null,
-            'is_active' => $validated['is_active'] ?? $user->is_active,
-        ]);
+        // Update basic info
+        $user->name = $validated['name'];
+        $user->username = $validated['username'];
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+        $user->is_active = $request->has('is_active') ? true : false;
 
-        if (!empty($validated['password'])) {
-            $user->update(['password' => bcrypt($validated['password'])]);
+        // Update password if provided
+        if ($request->filled('password')) {
+            $user->password = Hash::make($validated['password']);
         }
 
+        // Handle profile photo upload
+        if ($request->hasFile('profile_photo')) {
+            // Delete old photo if exists
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $user->profile_photo = $request->file('profile_photo')->store('profile_photos', 'public');
+        }
+
+        $user->save();
+
+        // Update role using Spatie
         $user->syncRoles([$validated['role']]);
 
+        // Sync branches with manager status
+        // First, remove all existing branch assignments
+        $user->branchAssignments()->delete();
+
+        // Then, add new assignments
+        foreach ($validated['branches'] as $branchId) {
+            $isManager = isset($request->branch_managers[$branchId]) && $request->branch_managers[$branchId];
+            $user->assignToBranch($branchId, $isManager);
+        }
+
         return redirect()->route('users.index')
-            ->with('success', 'Pengguna berhasil diperbarui');
+            ->with('success', 'Pengguna berhasil diperbarui!');
     }
 
     public function destroy(User $user)

@@ -15,18 +15,39 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                        {{ __('User') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('branches.index')" :active="request()->routeIs('branches.*')">
-                        {{ __('Branch') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('gaji.index')" :active="request()->routeIs('gaji.*')">
-                        {{ __('Gaji') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
-                        {{ __('Presensi') }}
-                    </x-nav-link>
+                    {{-- @role('fo|manager|superadmin') --}}
+                    @role('hr|superadmin')
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            {{ __('User') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('branches.index')" :active="request()->routeIs('branches.*')">
+                            {{ __('Branch') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('gaji.index')" :active="request()->routeIs('gaji.*')">
+                            {{ __('Gaji') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
+                            {{ __('Presensi') }}
+                        </x-nav-link>
+                    @endrole
+                    @role('marketing|superadmin')
+                        <x-nav-link :href="route('daily-contents.index')" :active="request()->routeIs('daily-contents.*')">
+                            {{ __('Daily Content') }}
+                        </x-nav-link>
+                    @endrole
+                    {{-- CONTACT 90 MENU --}}
+                    @role('fo|manager|superadmin')
+                        <x-nav-link :href="route('contact90.index')" :active="request()->routeIs('contact90.*')">
+                            {{ __('Contact 90') }}
+                        </x-nav-link>
+                    @endrole
+
+                    {{-- MANAGER MENU --}}
+                    @role('manager|superadmin')
+                        <x-nav-link :href="route('contact90.manager.dashboard')" :active="request()->routeIs('contact90.manager.*')">
+                            {{ __('Manager - Contact 90') }}
+                        </x-nav-link>
+                    @endrole
                 </div>
             </div>
 
@@ -53,6 +74,21 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+                        {{-- <x-dropdown-link :href="route('users.index')">
+                            {{ __('User') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('branches.index')">
+                            {{ __('Branch') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('gaji.index')">
+                            {{ __('Gaji') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('presensi.index')">
+                            {{ __('Presensi') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('daily-contents.index')">
+                            {{ __('Daily Content') }}
+                        </x-dropdown-link> --}}
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -103,6 +139,34 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('users.index')">
+                    {{ __('Users') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('branches.index')">
+                    {{ __('Branches') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('gaji.index')">
+                    {{ __('Gaji') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('presensi.index')">
+                    {{ __('Presensi') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('daily-contents.index')">
+                    {{ __('Daily Contents') }}
+                </x-responsive-nav-link>
+                {{-- CONTACT 90 MENU --}}
+                @role('fo|manager|superadmin')
+                    <x-responsive-nav-link :href="route('contact90.index')" :active="request()->routeIs('contact90.*')">
+                        {{ __('Contact 90') }}
+                    </x-responsive-nav-link>
+                @endrole
+
+                {{-- MANAGER MENU --}}
+                @role('manager|superadmin')
+                    <x-responsive-nav-link :href="route('contact90.manager.dashboard')" :active="request()->routeIs('contact90.manager.*')">
+                        {{ __('Manager - Contact 90') }}
+                    </x-responsive-nav-link>
+                @endrole
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

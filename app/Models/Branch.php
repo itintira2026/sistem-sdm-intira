@@ -22,6 +22,11 @@ class Branch extends Model
             ->withTimestamps();
     }
 
+    public function dailyContents()
+    {
+        return $this->hasMany(DailyContent::class);
+    }
+
     /**
      * Get all user assignments dengan detail
      */
@@ -108,26 +113,46 @@ class Branch extends Model
     /**
      * Get all gaji pokok di cabang ini
      */
-    public function gajiPokok()
+    // public function gajiPokok()
+    // {
+    //     return $this->hasManyThrough(
+    //         GajihPokok::class,
+    //         BranchUser::class,
+    //         'branch_id', // Foreign key on branch_user table
+    //         'branch_user_id', // Foreign key on gaji_pokok table
+    //         'id', // Local key on branches table
+    //         'id' // Local key on branch_user table
+    //     );
+    // }
+    /**
+     * Ambil semua gaji pokok user yang TERDAFTAR di cabang ini
+     * (walaupun gajinya diinput dari cabang lain)
+     */
+    public function gajiPokoks()
     {
-        return $this->hasManyThrough(
-            GajihPokok::class,
-            BranchUser::class,
-            'branch_id', // Foreign key on branch_user table
-            'branch_user_id', // Foreign key on gaji_pokok table
-            'id', // Local key on branches table
-            'id' // Local key on branch_user table
+        return GajihPokok::whereIn(
+            'user_id',
+            $this->userAssignments()->pluck('user_id')
         );
     }
+
 
     /**
      * Get total gaji pokok untuk bulan tertentu
      */
     public function getTotalGajiPokokForMonth($bulan, $tahun)
     {
-        return $this->gajiPokok()
+        return $this->gajiPokoks()
             ->where('bulan', $bulan)
             ->where('tahun', $tahun)
             ->sum('amount');
     }
+
+    // public function getTotalGajiPokokForMonth($bulan, $tahun)
+    // {
+    //     return $this->gajiPokok()
+    //         ->where('bulan', $bulan)
+    //         ->where('tahun', $tahun)
+    //         ->sum('amount');
+    // }
 }

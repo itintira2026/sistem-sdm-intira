@@ -60,6 +60,14 @@ class DatabaseSeeder extends Seeder
         ]);
         $hr->assignRole('hr');
 
+        $marketing = User::create([
+            'name' => 'Marketing',
+            'email' => 'marketing@example.com',
+            'username' => 'marketing123',
+            'password' => bcrypt('password'),
+        ]);
+        $marketing->assignRole('marketing');
+
         // $headOffice = User::create([
         //     'name' => 'HO',
         //     'email' => 'ho123@example.com',

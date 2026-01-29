@@ -42,39 +42,48 @@ class GajihPokokImport implements
         // CEGAH PHANTOM ROW
         // ===============================
         if (
-            empty($data['email_karyawan']) &&
-            empty($data['cabang']) &&
-            empty($data['nominal_gaji'])
+            empty($data['email']) &&
+            empty($data['gaji_pokok'])
         ) {
             return null;
         }
+        // if (
+        //     empty($data['email_karyawan']) &&
+        //     empty($data['cabang']) &&
+        //     empty($data['nominal_gaji'])
+        // ) {
+        //     return null;
+        // }
 
         // ===============================
         // CARI USER
         // ===============================
-        $user = User::where('email', $data['email_karyawan'])->first();
+        $user = User::where('email', $data['email'])->first();
         if (!$user) {
-            throw new \Exception("User dengan email {$data['email_karyawan']} tidak ditemukan");
+            throw new \Exception("User dengan email {$data['email']} tidak ditemukan");
         }
+
+        //
+
 
         // ===============================
         // CARI CABANG
         // ===============================
-        $branch = Branch::where('code', $data['cabang'])->first();
-        if (!$branch) {
-            throw new \Exception("Cabang {$data['cabang']} tidak ditemukan");
-        }
+        // $branch = Branch::where('code', $data['cabang'])->first();
+        // if (!$branch) {
+        //     throw new \Exception("Cabang {$data['cabang']} tidak ditemukan");
+        // }
 
         // ===============================
         // CARI RELASI USER-CABANG
         // ===============================
-        $branchUser = BranchUser::where('user_id', $user->id)
-            ->where('branch_id', $branch->id)
-            ->first();
+        // $branchUser = BranchUser::where('user_id', $user->id)
+        //     ->where('branch_id', $branch->id)
+        //     ->first();
 
-        if (!$branchUser) {
-            throw new \Exception("User belum terdaftar di cabang {$data['cabang']}");
-        }
+        // if (!$branchUser) {
+        //     throw new \Exception("User belum terdaftar di cabang {$data['cabang']}");
+        // }
 
         // ===============================
         // SIMPAN GAJI
@@ -82,12 +91,15 @@ class GajihPokokImport implements
         $this->successCount++;
 
         return new GajihPokok([
-            'branch_user_id'         => $branchUser->id,
-            'amount'                 => (int) $data['nominal_gaji'],
+            // 'branchuser_id'         => $branchUser->id,
+            'user_id'         => $user->id,
+            'amount'                 => (int) $data['gaji_pokok'],
             'tunjangan_makan'        => (int) ($data['tunjangan_makan'] ?? 0),
             'tunjangan_transportasi' => (int) ($data['tunjangan_transportasi'] ?? 0),
             'tunjangan_jabatan'      => (int) ($data['tunjangan_jabatan'] ?? 0),
             'tunjangan_komunikasi'   => (int) ($data['tunjangan_komunikasi'] ?? 0),
+            'potongan_bpjs'   => (int) ($data['potongan_bpjs'] ?? 0),
+            'total_revenue'   => (int) ($data['total_revenue'] ?? 0),
             'bulan'                  => (int) $data['bulan'],
             'tahun'                  => (int) $data['tahun'],
             'keterangan'             => $data['keterangan'] ?? null,
@@ -100,9 +112,9 @@ class GajihPokokImport implements
     public function rules(): array
     {
         return [
-            'email_karyawan' => ['required', 'email'],
-            'cabang'         => ['required', 'string'],
-            'nominal_gaji'   => ['required', 'numeric', 'min:0'],
+            'email' => ['required', 'email'],
+            // 'cabang'         => ['required', 'string'],
+            'gaji_pokok'   => ['required', 'numeric', 'min:0'],
             'bulan'          => ['required', 'numeric', 'between:1,12'],
             'tahun'          => ['required', 'digits:4'],
         ];
@@ -114,11 +126,11 @@ class GajihPokokImport implements
     public function customValidationMessages(): array
     {
         return [
-            'email_karyawan.required' => 'Email karyawan wajib diisi',
-            'email_karyawan.email'    => 'Format email karyawan tidak valid',
+            'email.required' => 'Email karyawan wajib diisi',
+            'email.email'    => 'Format email karyawan tidak valid',
             'cabang.required'         => 'Kode cabang wajib diisi',
-            'nominal_gaji.required'   => 'Nominal gaji wajib diisi',
-            'nominal_gaji.numeric'    => 'Nominal gaji harus angka',
+            'gaji_pokok.required'   => 'Gaji pokok wajib diisi',
+            'gaji_pokok.numeric'    => 'Gaji pokok harus angka',
             'bulan.numeric'          => 'Bulan wajib diisi',
             'tahun.required'          => 'Tahun wajib diisi',
         ];

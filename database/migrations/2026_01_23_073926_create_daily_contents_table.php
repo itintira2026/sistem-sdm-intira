@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('presensis', function (Blueprint $table) {
+        Schema::create('daily_contents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
             $table->date('tanggal');
-            $table->enum('status', ['CHECK_IN', 'CHECK_OUT', 'ISTIRAHAT_IN', 'ISTIRAHAT_OUT']);
-            $table->time('jam');
-            $table->string('wilayah');
             $table->string('keterangan')->nullable();
             $table->timestamps();
         });
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('presensis');
+        Schema::dropIfExists('daily_contents');
     }
 };

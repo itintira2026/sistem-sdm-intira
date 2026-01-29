@@ -125,4 +125,24 @@ class BranchController extends Controller
         return redirect()->route('branches.index')
             ->with('success', 'Cabang berhasil dinonaktifkan');
     }
+
+    public function search(Request $request)
+    {
+        $q = $request->input('q');
+
+        return Branch::query()
+            ->when($q, function ($query) use ($q) {
+                $query->where('code', 'like', "%{$q}%")
+                    ->orWhere('name', 'like', "%{$q}%");
+            })
+            ->orderBy('code')
+            ->limit(20)
+            ->get()
+            ->map(function ($branch) {
+                return [
+                    'id'   => $branch->id,
+                    'text' => "{$branch->code} - {$branch->name}",
+                ];
+            });
+    }
 }

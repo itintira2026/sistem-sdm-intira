@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="grid items-center justify-between grid-cols-1 gap-4 md:grid-cols-2">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Manajemen Cabang
@@ -10,7 +10,7 @@
                 </p>
             </div>
 
-            <div class="flex gap-3">
+            <div class="flex justify-start gap-3 md:justify-end">
                 <!-- Ganti tombol import yang sudah ada dengan yang ini -->
                 <button onclick="openImportModal()"
                     class="flex items-center gap-2 px-4 py-2 text-green-600 transition bg-green-100 rounded-lg hover:bg-green-200">
@@ -92,8 +92,10 @@
                     </form>
 
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
+                    {{-- <div class="overflow-x-auto">
+                        <table class="w-full"> --}}
+                    <div class="relative w-full overflow-x-auto md:overflow-x-visible custom-scrollbar">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
@@ -178,7 +180,7 @@
                                                 </button>
 
                                                 <div id="dropdown-{{ $branch->id }}"
-                                                    class="absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                    class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
 
                                                         {{-- <a href="{{ route('branches.show', $branch) }}"
@@ -254,106 +256,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal Import Cabang -->
-    {{-- <div id="importModal" class="fixed inset-0 z-50 hidden w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
-        <div class="relative w-11/12 p-5 mx-auto bg-white border rounded-lg shadow-lg top-20 md:w-2/3 lg:w-1/2">
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-3 mb-6 border-b">
-                <div>
-                    <h3 class="text-xl font-semibold text-gray-800">Import Data Cabang</h3>
-                    <p class="mt-1 text-sm text-gray-500">Unggah file untuk menambahkan data cabang secara massal</p>
-                </div>
-                <button id="closeModal" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Modal Content -->
-            <div class="mb-6">
-                <!-- Format File Section -->
-                <div class="mb-6">
-                    <h4 class="mb-3 font-medium text-gray-700">Format File yang Didukung</h4>
-                    <div class="grid grid-cols-1 gap-4 mb-4">
-
-                        <div class="p-4 border border-gray-200 rounded-lg">
-                            <div class="flex items-center mb-2">
-                                <div class="flex items-center justify-center w-10 h-10 mr-3 bg-green-100 rounded-full">
-                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                                        <polyline points="10 9 9 9 8 9"></polyline>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h5 class="font-semibold text-gray-800">Excel (.xlsx, .xls)</h5>
-                                    <p class="text-sm text-gray-500">Microsoft Excel</p>
-                                </div>
-                            </div>
-                            <ul class="space-y-1 text-sm text-gray-600 ml-13">
-                                <li>• Format: Kolom sesuai template</li>
-                                <li>• Maksimal 10MB</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Area -->
-                <div class="mb-6">
-                    <h4 class="mb-3 font-medium text-gray-700">Unggah File</h4>
-                    <div id="dropArea"
-                        class="p-8 text-center transition border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-teal-500">
-                        <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                        </div>
-                        <p class="mb-2 text-gray-700">Drag & drop file di sini atau klik untuk memilih</p>
-                        <p class="mb-4 text-sm text-gray-500">Format yang didukung: .csv, .xlsx, .xls</p>
-                        <button id="browseButton"
-                            class="px-4 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
-                            Pilih File
-                        </button>
-                        <input type="file" id="fileInput" class="hidden" accept=".csv,.xlsx,.xls">
-                    </div>
-                    <div id="fileName" class="hidden mt-3 text-sm text-gray-600">
-                        File terpilih: <span class="font-medium" id="selectedFileName"></span>
-                    </div>
-                </div>
-
-                <!-- Progress Bar (akan muncul saat upload) -->
-                <div id="progressContainer" class="hidden mb-6">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700">Mengunggah...</span>
-                        <span id="progressPercent" class="text-sm font-medium text-gray-700">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div id="progressBar" class="bg-teal-600 h-2.5 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="flex justify-end gap-3 pt-4 border-t">
-                <button id="cancelButton"
-                    class="px-5 py-2 text-gray-700 transition border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Batal
-                </button>
-                <button id="importButton"
-                    class="px-5 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled>
-                    Import Data
-                </button>
-            </div>
-        </div>
-    </div> --}}
 
     <!-- Modal Import Cabang -->
     <div id="importModal" class="fixed inset-0 z-50 hidden w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
@@ -467,158 +369,6 @@
     </div>
 
     <script>
-        // // Fungsi untuk membuka modal import
-        // function openImportModal() {
-        //     document.getElementById('importModal').classList.remove('hidden');
-        // }
-
-        // // Fungsi untuk menutup modal import
-        // function closeImportModal() {
-        //     document.getElementById('importModal').classList.add('hidden');
-        //     resetForm();
-        // }
-
-        // // Reset form
-        // function resetForm() {
-        //     document.getElementById('fileInput').value = '';
-        //     document.getElementById('fileName').classList.add('hidden');
-        //     document.getElementById('importButton').disabled = true;
-        //     document.getElementById('progressContainer').classList.add('hidden');
-        //     document.getElementById('progressBar').style.width = '0%';
-        //     document.getElementById('progressPercent').textContent = '0%';
-        // }
-
-        // // Event listener untuk tombol-tombol modal
-        // document.addEventListener('DOMContentLoaded', function() {
-        //     // Tombol close modal
-        //     document.getElementById('closeModal').addEventListener('click', closeImportModal);
-
-        //     // Tombol batal
-        //     document.getElementById('cancelButton').addEventListener('click', closeImportModal);
-
-        //     // Tombol browse file
-        //     document.getElementById('browseButton').addEventListener('click', function() {
-        //         document.getElementById('fileInput').click();
-        //     });
-
-        //     // Area drop file
-        //     const dropArea = document.getElementById('dropArea');
-
-        //     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        //         dropArea.addEventListener(eventName, preventDefaults, false);
-        //     });
-
-        //     function preventDefaults(e) {
-        //         e.preventDefault();
-        //         e.stopPropagation();
-        //     }
-
-        //     ['dragenter', 'dragover'].forEach(eventName => {
-        //         dropArea.addEventListener(eventName, highlight, false);
-        //     });
-
-        //     ['dragleave', 'drop'].forEach(eventName => {
-        //         dropArea.addEventListener(eventName, unhighlight, false);
-        //     });
-
-        //     function highlight() {
-        //         dropArea.classList.add('border-teal-500', 'bg-teal-50');
-        //     }
-
-        //     function unhighlight() {
-        //         dropArea.classList.remove('border-teal-500', 'bg-teal-50');
-        //     }
-
-        //     // Handle drop file
-        //     dropArea.addEventListener('drop', handleDrop, false);
-
-        //     function handleDrop(e) {
-        //         const dt = e.dataTransfer;
-        //         const files = dt.files;
-        //         handleFiles(files);
-        //     }
-
-        //     // Handle file input change
-        //     document.getElementById('fileInput').addEventListener('change', function() {
-        //         handleFiles(this.files);
-        //     });
-
-        //     // Fungsi untuk menangani file yang dipilih
-        //     function handleFiles(files) {
-        //         if (files.length > 0) {
-        //             const file = files[0];
-        //             const allowedExtensions = /(\.csv|\.xlsx|\.xls)$/i;
-
-        //             if (!allowedExtensions.exec(file.name)) {
-        //                 alert('Format file tidak didukung. Harap unggah file CSV atau Excel.');
-        //                 return;
-        //             }
-
-        //             // Tampilkan nama file
-        //             document.getElementById('selectedFileName').textContent = file.name;
-        //             document.getElementById('fileName').classList.remove('hidden');
-
-        //             // Aktifkan tombol import
-        //             document.getElementById('importButton').disabled = false;
-        //         }
-        //     }
-
-        //     // Tombol import (simulasi proses upload)
-        //     document.getElementById('importButton').addEventListener('click', function() {
-        //         const fileInput = document.getElementById('fileInput');
-
-        //         if (!fileInput.files.length) {
-        //             alert('Silakan pilih file terlebih dahulu.');
-        //             return;
-        //         }
-
-        //         // Tampilkan progress bar
-        //         document.getElementById('progressContainer').classList.remove('hidden');
-
-        //         // Simulasi proses upload
-        //         simulateUpload();
-        //     });
-
-        //     // Fungsi untuk simulasi proses upload
-        //     function simulateUpload() {
-        //         let progress = 0;
-        //         const progressBar = document.getElementById('progressBar');
-        //         const progressPercent = document.getElementById('progressPercent');
-        //         const importButton = document.getElementById('importButton');
-
-        //         importButton.disabled = true;
-        //         importButton.textContent = 'Mengimport...';
-
-        //         const interval = setInterval(() => {
-        //             progress += 5;
-        //             if (progress > 100) progress = 100;
-
-        //             progressBar.style.width = `${progress}%`;
-        //             progressPercent.textContent = `${progress}%`;
-
-        //             if (progress >= 100) {
-        //                 clearInterval(interval);
-
-        //                 // Tampilkan pesan sukses setelah 500ms
-        //                 setTimeout(() => {
-        //                     alert('Import berhasil! Data pengguna telah ditambahkan.');
-        //                     closeImportModal();
-
-        //                     // Di sini bisa ditambahkan kode untuk refresh data tabel
-        //                     // location.reload(); // atau gunakan AJAX untuk update data
-        //                 }, 500);
-        //             }
-        //         }, 100);
-        //     }
-
-        //     // Tutup modal saat klik di luar area modal
-        //     document.getElementById('importModal').addEventListener('click', function(e) {
-        //         if (e.target === this) {
-        //             closeImportModal();
-        //         }
-        //     });
-        // });
-
         // Fungsi untuk membuka modal import
         function openImportModal() {
             console.log('Opening import modal');
@@ -928,21 +678,31 @@
         });
 
         function toggleDropdown(id) {
+            event.stopPropagation();
+
+            const button = event.currentTarget;
+            const dropdown = document.getElementById(`dropdown-${id}`);
+
+            // Tutup dropdown lain
             document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                if (el.id !== `dropdown-${id}`) {
-                    el.classList.add('hidden');
-                }
+                if (el !== dropdown) el.classList.add('hidden');
             });
 
-            document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+            // Toggle
+            dropdown.classList.toggle('hidden');
+
+            if (!dropdown.classList.contains('hidden')) {
+                const rect = button.getBoundingClientRect();
+
+                dropdown.style.top = `${rect.bottom + 8}px`;
+                dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+            }
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                    el.classList.add('hidden');
-                });
-            }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
         });
     </script>
 

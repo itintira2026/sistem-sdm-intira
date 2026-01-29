@@ -1,17 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Detail Gaji - {{ $gajihPokok->branchUser->user->name }}
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">
+                <p class="mt-1 text-sm text-gray-500">
                     {{ $gajihPokok->branchUser->branch->name }} • {{ $gajihPokok->periode }}
                 </p>
             </div>
             <div class="flex gap-3">
                 <a href="{{ route('gaji-pokok.detail', ['branch' => $gajihPokok->branchUser->branch_id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
-                    class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition flex items-center gap-2">
+                    class="flex items-center gap-2 px-4 py-2 text-white transition bg-gray-500 rounded-lg hover:bg-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -23,14 +23,14 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Main Content - Left Side -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- User Information Card -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Karyawan</h3>
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900">Informasi Karyawan</h3>
                             <div class="flex items-start gap-4">
                                 <div
                                     class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
@@ -59,10 +59,11 @@
                         </div>
 
                         <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="text-sm font-medium text-gray-500">Cabang</label>
-                                    <p class="text-gray-900 font-semibold mt-1">{{ $gajihPokok->branchUser->branch->name
+                                    <p class="text-gray-900 font-semibold mt-1">
+                                    {{ $gajihPokok->branchUser->branch->name
                                         }}</p>
                                 </div>
                                 <div>
@@ -75,7 +76,7 @@
                     </div>
 
                     <!-- Salary Details Card -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900">Detail Gaji Pokok & Tunjangan</h3>
                         </div>
@@ -94,22 +95,22 @@
                                         <span class="text-sm text-gray-900 font-semibold">Rp {{
                                             number_format($gajihPokok->tunjangan_makan, 0, ',', '.') }}</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
+                                    <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">Tunjangan Transportasi</span>
                                         <span class="text-sm text-gray-900 font-semibold">Rp {{
                                             number_format($gajihPokok->tunjangan_transportasi, 0, ',', '.') }}</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
+                                    <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">Tunjangan Jabatan</span>
                                         <span class="text-sm text-gray-900 font-semibold">Rp {{
                                             number_format($gajihPokok->tunjangan_jabatan, 0, ',', '.') }}</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
+                                    <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">Tunjangan Komunikasi</span>
                                         <span class="text-sm text-gray-900 font-semibold">Rp {{
                                             number_format($gajihPokok->tunjangan_komunikasi, 0, ',', '.') }}</span>
                                     </div>
-                                    <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
                                         <span class="text-sm font-semibold text-gray-700">Total Tunjangan</span>
                                         <span class="text-sm text-blue-600 font-bold">Rp {{
                                             number_format($gajihPokok->total_tunjangan, 0, ',', '.') }}</span>
@@ -122,9 +123,9 @@
                                         ',', '.') }}</span>
                                 </div>
 
-                                <div class="flex justify-between items-center py-3 border-b border-gray-100">
-                                    <span class="text-gray-600 font-medium">Periode</span>
-                                    <span class="text-gray-900 font-semibold">{{ $gajihPokok->periode }}</span>
+                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                    <span class="font-medium text-gray-600">Periode</span>
+                                    <span class="font-semibold text-gray-900">{{ $gajihPokok->periode }}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-3 border-b border-gray-100">
                                     <span class="text-gray-600 font-medium">Tanggal Input</span>
@@ -141,11 +142,11 @@
                     </div>
 
                     <!-- Tabel Potongan & Tambahan -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900">Potongan & Tambahan</h3>
                             <a href="{{ route('potongan.create', ['branch' => $gajihPokok->branchUser->branch_id, 'branch_user_id' => $gajihPokok->branch_user_id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
-                                class="text-sm text-teal-600 hover:text-teal-700 font-medium">
+                                class="text-sm font-medium text-teal-600 hover:text-teal-700">
                                 + Tambah
                             </a>
                         </div>
@@ -250,7 +251,7 @@
                                 </svg>
                                 <span class="text-sm font-medium opacity-90">Total Gaji Diterima</span>
                             </div>
-                            <div class="text-4xl font-bold mb-1">
+                            <div class="mb-1 text-4xl font-bold">
                                 Rp {{ number_format($gajiBersih, 0, ',', '.') }}
                             </div>
                             <p class="text-sm opacity-75">Per Bulan</p>
@@ -258,7 +259,7 @@
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900">Statistik</h3>
                         </div>
@@ -373,7 +374,7 @@
                     </div>
 
                     <!-- Actions Card -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900">Aksi</h3>
                         </div>

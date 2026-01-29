@@ -70,7 +70,15 @@ class User extends Authenticatable
         // FO / non manager
         return $branches->first()->name;
     }
+    public function gajihPokoks()
+    {
+        return $this->hasMany(GajihPokok::class, 'user_id');
+    }
 
+    public function presensis()
+    {
+        return $this->hasMany(\App\Models\Presensi::class);
+    }
 
     /**
      * Cek apakah user adalah manager di cabang tertentu
@@ -171,5 +179,10 @@ class User extends Authenticatable
         if (!$assignment) return null;
 
         return $assignment->getLatestGajiPokok();
+    }
+
+    public function contact90s()
+    {
+        return $this->hasMany(Contact90::class);
     }
 }

@@ -11,23 +11,6 @@
             </div>
 
             <div class="flex gap-3">
-
-                {{-- <button onclick="openImportModal2()"
-                    class="flex items-center gap-2 px-4 py-2 text-green-600 transition bg-green-100 rounded-lg hover:bg-green-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Import Potongan
-                </button>
-                <button onclick="openImportModal()"
-                    class="flex items-center gap-2 px-4 py-2 text-green-600 transition bg-green-100 rounded-lg hover:bg-green-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Import Gaji Pokok
-                </button> --}}
                 <button
                     onclick="openImportModal({
     title: 'Import Gaji Pokok',
@@ -38,10 +21,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    Import Gaji Pokok
+                    Import Gaji
                 </button>
 
-                <button
+                {{-- <button
                     onclick="openImportModal({
     title: 'Import Potongan',
     action: '{{ route('potongan.import') }}'
@@ -52,15 +35,15 @@
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     Import Potongan
-                </button>
+                </button> --}}
 
-                <a href="{{ route('branches.create') }}"
+                {{-- <a href="{{ route('branches.create') }}"
                     class="flex items-center gap-2 px-4 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     Tambah Gaji
-                </a>
+                </a> --}}
             </div>
         </div>
     </x-slot>
@@ -82,9 +65,55 @@
                         Daftar Cabang
                     </h3>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
+                    <form method="GET" action="{{ route('gaji-pokok.index') }}" class="flex flex-wrap gap-4 mb-6">
+
+                        {{-- PER PAGE --}}
+                        <div>
+                            <select name="per_page" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border border-gray-300 rounded-lg appearance-none focus:ring-teal-500">
+                                @foreach ([10, 25, 50, 100] as $size)
+                                    <option value="{{ $size }}"
+                                        {{ request('per_page', 10) == $size ? 'selected' : '' }}>
+                                        {{ $size }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- STATUS --}}
+                        <div>
+                            <select name="status" onchange="this.form.submit()"
+                                class="px-4 py-2 pr-10 border border-gray-300 rounded-lg appearance-none focus:ring-teal-500">
+                                <option value="">Semua Status</option>
+                                <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Aktif</option>
+                                <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Tidak Aktif
+                                </option>
+                            </select>
+                        </div>
+
+                        {{-- SEARCH --}}
+                        <div class="relative flex-1 min-w-[250px]">
+                            <svg class="absolute w-5 h-5 text-gray-400 left-3 top-3" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Cari kode cabang atau nama cabang..."
+                                class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-teal-500">
+                        </div>
+
+                        <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                            Cari
+                        </button>
+                    </form>
+
+                    {{-- <div class="overflow-x-auto">
+                        <table class="w-full"> --}}
+                    <div class="relative w-full overflow-x-auto md:overflow-x-visible custom-scrollbar">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
+                            {{-- <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="px-4 py-4 text-sm font-semibold text-left text-gray-600 uppercase">
                                         Kode
@@ -105,7 +134,18 @@
                                         Aksi
                                     </th>
                                 </tr>
+                            </thead> --}}
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="px-4 py-4 min-w-[120px] text-left">Kode</th>
+                                    <th class="px-4 py-4 min-w-[220px] text-left">Nama Cabang</th>
+                                    <th class="px-4 py-4 min-w-[150px] text-left">Jumlah User</th>
+                                    <th class="px-4 py-4 min-w-[120px] text-left">Status</th>
+                                    <th class="px-4 py-4 min-w-[140px] text-left">Dibuat</th>
+                                    <th class="px-4 py-4 min-w-[80px] text-left">Aksi</th>
+                                </tr>
                             </thead>
+
 
                             <tbody>
                                 @forelse ($branches as $branch)
@@ -121,24 +161,24 @@
                                     @endphp
 
                                     <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             <span
                                                 class="px-3 py-1 text-sm font-medium rounded bg-cyan-100 text-cyan-700">
                                                 {{ $branchCode }}
                                             </span>
                                         </td>
 
-                                        <td class="px-4 py-4 font-medium text-gray-700">
+                                        <td class="px-4 py-4 font-medium text-gray-700 whitespace-nowrap">
                                             {{ $branchName }}
                                         </td>
 
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             <span class="px-3 py-1 text-sm rounded bg-cyan-100 text-cyan-700">
                                                 {{ $branchUserCount }} user
                                             </span>
                                         </td>
 
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             @if ($branchActive)
                                                 <span
                                                     class="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded">
@@ -152,28 +192,23 @@
                                             @endif
                                         </td>
 
-                                        <td class="px-4 py-4 text-sm text-gray-500">
+                                        <td class="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
                                             {{ $branchCreated }}
                                         </td>
 
-                                        <td class="px-4 py-4">
+                                        <td class="px-4 py-4 whitespace-nowrap">
                                             <div class="relative inline-block text-left">
-
                                                 <button type="button" onclick="toggleDropdown({{ $branch->id }})"
                                                     class="text-gray-400 hover:text-gray-600">
+
                                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                         <path
                                                             d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                                     </svg>
                                                 </button>
-
                                                 <div id="dropdown-{{ $branch->id }}"
-                                                    class="absolute right-0 z-10 hidden w-48 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                    class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                                                     <div class="py-1">
-                                                        <a href="{{ route('gaji.show', $branch) }}"
-                                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            Slip Gaji Detail
-                                                        </a>
                                                         <a href="{{ route('gaji-pokok.detail', parameters: $branch) }}"
                                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                             Gaji Pokok Detail
@@ -199,6 +234,88 @@
                                     </tr>
                                 @endforelse
                             </tbody>
+                            {{-- <tbody>
+                                @forelse ($branches as $branch)
+                                    @forelse ($branches as $branch)
+                                        @php
+                                            $branchName = $branch->name ?? 'Unknown';
+                                            $branchCode = $branch->code ?? '-';
+                                            $branchActive = isset($branch->is_active) ? $branch->is_active : false;
+                                            $branchUsers = $branch->users ?? collect();
+                                            $branchUserCount = $branchUsers->count();
+                                            $branchCreated = isset($branch->created_at)
+                                                ? $branch->created_at->format('d M Y')
+                                                : '-';
+                                        @endphp
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-3 py-1 text-sm font-medium rounded bg-cyan-100 text-cyan-700">
+                                                    {{ $branchCode }}
+                                                </span>
+                                            </td>
+
+                                            <td class="px-4 py-4 font-medium text-gray-700 whitespace-nowrap">
+                                                {{ $branchName }}
+                                            </td>
+
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-3 py-1 text-sm rounded bg-cyan-100 text-cyan-700">
+                                                    {{ $branchUserCount }} user
+                                                </span>
+                                            </td>
+
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                @if ($branchActive)
+                                                    <span
+                                                        class="px-3 py-1 text-sm text-green-700 bg-green-100 rounded">Aktif</span>
+                                                @else
+                                                    <span
+                                                        class="px-3 py-1 text-sm text-red-700 bg-red-100 rounded">Tidak
+                                                        Aktif</span>
+                                                @endif
+                                            </td>
+
+                                            <td class="px-4 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                {{ $branchCreated }}
+                                            </td>
+
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <div class="relative inline-block text-left">
+                                                    <button type="button"
+                                                        onclick="toggleDropdown({{ $branch->id }})"
+                                                        class="text-gray-400 hover:text-gray-600">
+                                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path
+                                                                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div id="dropdown-{{ $branch->id }}"
+                                                        class="fixed z-50 hidden w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                                        <div class="py-1">
+                                                            <a href="{{ route('gaji-pokok.detail', $branch) }}"
+                                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                Gaji Pokok Detail
+                                                            </a>
+                                                            <a href="{{ route('potongan.index', $branch) }}"
+                                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                Potongan Detail
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="py-6 text-center text-gray-500">
+                                                Data cabang belum tersedia
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                            </tbody> --}}
+
                         </table>
                     </div>
 
@@ -221,7 +338,7 @@
                     {{-- <h3 class="text-xl font-semibold text-gray-800">Import Data Gaji Pokok</h3> --}}
                     <h3 id="importModalTitle" class="text-lg font-semibold"></h3>
 
-                    <p class="mt-1 text-sm text-gray-500">Unggah file untuk menambahkan data Gaji Pokok secara massal
+                    <p class="mt-1 text-sm text-gray-500">Unggah file untuk menambahkan data Gaji secara massal
                     </p>
                 </div>
                 <button id="closeModal" type="button" class="text-gray-400 hover:text-gray-600">
@@ -474,22 +591,49 @@
 
 
 
+        // function toggleDropdown(id) {
+        //     document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+        //         if (el.id !== `dropdown-${id}`) {
+        //             el.classList.add('hidden');
+        //         }
+        //     });
+
+        //     document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+        // }
+
+        // document.addEventListener('click', function(e) {
+        //     if (!e.target.closest('.relative')) {
+        //         document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+        //             el.classList.add('hidden');
+        //         });
+        //     }
+        // });
         function toggleDropdown(id) {
+            event.stopPropagation();
+
+            const button = event.currentTarget;
+            const dropdown = document.getElementById(`dropdown-${id}`);
+
+            // Tutup dropdown lain
             document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                if (el.id !== `dropdown-${id}`) {
-                    el.classList.add('hidden');
-                }
+                if (el !== dropdown) el.classList.add('hidden');
             });
 
-            document.getElementById(`dropdown-${id}`).classList.toggle('hidden');
+            // Toggle
+            dropdown.classList.toggle('hidden');
+
+            if (!dropdown.classList.contains('hidden')) {
+                const rect = button.getBoundingClientRect();
+
+                dropdown.style.top = `${rect.bottom + 8}px`;
+                dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+            }
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-                    el.classList.add('hidden');
-                });
-            }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
         });
     </script>
 

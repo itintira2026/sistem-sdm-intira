@@ -7,15 +7,14 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\GajihPokokController;
-// use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\Payroll\PotonganController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
-
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -49,13 +48,14 @@ Route::middleware('auth')->group(function () {
         ->name('branches.users.destroy');
 
 
-  Route::get('/gaji-pokok/{gajihPokok}', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
+    //   Route::get('/gaji-pokok/{gajihPokok}', [GajihPokokController::class, 'show'])->name('gaji-pokok.show');
+    Route::get('/slip-gajih', [PayrollController::class, 'payrollsFo'])->name('gaji.fo');
+
+    Route::get('/gaji-pokok/{gajihPokok}', [GajihPokokController::class, 'show'])->name('gajih-pokok.show');
 
     Route::get('/payroll/{branch}/show', [PayrollController::class, 'show'])->name('gaji.show');
     Route::get('/gaji', [PayrollController::class, 'index'])->name('gaji.index');
-    // Route::get('/gaji-pokok/{branch}/detail', [GajihPokokController::class, 'detail'])->name('gaji-pokok.detail');
-    //    Route::get('/gaji-pokok/{gajihPokok}', [GajiPokokController::class, 'show'])
-    //      ->name('gaji-pokok.show');
+
     Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
     Route::get('/gaji-pokok/{branch}/create', [GajihPokokController::class, 'create'])->name('gaji-pokok.create');
     Route::post('/gaji-pokok/{branch}', [GajihPokokController::class, 'store'])->name('gaji-pokok.store');

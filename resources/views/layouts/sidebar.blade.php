@@ -256,8 +256,16 @@
         </div>
 
         <!-- Desktop Header -->
-        <header class="hidden bg-white border-b border-gray-200 lg:block shrink-0">
+        {{-- <header class="hidden bg-white border-b border-gray-200 lg:block shrink-0">
             <div class="px-6 py-3">
+                @isset($header)
+                    {{ $header }}
+                @endisset
+            </div>
+        </header> --}}
+        <!-- Header (Mobile & Desktop) -->
+        <header class="bg-white border-b border-gray-200 shrink-0">
+            <div class="px-4 py-3 sm:px-6">
                 @isset($header)
                     {{ $header }}
                 @endisset

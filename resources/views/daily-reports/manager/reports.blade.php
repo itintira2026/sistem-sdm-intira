@@ -532,11 +532,9 @@
         </div>
     </div>
 
-    {{-- Photo Modal --}}
-    <div id="photoModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75">
+    {{-- <div id="photoModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="relative w-full max-w-4xl bg-white rounded-lg">
-                {{-- Close Button --}}
                 <button onclick="closePhotoModal()"
                     class="absolute z-10 p-2 text-white bg-black bg-opacity-50 rounded-full top-4 right-4 hover:bg-opacity-75">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -545,18 +543,15 @@
                     </svg>
                 </button>
 
-                {{-- Modal Content --}}
                 <div class="p-6">
                     <h3 class="mb-4 text-lg font-semibold text-gray-800">Bukti Foto Laporan</h3>
                     <div id="photoModalContent" class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        {{-- Photos will be inserted here --}}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Photo Modal Script --}}
     <script>
         function showPhotos(reportId) {
             const photosDiv = document.getElementById(`photos-${reportId}`);
@@ -590,10 +585,101 @@
 
             // Show modal
             document.getElementById('photoModal').classList.remove('hidden');
+        };
+
+        function closePhotoModal() {
+            document.getElementById('photoModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('photoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePhotoModal();
+            }
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePhotoModal();
+            }
+        });
+    </script> --}}
+    {{-- Photo Modal --}}
+    <div id="photoModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-90">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative w-full max-w-6xl max-h-screen overflow-y-auto bg-white rounded-lg">
+                {{-- Close Button --}}
+                <button onclick="closePhotoModal()"
+                    class="sticky z-20 float-right p-2 text-white bg-red-600 rounded-full shadow-lg top-4 right-4 hover:bg-red-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                {{-- Modal Content --}}
+                <div class="p-6">
+                    <h3 class="mb-4 text-lg font-semibold text-gray-800">Bukti Foto Laporan</h3>
+                    <div id="photoModalContent" class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {{-- Photos will be inserted here --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Photo Modal Script --}}
+    <script>
+        function showPhotos(reportId) {
+            const photosDiv = document.getElementById(`photos-${reportId}`);
+            const photoItems = photosDiv.querySelectorAll('.photo-item');
+            const modalContent = document.getElementById('photoModalContent');
+
+            // Clear previous content
+            modalContent.innerHTML = '';
+
+            // Add photos to modal
+            photoItems.forEach((item, index) => {
+                const src = item.getAttribute('data-src');
+                const caption = item.getAttribute('data-caption');
+
+                const photoDiv = document.createElement('div');
+                photoDiv.className = 'relative group';
+                photoDiv.innerHTML = `
+                <div class="relative overflow-hidden transition border-2 border-gray-200 rounded-lg hover:border-teal-500">
+                    <img src="${src}" alt="Foto ${index + 1}"
+                        class="w-full h-auto transition-transform cursor-pointer group-hover:scale-105"
+                        onclick="openImageFullscreen('${src}')">
+                    <div class="absolute top-2 left-2">
+                        <span class="px-3 py-1 text-sm font-medium text-white bg-black rounded-full bg-opacity-70">
+                            📷 Foto ${index + 1}
+                        </span>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 transition opacity-0 bg-gradient-to-t from-black to-transparent group-hover:opacity-100">
+                        <button onclick="openImageFullscreen('${src}')" class="text-sm text-white hover:text-teal-300">
+                            🔍 Lihat Fullscreen
+                        </button>
+                    </div>
+                </div>
+                ${caption ? `<p class="px-2 mt-2 text-sm text-gray-600">${caption}</p>` : ''}
+            `;
+
+                modalContent.appendChild(photoDiv);
+            });
+
+            // Show modal
+            document.getElementById('photoModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent body scroll
         }
 
         function closePhotoModal() {
             document.getElementById('photoModal').classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restore body scroll
+        }
+
+        function openImageFullscreen(src) {
+            window.open(src, '_blank');
         }
 
         // Close modal when clicking outside

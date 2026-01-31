@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ImageHelper;
 use App\Models\Branch;
 use App\Models\BranchUser;
 use App\Models\DailyReport;
@@ -261,10 +262,30 @@ class DailyReportController extends Controller
         $report->save();
 
         // Upload photos
+        // if ($request->hasFile('photos')) {
+        //     foreach ($request->file('photos') as $index => $photo) {
+        //         $fileName = time() . '_' . $index . '.' . $photo->getClientOriginalExtension();
+        //         $filePath = $photo->storeAs('daily_reports/' . $report->id, $fileName, 'public');
+
+        //         DailyReportPhoto::create([
+        //             'daily_report_id' => $report->id,
+        //             'file_path' => $filePath,
+        //             'file_name' => $photo->getClientOriginalName(),
+        //             'keterangan' => $request->input('photo_keterangan.' . $index),
+        //         ]);
+        //     }
+        // }
+        // Upload photos
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $photo) {
-                $fileName = time() . '_' . $index . '.' . $photo->getClientOriginalExtension();
-                $filePath = $photo->storeAs('daily_reports/' . $report->id, $fileName, 'public');
+                // 🔥 COMPRESS & CONVERT TO WEBP
+                $filePath = ImageHelper::compressAndSave(
+                    $photo,
+                    'daily_reports/' . $report->id,
+                    1920, // max width
+                    1080, // max height
+                    80    // quality
+                );
 
                 DailyReportPhoto::create([
                     'daily_report_id' => $report->id,
@@ -365,10 +386,30 @@ class DailyReportController extends Controller
         }
 
         // Upload foto baru
+        // if ($request->hasFile('photos')) {
+        //     foreach ($request->file('photos') as $index => $photo) {
+        //         $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+        //         $filePath = $photo->storeAs('daily_reports/' . $dailyReport->id, $fileName, 'public');
+
+        //         DailyReportPhoto::create([
+        //             'daily_report_id' => $dailyReport->id,
+        //             'file_path' => $filePath,
+        //             'file_name' => $photo->getClientOriginalName(),
+        //             'keterangan' => $request->input('photo_keterangan.' . $index),
+        //         ]);
+        //     }
+        // }
+        // Upload foto baru
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $photo) {
-                $fileName = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                $filePath = $photo->storeAs('daily_reports/' . $dailyReport->id, $fileName, 'public');
+                // 🔥 COMPRESS & CONVERT TO WEBP
+                $filePath = ImageHelper::compressAndSave(
+                    $photo,
+                    'daily_reports/' . $dailyReport->id,
+                    1920, // max width
+                    1080, // max height
+                    80    // quality
+                );
 
                 DailyReportPhoto::create([
                     'daily_report_id' => $dailyReport->id,

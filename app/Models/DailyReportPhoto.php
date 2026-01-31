@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\ImageHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -59,13 +60,23 @@ class DailyReportPhoto extends Model
     // BOOT
     // ===============================
 
+    // protected static function boot()
+    // {
+    //     parent::boot();
+
+    //     static::deleting(function ($photo) {
+    //         // Auto delete file from storage when record is deleted
+    //         Storage::disk('public')->delete($photo->file_path);
+    //     });
+    // }
+
     protected static function boot()
     {
         parent::boot();
 
         static::deleting(function ($photo) {
             // Auto delete file from storage when record is deleted
-            Storage::disk('public')->delete($photo->file_path);
+            ImageHelper::delete($photo->file_path); // 🔥 GUNAKAN HELPER
         });
     }
 }

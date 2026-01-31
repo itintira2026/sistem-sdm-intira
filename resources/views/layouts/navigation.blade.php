@@ -40,12 +40,18 @@
                         <x-nav-link :href="route('contact90.index')" :active="request()->routeIs('contact90.*')">
                             {{ __('Contact 90') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('daily-reports.index')" :active="request()->routeIs('daily-reports.*')">
+                            {{ __('Daily Report') }}
+                        </x-nav-link>
                     @endrole
 
                     {{-- MANAGER MENU --}}
                     @role('manager|superadmin')
                         <x-nav-link :href="route('contact90.manager.dashboard')" :active="request()->routeIs('contact90.manager.*')">
                             {{ __('Manager - Contact 90') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('daily-reports.manager.index')" :active="request()->routeIs('daily-reports.manager.*')">
+                            {{ __('Manager - Daily Report') }}
                         </x-nav-link>
                     @endrole
                 </div>

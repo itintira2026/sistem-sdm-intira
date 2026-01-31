@@ -64,7 +64,7 @@ class GajihPokokImport implements
         }
 
         //
-
+        $bonus_revenue = $data['total_revenue'] * $data['persentase_revenue'] / 100;
 
         // ===============================
         // CARI CABANG
@@ -98,10 +98,14 @@ class GajihPokokImport implements
             'tunjangan_transportasi' => (int) ($data['tunjangan_transportasi'] ?? 0),
             'tunjangan_jabatan'      => (int) ($data['tunjangan_jabatan'] ?? 0),
             'tunjangan_komunikasi'   => (int) ($data['tunjangan_komunikasi'] ?? 0),
-            'potongan_bpjs'   => (int) ($data['potongan_bpjs'] ?? 0),
+            'ptg_bpjs_ketenagakerjaan'   => (int) ($data['potongan_bpjs_ketenagakerjaan'] ?? 0),
+            'ptg_bpjs_kesehatan'   => (int) ($data['potongan_bpjs_kesehatan'] ?? 0),
             'total_revenue'   => (int) ($data['total_revenue'] ?? 0),
+            'persentase_revenue'     => (int) $data['persentase_revenue'],
+            'bonus_revenue'   => (int) $bonus_revenue,
             'bulan'                  => (int) $data['bulan'],
             'tahun'                  => (int) $data['tahun'],
+            'hari_kerja'                  => (int) $data['hari_kerja'],
             'keterangan'             => $data['keterangan'] ?? null,
         ]);
     }

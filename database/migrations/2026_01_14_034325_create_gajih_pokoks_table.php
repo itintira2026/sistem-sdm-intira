@@ -17,10 +17,14 @@ return new class extends Migration
             $table->decimal('tunjangan_transportasi', 15, 2);
             $table->decimal('tunjangan_jabatan', 15, 2);
             $table->decimal('tunjangan_komunikasi', 15, 2);
-            $table->decimal('potongan_bpjs', 15, 2);
+            $table->decimal('ptg_bpjs_ketenagakerjaan', 15, 2);
+            $table->decimal('ptg_bpjs_kesehatan', 15, 2);
             $table->decimal('total_revenue', 15, 2);
+            $table->tinyInteger('persentase_revenue'); // 1-12
+            $table->decimal('bonus_revenue', 15, 2);
             $table->tinyInteger('bulan'); // 1-12
             $table->year('tahun'); // 2024, 2025
+            $table->tinyInteger('hari_kerja');
             $table->text('keterangan')->nullable();
             $table->timestamps();
 

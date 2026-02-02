@@ -53,6 +53,9 @@ class BranchController extends Controller
             'code'      => 'required|string|max:50|unique:branches,code',
             'phone'     => 'required|string|max:20',
             'address'   => 'required|string',
+            'timezone'  => 'required|string|max:100',
+            'longitude' => 'nullable|string|max:20',
+            'latitude'  => 'nullable|string|max:20',
             'is_active' => 'boolean',
         ]);
 
@@ -61,6 +64,9 @@ class BranchController extends Controller
             'code'      => $validated['code'],
             'phone'     => $validated['phone'],
             'address'   => $validated['address'],
+            'timezone'  => $validated['timezone'],
+            'longitude' => $validated['longitude'] ?? null,
+            'latitude'  => $validated['latitude'] ?? null,
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
@@ -87,6 +93,9 @@ class BranchController extends Controller
             'code'      => 'required|string|max:50|unique:branches,code,' . $branch->id,
             'phone'     => 'required|string|max:20',
             'address'   => 'required|string',
+            'timezone'  => 'required|string|max:100',
+            'longitude' => 'nullable|string|max:20',
+            'latitude'  => 'nullable|string|max:20',
             'is_active' => 'boolean',
         ]);
 
@@ -95,6 +104,9 @@ class BranchController extends Controller
             'code'      => $validated['code'],
             'phone'     => $validated['phone'],
             'address'   => $validated['address'],
+            'timezone'  => $validated['timezone'],
+            'longitude' => $validated['longitude'] ?? $branch->longitude,
+            'latitude'  => $validated['latitude'] ?? $branch->latitude,
             'is_active' => $validated['is_active'] ?? $branch->is_active,
         ]);
 

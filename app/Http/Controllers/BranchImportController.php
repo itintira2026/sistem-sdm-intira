@@ -114,16 +114,18 @@ class BranchImportController extends Controller
         // Buat data template
         $data = [
             [
-                'kode_cabang' => 'CAB001',
+                'kode_cabang' => 'CAB-001',
                 'nama_cabang' => 'Cabang Pusat',
                 'telepon' => '02112345678',
-                'alamat' => 'Jl. Contoh No. 123, Jakarta'
+                'alamat' => 'Jl. Contoh No. 123, Jakarta',
+                'timezone' => 'Asia/Jakarta'
             ],
             [
-                'kode_cabang' => 'CAB002',
+                'kode_cabang' => 'CAB-002',
                 'nama_cabang' => 'Cabang Bandung',
                 'telepon' => '02287654321',
-                'alamat' => 'Jl. Contoh No. 456, Bandung'
+                'alamat' => 'Jl. Contoh No. 456, Bandung',
+                'timezone' => 'Asia/Jakarta'
             ]
         ];
 
@@ -143,7 +145,7 @@ class BranchImportController extends Controller
 
             public function headings(): array
             {
-                return ['kode_cabang', 'nama_cabang', 'telepon', 'alamat'];
+                return ['kode_cabang', 'nama_cabang', 'telepon', 'alamat', 'timezone'];
             }
         }, 'template_import_cabang.xlsx');
     }

@@ -63,7 +63,7 @@
                                 <div>
                                     <label class="text-sm font-medium text-gray-500">Cabang</label>
                                     <p class="text-gray-900 font-semibold mt-1">
-                                    {{ $gajihPokok->branchUser->branch->name
+                                        {{ $gajihPokok->branchUser->branch->name
                                         }}</p>
                                 </div>
                                 <div>
@@ -141,88 +141,103 @@
                         </div>
                     </div>
 
-                    <!-- Tabel Potongan & Tambahan -->
-                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Potongan & Tambahan</h3>
-                            <a href="{{ route('potongan.create', ['branch' => $gajihPokok->branchUser->branch_id, 'branch_user_id' => $gajihPokok->branch_user_id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
-                                class="text-sm font-medium text-teal-600 hover:text-teal-700">
-                                + Tambah
-                            </a>
-                        </div>
+                  <!-- Tabel Potongan & Tambahan -->
+<div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Potongan Keterlambatan</h3>
+        <span class="text-sm text-gray-500">Periode: {{ $gajihPokok->periode }}</span>
+    </div>
 
-                        <div class="p-6 overflow-x-auto">
-                            @if($potongans->isEmpty())
-                            <div class="text-center py-8">
-                                <p class="text-gray-500">Belum ada potongan atau tambahan untuk periode ini</p>
-                            </div>
-                            @else
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Tanggal</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Divisi</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Keterangan</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Jenis</th>
-                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                            Nominal</th>
-                                    </tr>
-                                </thead>
+    <div class="p-6 overflow-x-auto">
+        @if(empty($dataPotongan))
+        <div class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-gray-500 mt-2">Tidak ada keterlambatan untuk periode ini</p>
+            <p class="text-sm text-green-600 mt-1">Karyawan selalu tepat waktu! 🎉</p>
+        </div>
+        @else
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Tanggal</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Jam Check In</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Keterlambatan</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Keterangan</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                        Potongan</th>
+                </tr>
+            </thead>
 
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($potongans as $item)
-                                    <tr>
-                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $item->tanggal->format('d M Y')
-                                            }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-700">{{ $item->divisi }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-700">{{ $item->keterangan }}</td>
-                                        <td class="px-4 py-3">
-                                            @if($item->jenis === 'potongan')
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-600">
-                                                Potongan
-                                            </span>
-                                            @else
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-600">
-                                                Tambahan
-                                            </span>
-                                            @endif
-                                        </td>
-                                        <td
-                                            class="px-4 py-3 text-sm text-right font-semibold {{ $item->jenis === 'potongan' ? 'text-red-600' : 'text-green-600' }}">
-                                            {{ $item->jenis === 'potongan' ? '-' : '+' }} Rp {{
-                                            number_format($item->amount, 0, ',', '.') }}
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @foreach($dataPotongan as $item)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        {{ Carbon\Carbon::parse($item['tanggal'])->format('d M Y') }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-700">
+                        {{ $item['jam_check_in'] }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-600">
+                            {{ $item['menit_terlambat'] }} menit
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-700">
+                        {{ $item['keterangan'] }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">
+                        - Rp {{ number_format($item['potongan'], 0, ',', '.') }}
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
 
-                                <tfoot class="bg-gray-50">
-                                    <tr>
-                                        <td colspan="4"
-                                            class="px-4 py-3 text-sm font-semibold text-gray-700 text-right">Total
-                                            Potongan:</td>
-                                        <td class="px-4 py-3 text-sm font-bold text-red-600 text-right">- Rp {{
-                                            number_format($totalPotongan, 0, ',', '.') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="4"
-                                            class="px-4 py-3 text-sm font-semibold text-gray-700 text-right">Total
-                                            Tambahan:</td>
-                                        <td class="px-4 py-3 text-sm font-bold text-green-600 text-right">+ Rp {{
-                                            number_format($totalTambahan, 0, ',', '.') }}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            @endif
-                        </div>
-                    </div>
+            <tfoot class="bg-gray-50">
+                <tr>
+                    <td colspan="4" class="px-4 py-3 text-sm font-semibold text-gray-700 text-right">
+                        Total Potongan:
+                    </td>
+                    <td class="px-4 py-3 text-sm font-bold text-red-600 text-right">
+                        - Rp {{ number_format($totalPotongan, 0, ',', '.') }}
+                    </td>
+                </tr>
+                @if($totalTambahan > 0)
+                <tr>
+                    <td colspan="4" class="px-4 py-3 text-sm font-semibold text-gray-700 text-right">
+                        Total Tambahan:
+                    </td>
+                    <td class="px-4 py-3 text-sm font-bold text-green-600 text-right">
+                        + Rp {{ number_format($totalTambahan, 0, ',', '.') }}
+                    </td>
+                </tr>
+                @endif
+            </tfoot>
+        </table>
 
+        <!-- Info potongan per menit -->
+        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+            <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                    <p class="text-sm font-medium text-blue-900">Informasi Potongan</p>
+                    <p class="text-xs text-blue-700 mt-1">
+                        • Shift 1 (08:00 - 12:00): Potongan Rp 5.000/menit keterlambatan<br>
+                        • Shift 2 (13:00 - 21:00): Potongan Rp 5.000/menit keterlambatan
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
                     <!-- Notes Card -->
                     @if($gajihPokok->keterangan)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -328,7 +343,7 @@
                                 @foreach($riwayatGaji as $index => $riwayat)
 
                                 <!-- Ganti dari gajih-pokok.show menjadi gaji-pokok.show -->
-                                <a href="{{ route('gajih-pokok.show', ['gajihPokok' => $initialGajihPokok->id, 'bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun]) }}"
+                                <a href="{{ route('gaji-pokok.show', ['gajihPokok' => $initialGajihPokok->id, 'bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun]) }}"
                                     class="block transition-all hover:shadow-md">
                                     <div
                                         class="flex items-center justify-between p-4 rounded-lg border {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' : 'bg-gray-50 border-gray-200 hover:border-blue-300' }}">

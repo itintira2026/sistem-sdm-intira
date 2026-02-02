@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Branch;
 use App\Models\GajihPokok;
 use App\Models\BranchUser;
+use App\Models\Presensi;
 use Carbon\Carbon;
 
 class GajihPokokController extends Controller
@@ -266,13 +267,86 @@ class GajihPokokController extends Controller
     }
 
 
-    public function show($id)
+//   public function show($id)
+// {
+//     // Cek apakah ada parameter bulan dan tahun dari request
+//     $requestedBulan = request('bulan');
+//     $requestedTahun = request('tahun');
+    
+//     // Find gaji pokok pertama untuk mendapatkan user_id
+//     $initialGajihPokok = GajihPokok::with([
+//         'branchUser' => function($query) {
+//             $query->with(['user.roles', 'branch']);
+//         }
+//     ])->findOrFail($id);
+    
+//     // Pastikan branchUser ada
+//     if (!$initialGajihPokok->branchUser) {
+//         return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
+//     }
+    
+//     // Jika ada parameter bulan dan tahun, ambil data untuk periode tersebut
+//     if ($requestedBulan && $requestedTahun) {
+//         $gajihPokok = GajihPokok::with([
+//             'branchUser' => function ($query) {
+//                 $query->with(['user.roles', 'branch']);
+//             }
+//         ])
+//         ->where('user_id', $initialGajihPokok->user_id) // ✅ UBAH KE user_id
+//         ->where('bulan', $requestedBulan)
+//         ->where('tahun', $requestedTahun)
+//         ->first();
+
+//         // Jika tidak ditemukan untuk periode tersebut
+//         if (!$gajihPokok) {
+//             return redirect()->back()->with('error', 'Data gaji untuk periode tersebut tidak ditemukan!');
+//         }
+//     } else {
+//         // Jika tidak ada parameter, gunakan data initial
+//         $gajihPokok = $initialGajihPokok;
+//     }
+
+//     // Get potongan & tambahan untuk periode yang sedang ditampilkan
+//     $potongans = $gajihPokok->branchUser->potongans()
+//         ->where('bulan', $gajihPokok->bulan)
+//         ->where('tahun', $gajihPokok->tahun)
+//         ->orderBy('tanggal', 'asc')
+//         ->get();
+
+//     // Hitung total potongan & tambahan
+//     $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
+//     $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
+    
+//     // Hitung gaji
+//     $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
+//     $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
+
+//     // Get riwayat gaji pokok (6 bulan terakhir)
+//     $riwayatGaji = GajihPokok::where('user_id', $gajihPokok->user_id) // ✅ UBAH KE user_id
+//         ->orderBy('tahun', 'desc')
+//         ->orderBy('bulan', 'desc')
+//         ->take(6)
+//         ->get();
+
+//     return view('payroll.gajih_pokok.show', compact(
+//         'gajihPokok',
+//         'potongans',
+//         'totalPotongan',
+//         'totalTambahan',
+//         'gajiKotor',
+//         'gajiBersih',
+//         'riwayatGaji',
+//         'initialGajihPokok'
+//     ));
+// }
+
+public function show($id)
 {
     // Cek apakah ada parameter bulan dan tahun dari request
     $requestedBulan = request('bulan');
     $requestedTahun = request('tahun');
     
-    // Find gaji pokok pertama untuk mendapatkan branch_user_id
+    // Find gaji pokok pertama untuk mendapatkan user_id
     $initialGajihPokok = GajihPokok::with([
         'branchUser' => function($query) {
             $query->with(['user.roles', 'branch']);
@@ -290,79 +364,77 @@ class GajihPokokController extends Controller
             'branchUser' => function ($query) {
                 $query->with(['user.roles', 'branch']);
             }
-        ])->findOrFail($id);
+        ])
+        ->where('user_id', $initialGajihPokok->user_id)
+        ->where('bulan', $requestedBulan)
+        ->where('tahun', $requestedTahun)
+        ->first();
 
-        // Pastikan branchUser ada
-        if (!$gajihPokok->branchUser) {
-            return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
+        // Jika tidak ditemukan untuk periode tersebut
+        if (!$gajihPokok) {
+            return redirect()->back()->with('error', 'Data gaji untuk periode tersebut tidak ditemukan!');
         }
-
-        // Get potongan & tambahan
-        $potongans = $gajihPokok->branchUser->potongans()
-            ->where('bulan', $gajihPokok->bulan)
-            ->where('tahun', $gajihPokok->tahun)
-            ->orderBy('tanggal', 'asc')
-            ->get();
-
-        // Hitung total potongan & tambahan
-        $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
-        $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
-
-        // Hitung gaji
-        $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
-        $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
-
-        // Get riwayat gaji pokok (3 bulan terakhir)
-        $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
-            ->orderBy('tahun', 'desc')
-            ->orderBy('bulan', 'desc')
-            ->take(3)
-            ->get();
-
-        return view('payroll.gajih_pokok.show', compact(
-            'gajihPokok',
-            'potongans',
-            'totalPotongan',
-            'totalTambahan',
-            'gajiKotor',
-            'gajiBersih',
-            'riwayatGaji'
-        ));
+    } else {
+        // Jika tidak ada parameter, gunakan data initial
+        $gajihPokok = $initialGajihPokok;
     }
 
-    // Get potongan & tambahan untuk periode yang sedang ditampilkan
-    $potongans = $gajihPokok->branchUser->potongans()
-                            ->where('bulan', $gajihPokok->bulan)
-                            ->where('tahun', $gajihPokok->tahun)
-                            ->orderBy('tanggal', 'asc')
-                            ->get();
+    // ===== AMBIL DATA PRESENSI & HITUNG POTONGAN =====
+    $presensis = Presensi::forUser($gajihPokok->user_id)
+        ->forMonth($gajihPokok->bulan, $gajihPokok->tahun)
+        ->checkIn()
+        ->orderBy('tanggal', 'asc')
+        ->get();
 
-    // Hitung total potongan & tambahan
-    $totalPotongan = $potongans->where('jenis', 'potongan')->sum('amount');
-    $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
+    // Konfigurasi potongan per menit (bisa disimpan di config atau database)
+    $potonganPerMenit = 5000; // Rp 5.000 per menit
+    
+    // Hitung potongan untuk setiap presensi
+    $dataPotongan = [];
+    $totalPotongan = 0;
+    
+    foreach ($presensis as $presensi) {
+        $hitungan = $presensi->hitungPotonganTerlambat($potonganPerMenit);
+        
+        if ($hitungan['potongan'] > 0) {
+            $dataPotongan[] = [
+                'tanggal' => $presensi->tanggal,
+                'jam_check_in' => $hitungan['jam_check_in'],
+                'menit_terlambat' => $hitungan['menit_terlambat'],
+                'potongan' => $hitungan['potongan'],
+                'keterangan' => $presensi->keterangan ?? 'Keterlambatan ' . $hitungan['menit_terlambat'] . ' menit',
+            ];
+            
+            $totalPotongan += $hitungan['potongan'];
+        }
+    }
+    
+    // Total tambahan (bisa dari bonus, lembur, dll - untuk sementara 0)
+    $totalTambahan = 0;
     
     // Hitung gaji
     $gajiKotor = $gajihPokok->total_gaji_kotor; // Gaji pokok + semua tunjangan
     $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
 
     // Get riwayat gaji pokok (6 bulan terakhir)
-    $riwayatGaji = GajihPokok::where('branch_user_id', $gajihPokok->branch_user_id)
-                             ->orderBy('tahun', 'desc')
-                             ->orderBy('bulan', 'desc')
-                             ->take(6)
-                             ->get();
+    $riwayatGaji = GajihPokok::where('user_id', $gajihPokok->user_id)
+        ->orderBy('tahun', 'desc')
+        ->orderBy('bulan', 'desc')
+        ->take(6)
+        ->get();
 
     return view('payroll.gajih_pokok.show', compact(
         'gajihPokok',
-        'potongans',
+        'dataPotongan',
         'totalPotongan',
         'totalTambahan',
         'gajiKotor',
         'gajiBersih',
         'riwayatGaji',
-        'initialGajihPokok' // Kirim juga data awal untuk referensi ID
+        'initialGajihPokok'
     ));
 }
+
     public function destroy(GajihPokok $gajiPokok)
     {
         $gajiPokok->delete();

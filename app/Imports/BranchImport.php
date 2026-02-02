@@ -39,7 +39,8 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
             empty($normalizedRow['kode_cabang']) &&
             empty($normalizedRow['nama_cabang']) &&
             empty($normalizedRow['telepon']) &&
-            empty($normalizedRow['alamat'])
+            empty($normalizedRow['alamat']) &&
+            empty($normalizedRow['timezone'])
         ) {
             return null;
         }
@@ -50,6 +51,7 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
             'name' => $normalizedRow['nama_cabang'] ?? null,
             'phone' => $normalizedRow['telepon'] ?? null,
             'address' => $normalizedRow['alamat'] ?? null,
+            'timezone' => $normalizedRow['timezone'] ?? null,
             'is_active' => true,
         ]);
 
@@ -93,6 +95,7 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
                 'max:20'
             ],
             'alamat' => ['nullable', 'string'],
+            'timezone' => ['required', 'string', 'max:100'],
         ];
     }
 
@@ -105,6 +108,7 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
             'kode_cabang.required' => 'Kode cabang wajib diisi',
             'kode_cabang.unique' => 'Kode cabang :input sudah ada di database',
             'nama_cabang.required' => 'Nama cabang wajib diisi',
+            'timezone.required' => 'Timezone wajib diisi',
         ];
     }
 
@@ -118,6 +122,7 @@ class BranchImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
             'nama_cabang' => 'Nama Cabang',
             'telepon' => 'Telepon',
             'alamat' => 'Alamat',
+            'timezone' => 'Timezone',
         ];
     }
 

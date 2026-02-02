@@ -11,6 +11,9 @@ class Branch extends Model
         'phone',
         'address',
         'code',
+        'timezone',
+        'longitude',
+        'latitude',
         'is_active',
     ];
 

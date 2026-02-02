@@ -15,10 +15,14 @@ class GajihPokok extends Model
         'tunjangan_transportasi',
         'tunjangan_jabatan',
         'tunjangan_komunikasi',
-        'potongan_bpjs',
+        'ptg_bpjs_ketenagakerjaan',
+        'ptg_bpjs_kesehatan',
         'total_revenue',
+        'persentase_revenue',
+        'bonus_revenue',
         'bulan',
         'tahun',
+        'hari_kerja',
         'keterangan',
     ];
 
@@ -28,10 +32,14 @@ class GajihPokok extends Model
         'tunjangan_transportasi' => 'decimal:2',
         'tunjangan_jabatan' => 'decimal:2',
         'tunjangan_komunikasi' => 'decimal:2',
-        'potongan_bpjs' => 'decimal:2',
+        'ptg_bpjs_ketenagakerjaan' => 'decimal:2',
+        'ptg_bpjs_kesehatan' => 'decimal:2',
         'total_revenue' => 'decimal:2',
+        'persentase_revenue' => 'integer',
+        'bonus_revenue' => 'decimal:2',
         'bulan' => 'integer',
         'tahun' => 'integer',
+        'hari_kerja' => 'integer',
     ];
 
     /**
@@ -100,6 +108,7 @@ class GajihPokok extends Model
     {
         return $this->amount + $this->total_tunjangan;
     }
+
     /**
      * Get nama bulan
      */
@@ -145,26 +154,6 @@ class GajihPokok extends Model
     {
         return $query->where('tahun', $tahun);
     }
-
-    /**
-     * Scope untuk branch tertentu
-     */
-    // public function scopeForBranch($query, $branchId)
-    // {
-    //     return $query->whereHas('branchUser', function ($q) use ($branchId) {
-    //         $q->where('branch_id', $branchId);
-    //     });
-    // }
-
-    /**
-     * Scope untuk user tertentu
-     */
-    // public function scopeForUser($query, $userId)
-    // {
-    //     return $query->whereHas('branchUser', function ($q) use ($userId) {
-    //         $q->where('user_id', $userId);
-    //     });
-    // }
 
     /**
      * Ambil USER dari gaji pokok

@@ -43,6 +43,52 @@ class GajihPokok extends Model
     ];
 
     /**
+     * Relasi ke BranchUser
+     */
+    // public function branchUser()
+    // {
+    //     return $this->belongsTo(BranchUser::class);
+    // }
+
+ public function branchUser()
+{
+    return $this->belongsTo(BranchUser::class, 'user_id', 'user_id')
+                ->whereHas('user', function($query) {
+                    $query->where('is_active', true);
+                });
+}
+
+    /**
+     * Get user via branch_user
+     */
+    public function user()
+    {
+        return $this->hasOneThrough(
+            User::class,
+            BranchUser::class,
+            'id', // Foreign key on branch_user table
+            'id', // Foreign key on users table
+            'branch_user_id', // Local key on gaji_pokok table
+            'user_id' // Local key on branch_user table
+        );
+    }
+
+    // /**
+    //  * Get branch via branch_user
+    //  */
+    // public function branch()
+    // {
+    //     return $this->hasOneThrough(
+    //         Branch::class,
+    //         BranchUser::class,
+    //         'id', // Foreign key on branch_user table
+    //         'id', // Foreign key on branches table
+    //         'branch_user_id', // Local key on gaji_pokok table
+    //         'branch_id' // Local key on branch_user table
+    //     );
+    // }
+
+    /**
      * Get formatted amount
      */
     public function getFormattedAmountAttribute()
@@ -112,10 +158,10 @@ class GajihPokok extends Model
     /**
      * Ambil USER dari gaji pokok
      */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class, 'user_id');
+    // }
 
     /**
      * Ambil BRANCH lewat branch_users

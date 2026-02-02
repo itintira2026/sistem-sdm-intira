@@ -26,6 +26,7 @@ class BranchUser extends Pivot
         'branch_id',
         'user_id',
         'is_manager',
+        'is_active'
     ];
 
     /**
@@ -33,6 +34,7 @@ class BranchUser extends Pivot
      */
     protected $casts = [
         'is_manager' => 'boolean',
+        'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

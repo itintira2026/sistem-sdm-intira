@@ -64,6 +64,22 @@ Route::middleware('auth')->group(function () {
             // Delete Laporan
             Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
         });
+
+        Route::prefix('daily-reports-3hour-manager')->name('daily-reports.3hour-manager.')->group(function () {
+            // Dashboard & List Laporan
+            // Route::get('/', [DailyReportController::class, 'index'])->name('index');
+            Route::get('/', fn() => view('daily-reports.3hour-manager.index'))->name('index');
+            // Create Laporan
+            // Route::get('/create', [DailyReportController::class, 'create'])->name('create');
+            // Route::post('/', [DailyReportController::class, 'store'])->name('store');
+
+            // Edit & Update Laporan
+            // Route::get('/{dailyReport}/edit', [DailyReportController::class, 'edit'])->name('edit');
+            // Route::put('/{dailyReport}', [DailyReportController::class, 'update'])->name('update');
+
+            // Delete Laporan
+            // Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
+        });
     });
 
     Route::middleware('role:manager|superadmin')->group(function () {

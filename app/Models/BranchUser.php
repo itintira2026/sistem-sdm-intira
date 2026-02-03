@@ -121,11 +121,14 @@ class BranchUser extends Pivot
 
     public function gajihPokok()
     {
-        return $this->hasMany(
-            GajihPokok::class,
-            'branch_user_id', // FK di gajih_pokoks
-            'id'              // PK di branch_users
-        );
+        // return $this->hasMany(
+        //     GajihPokok::class,
+        //     'branch_user_id', // FK di gajih_pokoks
+        //     'id'              // PK di branch_users
+        // );
+        return $this->hasMany(GajihPokok::class, 'user_id', 'user_id');
+
+
     }
 
     /**

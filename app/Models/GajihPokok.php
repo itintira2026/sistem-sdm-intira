@@ -52,6 +52,8 @@ class GajihPokok extends Model
 
  public function branchUser()
 {
+
+
     return $this->belongsTo(BranchUser::class, 'user_id', 'user_id')
                 ->whereHas('user', function($query) {
                     $query->where('is_active', true);

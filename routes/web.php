@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Payroll\PotonganImportController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ThreeHourReportManagerController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Contact90Controller;
 use App\Http\Controllers\DailyReportController;
@@ -96,20 +100,21 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
         });
 
+        // Route::prefix('daily-reports-3hour-manager')->name('daily-reports.3hour-manager.')->group(function () {
+        //     // Dashboard & List Laporan
+        //     Route::get('/create', [ThreeHourReportManagerController::class, 'create'])->name('create');
+        // });
+
+        // File: routes/web.php
+        // Tambahkan di dalam group Route yang sudah ada
+
         Route::prefix('daily-reports-3hour-manager')->name('daily-reports.3hour-manager.')->group(function () {
             // Dashboard & List Laporan
-            // Route::get('/', [DailyReportController::class, 'index'])->name('index');
-            Route::get('/', fn () => view('daily-reports.3hour-manager.index'))->name('index');
-            // Create Laporan
-            // Route::get('/create', [DailyReportController::class, 'create'])->name('create');
-            // Route::post('/', [DailyReportController::class, 'store'])->name('store');
-
-            // Edit & Update Laporan
-            // Route::get('/{dailyReport}/edit', [DailyReportController::class, 'edit'])->name('edit');
-            // Route::put('/{dailyReport}', [DailyReportController::class, 'update'])->name('update');
-
-            // Delete Laporan
-            // Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
+            Route::get('/', [ThreeHourReportManagerController::class, 'index'])->name('index');
+            // Form Input
+            Route::get('/create', [ThreeHourReportManagerController::class, 'create'])->name('create');
+            // Simpan Laporan
+            Route::post('/', [ThreeHourReportManagerController::class, 'store'])->name('store');
         });
     });
 

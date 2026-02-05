@@ -36,6 +36,16 @@ class ThreeHourReportManager extends Model
     {
         return $this->hasMany(Revenue::class);
     }
+    public function omzets()
+    {
+        return $this->hasMany(Omzet::class);
+    }
+
+    public function nasabahs()
+    {
+        return $this->hasMany(Nasabah::class);
+    }
+
 
     // ===============================
     // ACCESSORS

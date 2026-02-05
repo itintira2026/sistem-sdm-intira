@@ -273,13 +273,35 @@
     {{-- JavaScript --}}
     <script>
         // Update current time setiap detik
+        // setInterval(() => {
+        //     const timeEl = document.getElementById('currentTime');
+        //     if (timeEl) {
+        //         const now = new Date();
+        //         timeEl.textContent = now.toTimeString().split(' ')[0];
+        //     }
+        // }, 1000);
+        // Server time sync
+        @if (!$needShiftSelection)
+        let serverTime = {{ $serverTimestamp }} * 1000; // Convert to milliseconds
+        const branchTimezone = '{{ \App\Helpers\TimeHelper::getTimezoneStringForView($branchTimezone) }}';
+
+        // Update current time setiap detik (synced dengan server)
         setInterval(() => {
+            serverTime += 1000; // Increment 1 detik
+            
             const timeEl = document.getElementById('currentTime');
             if (timeEl) {
-                const now = new Date();
-                timeEl.textContent = now.toTimeString().split(' ')[0];
+                const date = new Date(serverTime);
+                timeEl.textContent = date.toLocaleTimeString('id-ID', {
+                    timeZone: branchTimezone,
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
             }
         }, 1000);
+        @endif
 
         // Countdown timers
         function updateCountdowns() {

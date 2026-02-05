@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Validasi Laporan Harian
@@ -9,7 +9,7 @@
                     Review dan validasi laporan harian cabang
                 </p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-3 mt-3 md:mt-0">
                 <a href="{{ route('daily-reports.manager.dashboard', ['tanggal' => $tanggal]) }}"
                     class="flex items-center gap-2 px-4 py-2 text-white transition bg-gray-500 rounded-lg hover:bg-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

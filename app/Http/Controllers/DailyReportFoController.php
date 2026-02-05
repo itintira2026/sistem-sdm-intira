@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DailyReportFOExport;
 use App\Helpers\ImageHelper;
 use App\Helpers\ShiftHelper;
 use App\Helpers\TimeHelper;
 use App\Models\Branch;
 use App\Models\DailyReportFO;
 use App\Models\DailyReportFOPhoto;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
-use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DailyReportFoController extends Controller
 {
@@ -43,7 +43,7 @@ class DailyReportFoController extends Controller
         $selectedShift = ShiftHelper::determineShift($user->id);
 
         // Jika belum pilih shift, redirect ke modal pilih shift
-        if (!$selectedShift) {
+        if (! $selectedShift) {
             return view('daily-reports-fo.index', [
                 'branch' => $branch,
                 'needShiftSelection' => true,
@@ -79,7 +79,7 @@ class DailyReportFoController extends Controller
                 'window' => TimeHelper::getSlotWindowRange($slotTime, $branch->id, $today),
                 'existing_report' => $existingReport,
                 'has_report' => $existingReport !== null,
-                'can_upload' => $status === 'open' && !$existingReport,
+                'can_upload' => $status === 'open' && ! $existingReport,
                 'can_edit' => $status === 'open' && $existingReport,
                 'time_until_open' => $status === 'waiting' ? TimeHelper::getTimeUntilSlotOpens($slotTime, $branch->id, $today) : null,
                 'time_remaining' => $status === 'open' ? TimeHelper::getRemainingTimeInSlot($slotTime, $branch->id, $today) : null,
@@ -101,6 +101,8 @@ class DailyReportFoController extends Controller
             'slotData' => $slotData,
             'stats' => $stats,
             'today' => $today,
+            'serverTimestamp' => $branchTime->timestamp,
+            'branchTimezone' => $branch->timezone,
         ]);
     }
 
@@ -117,7 +119,7 @@ class DailyReportFoController extends Controller
         ]);
 
         // Check if user can still change shift (belum ada laporan hari ini)
-        if (!ShiftHelper::canChangeShiftToday($user->id)) {
+        if (! ShiftHelper::canChangeShiftToday($user->id)) {
             return back()->with('error', 'Shift sudah terkunci karena Anda sudah membuat laporan hari ini.');
         }
 
@@ -125,7 +127,7 @@ class DailyReportFoController extends Controller
         ShiftHelper::setTodayShift($validated['shift']);
 
         return redirect()->route('daily-reports-fo.index')
-            ->with('success', 'Shift ' . config('daily_report_fo.shifts')[$validated['shift']]['label'] . ' berhasil dipilih!');
+            ->with('success', 'Shift '.config('daily_report_fo.shifts')[$validated['shift']]['label'].' berhasil dipilih!');
     }
 
     /**
@@ -136,7 +138,7 @@ class DailyReportFoController extends Controller
         $user = Auth::user();
         $branch = $user->branches->first();
 
-        if (!$branch) {
+        if (! $branch) {
             return back()->with('error', 'Anda belum terdaftar di cabang manapun.');
         }
 
@@ -146,7 +148,7 @@ class DailyReportFoController extends Controller
         // Get shift
         $selectedShift = ShiftHelper::determineShift($user->id);
 
-        if (!$selectedShift) {
+        if (! $selectedShift) {
             return redirect()->route('daily-reports-fo.index')
                 ->with('error', 'Silakan pilih shift terlebih dahulu.');
         }
@@ -154,7 +156,7 @@ class DailyReportFoController extends Controller
         // Get slot config
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
-        if (!$slotConfig) {
+        if (! $slotConfig) {
             return back()->with('error', 'Slot tidak valid.');
         }
 
@@ -200,7 +202,7 @@ class DailyReportFoController extends Controller
         $user = Auth::user();
         $branch = $user->branches->first();
 
-        if (!$branch) {
+        if (! $branch) {
             return back()->with('error', 'Anda belum terdaftar di cabang manapun.');
         }
 
@@ -210,7 +212,7 @@ class DailyReportFoController extends Controller
         // Get shift
         $selectedShift = ShiftHelper::determineShift($user->id);
 
-        if (!$selectedShift) {
+        if (! $selectedShift) {
             return redirect()->route('daily-reports-fo.index')
                 ->with('error', 'Silakan pilih shift terlebih dahulu.');
         }
@@ -218,14 +220,14 @@ class DailyReportFoController extends Controller
         // Get slot config
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
-        if (!$slotConfig) {
+        if (! $slotConfig) {
             return back()->with('error', 'Slot tidak valid.');
         }
 
         $slotTime = $slotConfig['slot_time'];
 
         // Check if slot is open
-        if (!TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
+        if (! TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
             return back()->with('error', 'Window upload untuk slot ini sudah ditutup.');
         }
 
@@ -315,7 +317,7 @@ class DailyReportFoController extends Controller
         $user = Auth::user();
         $branch = $user->branches->first();
 
-        if (!$branch) {
+        if (! $branch) {
             return back()->with('error', 'Anda belum terdaftar di cabang manapun.');
         }
 
@@ -325,7 +327,7 @@ class DailyReportFoController extends Controller
         // Get shift
         $selectedShift = ShiftHelper::determineShift($user->id);
 
-        if (!$selectedShift) {
+        if (! $selectedShift) {
             return redirect()->route('daily-reports-fo.index')
                 ->with('error', 'Silakan pilih shift terlebih dahulu.');
         }
@@ -333,14 +335,14 @@ class DailyReportFoController extends Controller
         // Get slot config
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
-        if (!$slotConfig) {
+        if (! $slotConfig) {
             return back()->with('error', 'Slot tidak valid.');
         }
 
         $slotTime = $slotConfig['slot_time'];
 
         // Check if slot is still open
-        if (!TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
+        if (! TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
             return back()->with('error', 'Window upload untuk slot ini sudah ditutup. Tidak bisa edit.');
         }
 
@@ -436,7 +438,7 @@ class DailyReportFoController extends Controller
         $user = Auth::user();
         $branch = $user->branches->first();
 
-        if (!$branch) {
+        if (! $branch) {
             return back()->with('error', 'Anda belum terdaftar di cabang manapun.');
         }
 
@@ -515,7 +517,7 @@ class DailyReportFoController extends Controller
         $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
         $selectedBranch = $managedBranches->find($selectedBranchId);
 
-        if (!$selectedBranch) {
+        if (! $selectedBranch) {
             abort(403, 'Anda tidak memiliki akses ke cabang ini.');
         }
 
@@ -603,7 +605,7 @@ class DailyReportFoController extends Controller
         $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
         $selectedBranch = $managedBranches->find($selectedBranchId);
 
-        if (!$selectedBranch) {
+        if (! $selectedBranch) {
             abort(403, 'Anda tidak memiliki akses ke cabang ini.');
         }
 
@@ -627,6 +629,7 @@ class DailyReportFoController extends Controller
      */
     public function managerFODetail(Request $request, $userId)
     {
+        // dd($userId, $request);
         $user = Auth::user();
         $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
         $dateTo = $request->input('date_to', now()->toDateString());
@@ -635,7 +638,7 @@ class DailyReportFoController extends Controller
         $foUser = User::findOrFail($userId);
 
         // Check permission
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $managedBranchIds = $user->managedBranches->pluck('id');
             $foUserBranchIds = $foUser->branches->pluck('id');
 
@@ -698,7 +701,7 @@ class DailyReportFoController extends Controller
         $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
         $selectedBranch = $managedBranches->find($selectedBranchId);
 
-        if (!$selectedBranch) {
+        if (! $selectedBranch) {
             abort(403, 'Anda tidak memiliki akses ke cabang ini.');
         }
 
@@ -752,10 +755,10 @@ class DailyReportFoController extends Controller
         $report = DailyReportFO::with(['user', 'branch', 'photos'])->findOrFail($reportId);
 
         // Check permission
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $managedBranchIds = $user->managedBranches->pluck('id');
 
-            if (!$managedBranchIds->contains($report->branch_id)) {
+            if (! $managedBranchIds->contains($report->branch_id)) {
                 abort(403, 'Anda tidak memiliki akses ke laporan ini.');
             }
         }
@@ -772,11 +775,11 @@ class DailyReportFoController extends Controller
     /**
      * Manager - Export Excel
      */
-    public function managerExport(Request $request)
-    {
-        // TODO: Implement Excel export using Laravel Excel
-        return back()->with('info', 'Fitur export sedang dalam pengembangan.');
-    }
+    // public function managerExport(Request $request)
+    // {
+    //     // TODO: Implement Excel export using Laravel Excel
+    //     return back()->with('info', 'Fitur export sedang dalam pengembangan.');
+    // }
 
     // ==============================
     // MARKETING SECTION
@@ -972,9 +975,87 @@ class DailyReportFoController extends Controller
     /**
      * Marketing - Export
      */
+    // public function marketingExport(Request $request)
+    // {
+    //     // TODO: Implement Excel/PDF export
+    //     return back()->with('info', 'Fitur export sedang dalam pengembangan.');
+    // }
+
+    /**
+     * Manager - Export Excel
+     */
+    public function managerExport(Request $request)
+    {
+        $user = Auth::user();
+
+        // Get managed branches
+        if ($user->hasRole('superadmin')) {
+            $managedBranches = Branch::orderBy('name')->get();
+        } else {
+            $managedBranches = $user->managedBranches;
+        }
+
+        $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
+        $selectedBranch = $managedBranches->find($selectedBranchId);
+
+        if (! $selectedBranch) {
+            abort(403, 'Anda tidak memiliki akses ke cabang ini.');
+        }
+
+        $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
+        $dateTo = $request->input('date_to', now()->toDateString());
+        $shiftFilter = $request->input('shift');
+
+        // Build query
+        $query = DailyReportFO::where('branch_id', $selectedBranchId)
+            ->whereBetween('tanggal', [$dateFrom, $dateTo]);
+
+        if ($shiftFilter) {
+            $query->where('shift', $shiftFilter);
+        }
+
+        $query->orderBy('tanggal', 'desc')
+            ->orderBy('shift', 'asc')
+            ->orderBy('slot', 'asc');
+
+        // Generate filename
+        $filename = 'Daily_Report_FO_'.$selectedBranch->name.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
+        $title = 'Report '.$selectedBranch->name;
+
+        return Excel::download(new DailyReportFOExport($query, $title), $filename);
+    }
+
+    /**
+     * Marketing - Export Excel
+     */
     public function marketingExport(Request $request)
     {
-        // TODO: Implement Excel/PDF export
-        return back()->with('info', 'Fitur export sedang dalam pengembangan.');
+        $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
+        $dateTo = $request->input('date_to', now()->toDateString());
+        $branchId = $request->input('branch_id');
+        $shiftFilter = $request->input('shift');
+
+        // Build query
+        $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo]);
+
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        if ($shiftFilter) {
+            $query->where('shift', $shiftFilter);
+        }
+
+        $query->orderBy('tanggal', 'desc')
+            ->orderBy('branch_id', 'asc')
+            ->orderBy('shift', 'asc')
+            ->orderBy('slot', 'asc');
+
+        // Generate filename
+        $branchName = $branchId ? Branch::find($branchId)->name : 'All_Branches';
+        $filename = 'Daily_Report_FO_'.$branchName.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
+        $title = 'Report '.$branchName;
+
+        return Excel::download(new DailyReportFOExport($query, $title), $filename);
     }
 }

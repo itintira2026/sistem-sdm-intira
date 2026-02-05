@@ -40,65 +40,6 @@
             @endif
 
             {{-- 📊 PROGRESS LAPORAN HARI INI --}}
-            {{-- <div class="p-6 mb-6 bg-white rounded-lg shadow-sm">
-                <h3 class="mb-4 text-lg font-semibold text-gray-800">Progress Laporan Hari Ini</h3>
-
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <div class="p-4 rounded-lg bg-teal-50">
-                        <p class="text-sm text-teal-700">Total Laporan</p>
-                        <p class="mt-2 text-3xl font-bold text-teal-800">
-                            {{ $stats['total_hari_ini'] }}<span
-                                class="text-lg text-teal-400">/{{ $stats['target'] }}</span>
-                        </p>
-                        <div class="w-full h-2 mt-3 bg-gray-200 rounded-full">
-                            <div class="h-2 bg-teal-600 rounded-full"
-                                style="width: {{ min(($stats['total_hari_ini'] / $stats['target']) * 100, 100) }}%">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-4 rounded-lg {{ $stats['shift_pagi'] ? 'bg-green-50' : 'bg-orange-50' }}">
-                        <p class="text-sm {{ $stats['shift_pagi'] ? 'text-green-700' : 'text-orange-700' }}">
-                            Shift Pagi (08:00 - 16:00)
-                        </p>
-                        <p
-                            class="mt-2 text-2xl font-bold {{ $stats['shift_pagi'] ? 'text-green-800' : 'text-orange-800' }}">
-                            @if ($stats['shift_pagi'])
-                                ✅ Sudah
-                            @else
-                                ⏳ Belum
-                            @endif
-                        </p>
-                    </div>
-
-                    <div class="p-4 rounded-lg {{ $stats['shift_siang'] ? 'bg-green-50' : 'bg-orange-50' }}">
-                        <p class="text-sm {{ $stats['shift_siang'] ? 'text-green-700' : 'text-orange-700' }}">
-                            Shift Siang (14:00 - 22:00)
-                        </p>
-                        <p
-                            class="mt-2 text-2xl font-bold {{ $stats['shift_siang'] ? 'text-green-800' : 'text-orange-800' }}">
-                            @if ($stats['shift_siang'])
-                                ✅ Sudah
-                            @else
-                                ⏳ Belum
-                            @endif
-                        </p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div class="p-3 rounded-lg bg-green-50">
-                        <p class="text-xs text-green-700">✅ Sudah Divalidasi</p>
-                        <p class="text-xl font-bold text-green-800">{{ $stats['validated'] }}</p>
-                    </div>
-                    <div class="p-3 rounded-lg bg-orange-50">
-                        <p class="text-xs text-orange-700">⏳ Belum Divalidasi</p>
-                        <p class="text-xl font-bold text-orange-800">{{ $stats['pending'] }}</p>
-                    </div>
-                </div>
-            </div> --}}
-
-            {{-- 📊 PROGRESS LAPORAN HARI INI --}}
             <div class="p-6 mb-6 bg-white rounded-lg shadow-sm">
                 <h3 class="mb-4 text-lg font-semibold text-gray-800">Progress Laporan Hari Ini</h3>
 

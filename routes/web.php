@@ -1,25 +1,25 @@
 <?php
 
 use App\Http\Controllers\BranchController;
-use App\Http\Controllers\Payroll\PotonganImportController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Contact90Controller;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DailyReportFoController;
-use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\GajihPokokController;
+use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\Payroll\PotonganController;
+use App\Http\Controllers\Payroll\PotonganImportController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiImportController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn() => view('auth.login'));
+Route::get('/', fn () => view('auth.login'));
 
-Route::get('/dashboard', fn() => view('dashboard'))
+Route::get('/dashboard', fn () => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::middleware('auth')->group(function () {
@@ -99,7 +99,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('daily-reports-3hour-manager')->name('daily-reports.3hour-manager.')->group(function () {
             // Dashboard & List Laporan
             // Route::get('/', [DailyReportController::class, 'index'])->name('index');
-            Route::get('/', fn() => view('daily-reports.3hour-manager.index'))->name('index');
+            Route::get('/', fn () => view('daily-reports.3hour-manager.index'))->name('index');
             // Create Laporan
             // Route::get('/create', [DailyReportController::class, 'create'])->name('create');
             // Route::post('/', [DailyReportController::class, 'store'])->name('store');
@@ -112,8 +112,6 @@ Route::middleware('auth')->group(function () {
             // Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
         });
     });
-
-
 
     Route::middleware('role:manager|superadmin')->group(function () {
 
@@ -254,7 +252,7 @@ Route::middleware('auth')->group(function () {
     // });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 // <?php
 

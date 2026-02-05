@@ -13,6 +13,10 @@ class TimeHelper
      * @param string $timezone WIB|WITA|WIT
      * @return string
      */
+    public static function getTimezoneStringForView($timezone)
+    {
+        return self::getTimezoneString($timezone);
+    }
     protected static function getTimezoneString($timezone)
     {
         $timezones = config('daily_report_fo.timezones', [

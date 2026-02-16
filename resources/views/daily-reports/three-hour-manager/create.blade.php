@@ -235,7 +235,7 @@
 
                                 <div class="flex-1 w-full">
 
-                                    <div class="flex items-center justify-between w-full gap-3 p-3 bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50"
+                                    <div class="flex items-center justify-between w-full gap-3 p-3 bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-teal-500 hover:bg-teal-50"
                                         onclick="document.getElementById('file-nasabah').click()">
 
                                         <div class="flex items-center flex-1 gap-2">
@@ -253,7 +253,7 @@
                                         </div>
 
                                         <button type="button"
-                                            class="px-4 py-2 text-sm font-medium text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
+                                            class="px-4 py-2 text-sm font-medium text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
 
                                             Import File
 

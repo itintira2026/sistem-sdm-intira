@@ -23,13 +23,15 @@ use App\Http\Controllers\ValidationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('auth.login'));
+Route::get('/', fn() => view('auth.login'));
 
-Route::get('/dashboard', fn () => view('dashboard'))
+Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::middleware('auth')->group(function () {
-
+    Route::get('/gaji-saya', [PayrollController::class, 'show'])
+        ->name('gaji-saya.show')
+        ->middleware('auth');
     /*
     |--------------------------------------------------------------------------
     | DAILY REPORT FO - FO AREA
@@ -281,7 +283,8 @@ Route::middleware('auth')->group(function () {
         |--------------------------------------------------------------------------
         */
         Route::get('/gaji-pokok', [PayrollController::class, 'index'])->name('gaji-pokok.index');
-        Route::get('/payroll/{branch}/show', [PayrollController::class, 'show'])->name('gaji.show');
+        // Route::get('/payroll/{branch}/show', [PayrollController::class, 'show'])->name('gaji.show');
+        // Route tanpa parameter {id}
 
         // Route::get('/gaji-pokok', [GajihPokokController::class, 'index'])->name('gaji-pokok.index');
         Route::get('/gaji-pokok/{branch}/create', [GajihPokokController::class, 'create'])->name('gaji-pokok.create');
@@ -310,7 +313,7 @@ Route::middleware('auth')->group(function () {
     // });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // <?php
 

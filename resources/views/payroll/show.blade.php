@@ -3,28 +3,20 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                    Detail Gaji - Budi Santoso
+                    Detail Gaji - {{ $gajihPokok->branchUser->user->name }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    Cabang Jakarta Pusat • Januari 2025
+                    {{ $gajihPokok->branchUser->branch->name }} • {{ $gajihPokok->periode }}
                 </p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('gaji.index') }}"
+                <a href="{{ route('gaji-pokok.detail', ['branch' => $gajihPokok->branchUser->branch_id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
                     class="flex items-center gap-2 px-4 py-2 text-white transition bg-gray-500 rounded-lg hover:bg-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Kembali
-                </a>
-
-                <a href="{{ route('potongan.create', ['branch' => $branch->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
-                    class="flex items-center gap-2 px-4 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah
                 </a>
             </div>
         </div>
@@ -42,20 +34,25 @@
                             <div class="flex items-start gap-4">
                                 <div
                                     class="flex items-center justify-center w-20 h-20 text-2xl font-bold text-white rounded-full shadow-lg bg-gradient-to-br from-blue-500 to-blue-600">
-                                    BS
+                                    {{ strtoupper(substr($gajihPokok->branchUser->user->name, 0, 2)) }}
                                 </div>
                                 <div class="flex-1">
-                                    <h4 class="text-xl font-bold text-gray-900">Budi Santoso</h4>
-                                    <p class="mt-1 text-gray-600">budi.santoso@example.com</p>
+                                    <h4 class="text-xl font-bold text-gray-900">{{ $gajihPokok->branchUser->user->name
+                                        }}</h4>
+                                    <p class="mt-1 text-gray-600">{{ $gajihPokok->branchUser->user->email }}</p>
                                     <div class="flex items-center gap-2 mt-3">
+                                        @foreach($gajihPokok->branchUser->user->roles as $role)
                                         <span
                                             class="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">
-                                            Kasir
+                                            {{ $role->name }}
                                         </span>
+                                        @endforeach
+                                        @if($gajihPokok->branchUser->is_manager)
                                         <span
-                                            class="px-3 py-1 text-sm font-medium rounded-full bg-amber-100 text-amber-700">
+                                            class="px-3 py-1 text-sm font-medium text-amber-700 bg-amber-100 rounded-full">
                                             Manager
                                         </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -65,11 +62,13 @@
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="text-sm font-medium text-gray-500">Cabang</label>
-                                    <p class="mt-1 font-semibold text-gray-900">Jakarta Pusat</p>
+                                    <p class="mt-1 font-semibold text-gray-900">{{ $gajihPokok->branchUser->branch->name
+                                        }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-500">Status</label>
-                                    <p class="mt-1 font-semibold text-gray-900">Manager</p>
+                                    <p class="mt-1 font-semibold text-gray-900">{{ $gajihPokok->branchUser->is_manager ?
+                                        'Manager' : 'Staff' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -78,86 +77,362 @@
                     <!-- Salary Details Card -->
                     <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Detail Gaji Pokok</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Detail Gaji Pokok & Tunjangan</h3>
                         </div>
                         <div class="p-6">
                             <div class="space-y-4">
                                 <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                    <span class="font-medium text-gray-600">Gaji Pokok</span>
+                                    <span class="font-bold text-gray-900">Rp {{ number_format($gajihPokok->amount, 0,
+                                        ',', '.') }}</span>
+                                </div>
+
+                                <div class="p-4 space-y-3 bg-gray-50 rounded-lg">
+                                    <p class="mb-2 text-sm font-semibold text-gray-700">Tunjangan:</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Tunjangan Makan</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->tunjangan_makan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Tunjangan Transportasi</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->tunjangan_transportasi, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Tunjangan Jabatan</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->tunjangan_jabatan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Tunjangan Komunikasi</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->tunjangan_komunikasi, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                        <span class="text-sm font-semibold text-gray-700">Total Tunjangan</span>
+                                        <span class="text-sm font-bold text-blue-600">Rp {{
+                                            number_format($gajihPokok->total_tunjangan, 0, ',', '.') }}</span>
+                                    </div>
+                                    {{-- <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Potongan BPJS Ketenagakerjaan</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->ptg_bpjs_ketenagakerjaan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Potongan BPJS Kesehatan</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->ptg_bpjs_kesehatan, 0, ',', '.') }}</span>
+                                    </div> --}}
+                                </div>
+
+                                <div class="p-4 space-y-3 bg-gray-50 rounded-lg">
+                                    <p class="mb-2 text-sm font-semibold text-gray-700">Revenue:</p>
+
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Bonus Revenue</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->total_revenue, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">persentasi Revenue</span>
+                                        <span class="text-sm font-semibold text-gray-900">{{
+                                            $gajihPokok->persentase_revenue}}%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                        <span class="text-sm font-semibold text-gray-700">Total Potongan</span>
+                                        <span class="text-sm font-bold text-blue-600">Rp {{
+                                            number_format($gajihPokok->bonus_revenue, 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                                <div class="p-4 space-y-3 bg-gray-50 rounded-lg">
+                                    <p class="mb-2 text-sm font-semibold text-gray-700">Potongan Kesehatan:</p>
+
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Potongan BPJS Ketenagakerjaan</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->ptg_bpjs_ketenagakerjaan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Potongan BPJS Kesehatan</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->ptg_bpjs_kesehatan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                        <span class="text-sm font-semibold text-gray-700">Total Potongan</span>
+                                        <span class="text-sm font-bold text-red-600">Rp {{
+                                            number_format($gajihPokok->total_potongan_bpjs, 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between py-3 border-t-2 border-gray-300">
+                                    <span class="font-bold text-gray-700">Gaji Kotor (Pokok + Tunjangan)</span>
+                                    <span class="text-lg font-bold text-blue-600">Rp {{ number_format($gajiKotor, 0,
+                                        ',', '.') }}</span>
+                                </div>
+
+                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                     <span class="font-medium text-gray-600">Periode</span>
-                                    <span class="font-semibold text-gray-900">Januari 2025</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="font-medium text-gray-600">Bulan</span>
-                                    <span class="font-semibold text-gray-900">Januari</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <span class="font-medium text-gray-600">Tahun</span>
-                                    <span class="font-semibold text-gray-900">2025</span>
+                                    <span class="font-semibold text-gray-900">{{ $gajihPokok->periode }}</span>
                                 </div>
                                 <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                     <span class="font-medium text-gray-600">Tanggal Input</span>
-                                    <span class="font-semibold text-gray-900">05 Januari 2025, 09:30</span>
+                                    <span class="font-semibold text-gray-900">{{ $gajihPokok->created_at->format('d F Y,
+                                        H:i') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between py-3">
                                     <span class="font-medium text-gray-600">Terakhir Update</span>
-                                    <span class="font-semibold text-gray-900">10 Januari 2025, 14:15</span>
+                                    <span class="font-semibold text-gray-900">{{ $gajihPokok->updated_at->format('d F Y,
+                                        H:i') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Potongan Keterlambatan -->
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Potongan Keterlambatan</h3>
+                                <p class="text-sm text-gray-500">Berdasarkan data presensi</p>
+                            </div>
+                            <span class="px-3 py-1 text-sm font-semibold text-orange-700 bg-orange-100 rounded-full">
+                                {{ count($dataPotonganTerlambat) }} Keterlambatan
+                            </span>
+                        </div>
+
+                        <div class="p-6 overflow-x-auto">
+                            @if(empty($dataPotonganTerlambat))
+                            <div class="py-8 text-center">
+                                <svg class="w-12 h-12 mx-auto text-green-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="mt-2 text-gray-500">Tidak ada keterlambatan untuk periode ini</p>
+                                <p class="mt-1 text-sm text-green-600">Karyawan selalu tepat waktu! 🎉</p>
+                            </div>
+                            @else
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Tanggal</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">Jam
+                                            Check In</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Keterlambatan</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Keterangan</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-right text-gray-500 uppercase">
+                                            Potongan</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($dataPotonganTerlambat as $item)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 text-sm text-gray-900">
+                                            {{ Carbon\Carbon::parse($item['tanggal'])->format('d M Y') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">
+                                            {{ $item['jam_check_in'] }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold text-orange-600 bg-orange-100 rounded-full">
+                                                {{ $item['menit_terlambat'] }} menit
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">
+                                            {{ $item['keterangan'] }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-semibold text-right text-red-600">
+                                            - Rp {{ number_format($item['potongan'], 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+
+                                <tfoot class="bg-red-50">
+                                    <tr>
+                                        <td colspan="4"
+                                            class="px-4 py-3 text-sm font-semibold text-right text-gray-700">
+                                            Total Potongan Keterlambatan:
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-bold text-right text-red-600">
+                                            - Rp {{ number_format($totalPotonganTerlambat, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <!-- Info potongan per menit -->
+                            <div class="p-4 mt-4 bg-blue-50 rounded-lg">
+                                <div class="flex items-start gap-2">
+                                    <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-900">Informasi Potongan</p>
+                                        <p class="mt-1 text-xs text-blue-700">
+                                            • Shift 1 (08:00 - 12:00): Potongan Rp 15.000/keterlambatan<br>
+                                            • Shift 2 (13:00 - 21:00): Potongan Rp 15.000/keterlambatan
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Tabel Potongan & Tambahan dari Model Potongan -->
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Potongan & Tambahan Lainnya</h3>
+                                <p class="text-sm text-gray-500">Bonus, denda, atau adjustment lainnya</p>
+                            </div>
+                            {{-- <a href="{{ route('potongan.create', ['branch' => $gajihPokok->branchUser->branch_id, 'branch_user_id' => $gajihPokok->branchUser->id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
+                                class="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah
+                            </a> --}}
+                        </div>
+
+                        <div class="p-6 overflow-x-auto">
+                            @if($potongans->isEmpty())
+                            <div class="py-8 text-center">
+                                <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p class="mt-2 text-gray-500">Belum ada potongan atau tambahan lainnya</p>
+                                <p class="mt-1 text-sm text-gray-400">Klik tombol "Tambah" untuk menambahkan data</p>
+                            </div>
+                            @else
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Tanggal</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Divisi</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Keterangan</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                                            Jenis</th>
+                                        <th class="px-4 py-3 text-xs font-medium text-right text-gray-500 uppercase">
+                                            Nominal</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($potongans as $item)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $item->tanggal->format('d M Y')
+                                            }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">{{ $item->divisi }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-700">{{ $item->keterangan }}</td>
+                                        <td class="px-4 py-3">
+                                            @if($item->jenis === 'potongan')
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded-full">
+                                                Potongan
+                                            </span>
+                                            @else
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold text-green-600 bg-green-100 rounded-full">
+                                                Tambahan
+                                            </span>
+                                            @endif
+                                        </td>
+                                        <td
+                                            class="px-4 py-3 text-sm font-semibold text-right {{ $item->jenis === 'potongan' ? 'text-red-600' : 'text-green-600' }}">
+                                            {{ $item->jenis === 'potongan' ? '-' : '+' }} Rp {{
+                                            number_format($item->amount, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+
+                                <tfoot class="bg-gray-50">
+                                    @if($totalPotonganLain > 0)
+                                    <tr>
+                                        <td colspan="4"
+                                            class="px-4 py-3 text-sm font-semibold text-right text-gray-700">Total
+                                            Potongan Lain:</td>
+                                        <td class="px-4 py-3 text-sm font-bold text-right text-red-600">- Rp {{
+                                            number_format($totalPotonganLain, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
+                                    @if($totalTambahan > 0)
+                                    <tr>
+                                        <td colspan="4"
+                                            class="px-4 py-3 text-sm font-semibold text-right text-gray-700">Total
+                                            Tambahan:</td>
+                                        <td class="px-4 py-3 text-sm font-bold text-right text-green-600">+ Rp {{
+                                            number_format($totalTambahan, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
+                                </tfoot>
+                            </table>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Summary Card -->
+                    <div class="overflow-hidden shadow-sm bg-gradient-to-r from-blue-500 to-blue-600 sm:rounded-lg">
+                        <div class="p-6 text-white">
+                            <h3 class="mb-4 text-lg font-semibold">Ringkasan Perhitungan Gaji</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between pb-2 border-b border-blue-400">
+                                    <span class="font-medium">Gaji Kotor</span>
+                                    <span class="font-bold">Rp {{ number_format($gajiKotor, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Potongan Keterlambatan</span>
+                                    <span class="text-sm font-semibold text-red-200">- Rp {{
+                                        number_format($totalPotonganTerlambat, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Potongan Lainnya</span>
+                                    <span class="text-sm font-semibold text-red-200">- Rp {{
+                                        number_format($totalPotonganLain, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between pb-2 border-b border-blue-400">
+                                    <span class="text-sm">Tambahan</span>
+                                    <span class="text-sm font-semibold text-green-200">+ Rp {{
+                                        number_format($totalTambahan, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-2">
+                                    <span class="text-lg font-bold">Gaji Bersih</span>
+                                    <span class="text-2xl font-bold">Rp {{ number_format($gajiBersih, 0, ',', '.')
+                                        }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Notes Card -->
+                    @if($gajihPokok->keterangan)
                     <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900">Keterangan</h3>
                         </div>
                         <div class="p-6">
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-gray-700">Gaji pokok periode Januari 2025. Sudah termasuk penyesuaian
-                                    kenaikan tahunan sebesar 10% dari periode sebelumnya.</p>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-gray-700">{{ $gajihPokok->keterangan }}</p>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Riwayat Gaji Pokok -->
-                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Riwayat Gaji Pokok</h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="space-y-3">
-                                <div
-                                    class="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Januari 2025</p>
-                                        <p class="text-sm text-gray-600">Periode Aktif</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-bold text-blue-600">Rp 5.500.000</p>
-                                        <p class="text-xs text-gray-500">+10%</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between p-4 rounded-lg bg-gray-50">
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Desember 2024</p>
-                                        <p class="text-sm text-gray-600">Periode Sebelumnya</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-bold text-gray-700">Rp 5.000.000</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between p-4 rounded-lg bg-gray-50">
-                                    <div>
-                                        <p class="font-semibold text-gray-900">November 2024</p>
-                                        <p class="text-sm text-gray-600">2 bulan lalu</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-bold text-gray-700">Rp 5.000.000</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @endif
                 </div>
 
                 <!-- Sidebar - Right Side -->
@@ -171,10 +446,10 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span class="text-sm font-medium opacity-90">Gaji Pokok</span>
+                                <span class="text-sm font-medium opacity-90">Total Gaji Diterima</span>
                             </div>
                             <div class="mb-1 text-4xl font-bold">
-                                Rp 5.500.000
+                                Rp {{ number_format($gajiBersih, 0, ',', '.') }}
                             </div>
                             <p class="text-sm opacity-75">Per Bulan</p>
                         </div>
@@ -197,7 +472,8 @@
                                     </div>
                                     <div>
                                         <p class="text-sm text-gray-600">Status</p>
-                                        <p class="font-semibold text-gray-900">Aktif</p>
+                                        <p class="font-semibold text-gray-900">{{
+                                            $gajihPokok->branchUser->user->is_active ? 'Aktif' : 'Tidak Aktif' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -213,7 +489,8 @@
                                     </div>
                                     <div>
                                         <p class="text-sm text-gray-600">Cabang</p>
-                                        <p class="font-semibold text-gray-900">Jakarta Pusat</p>
+                                        <p class="font-semibold text-gray-900">{{ $gajihPokok->branchUser->branch->name
+                                            }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -229,52 +506,75 @@
                                     </div>
                                     <div>
                                         <p class="text-sm text-gray-600">Periode</p>
-                                        <p class="font-semibold text-gray-900">Januari 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg">
-                                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Kenaikan</p>
-                                        <p class="font-semibold text-green-600">+10%</p>
+                                        <p class="font-semibold text-gray-900">{{ $gajihPokok->periode }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Riwayat Gaji Pokok -->
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div class="p-6 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900">Riwayat Gaji Pokok</h3>
+                            <p class="mt-1 text-sm text-gray-500">Klik untuk melihat detail periode</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-3">
+                                @foreach($riwayatGaji as $index => $riwayat)
+                                <a href="{{ route('gaji-saya.show', ['bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun]) }}"
+                                    class="block transition-all hover:shadow-md">
+                                    <div
+                                        class="flex items-center justify-between p-4 border rounded-lg {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' : 'bg-gray-50 border-gray-200 hover:border-blue-300' }}">
+                                        <div>
+                                            <p
+                                                class="font-semibold {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'text-blue-900' : 'text-gray-900' }}">
+                                                {{ $riwayat->periode }}
+                                            </p>
+                                            <p
+                                                class="text-sm {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'text-blue-600' : 'text-gray-600' }}">
+                                                {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun ==
+                                                $gajihPokok->tahun) ? 'Periode Aktif' : ($index === 1 ? 'Periode
+                                                Sebelumnya' : $index . ' bulan lalu') }}
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="text-right">
+                                                <p
+                                                    class="font-bold {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'text-blue-600' : 'text-gray-700' }}">
+                                                    Rp {{ number_format($riwayat->total_gaji_kotor, 0, ',', '.') }}
+                                                </p>
+                                            </div>
+                                            @if($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun ==
+                                            $gajihPokok->tahun)
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            @else
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Actions Card -->
-                    {{-- <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900">Aksi</h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            <button class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-blue-500 rounded-lg hover:bg-blue-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Edit Gaji Pokok
-                            </button>
-
-                            <button onclick="alert('Data akan dihapus!')" class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-red-500 rounded-lg hover:bg-red-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Hapus Data
-                            </button>
-
-                            <button class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-green-500 rounded-lg hover:bg-green-600">
+                            <button
+                                class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-green-500 rounded-lg hover:bg-green-600">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -282,7 +582,8 @@
                                 Export PDF
                             </button>
 
-                            <button class="flex items-center justify-center w-full gap-2 px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200">
+                            <button
+                                class="flex items-center justify-center w-full gap-2 px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -290,7 +591,7 @@
                                 Print
                             </button>
                         </div>
-                    </div> --}}
+                    </div>
 
                     <!-- Info Card -->
                     <div
@@ -315,4 +616,16 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        // Smooth scroll ke top saat memilih periode
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('bulan') && params.has('tahun')) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>

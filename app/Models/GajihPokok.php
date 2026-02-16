@@ -50,15 +50,15 @@ class GajihPokok extends Model
     //     return $this->belongsTo(BranchUser::class);
     // }
 
- public function branchUser()
-{
+    public function branchUser()
+    {
 
 
-    return $this->belongsTo(BranchUser::class, 'user_id', 'user_id')
-                ->whereHas('user', function($query) {
-                    $query->where('is_active', true);
-                });
-}
+        return $this->belongsTo(BranchUser::class, 'user_id', 'user_id')
+            ->whereHas('user', function ($query) {
+                $query->where('is_active', true);
+            });
+    }
 
     /**
      * Get user via branch_user
@@ -105,10 +105,21 @@ class GajihPokok extends Model
             $this->tunjangan_jabatan +
             $this->tunjangan_komunikasi;
     }
+    public function getTotalPotonganBpjsAttribute()
+    {
+        return $this->ptg_bpjs_ketenagakerjaan +
+            $this->ptg_bpjs_kesehatan;
+    }
 
+    //   public function getTotalRevenueAttribute()
+    // {
+    //     return $this->bonus_revenue *
+    //         ($this->persentase_revenue / 100);
+    // }
     public function getTotalGajiKotorAttribute()
     {
-        return $this->amount + $this->total_tunjangan;
+        return $this->amount + $this->total_tunjangan +
+            $this->bonus_revenue - $this->total_potongan_bpjs;
     }
 
     /**

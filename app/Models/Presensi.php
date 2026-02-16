@@ -143,7 +143,7 @@ public function hitungPotonganTerlambat($potonganTerlambat = 15000, $potonganIzi
     // =========================
 
     // Shift 1: 08:00 - 12:59
-    if ($hour >= 8 && $hour < 13) {
+    if ($hour >= 8 && $hour < 12) {
         $jamMasuk = \Carbon\Carbon::parse($this->tanggal->format('Y-m-d') . ' 08:00:00');
 
         if ($jamCheckIn->gt($jamMasuk)) {
@@ -151,7 +151,7 @@ public function hitungPotonganTerlambat($potonganTerlambat = 15000, $potonganIzi
         }
     }
     // Shift 2: 13:00 - 21:00
-    elseif ($hour >= 13 && $hour <= 21) {
+    elseif ($hour > 13 && $hour <= 21) {
         $jamMasuk = \Carbon\Carbon::parse($this->tanggal->format('Y-m-d') . ' 13:00:00');
 
         if ($jamCheckIn->gt($jamMasuk)) {

@@ -5,18 +5,19 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     Detail Potongan & Tambahan - {{ $branch->name }}
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">
-                    Periode: {{ Carbon\Carbon::create()->month($bulan)->format('F') }} {{ $tahun }}
-                </p>
+        <p class="text-sm text-gray-500 mt-1">
+    Periode: {{ \Carbon\Carbon::create(null, (int) $bulan, 1)->format('F') }} {{ $tahun }}
+</p>
+
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('gaji.index') }}"
+                {{-- <a href="{{ route('gaji.index') }}"
                     class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Kembali
-                </a>
+                </a> --}}
                 
                 <a href="{{ route('potongan.create', ['branch' => $branch->id, 'bulan' => $bulan, 'tahun' => $tahun]) }}"
                     class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition flex items-center gap-2">
@@ -149,7 +150,9 @@
                                 </div>
                                 <div class="ml-3">
                                     <p class="text-sm text-yellow-700">
-                                        Tidak ada data potongan untuk periode <strong>{{ Carbon\Carbon::create()->month($bulan)->format('F') }} {{ $tahun }}</strong> di cabang ini.
+                                  
+
+                                        Tidak ada data potongan untuk periode <strong>{{ \Carbon\Carbon::create(null, (int) $bulan, 1)->format('F') }} {{ $tahun }}</strong> di cabang ini.
                                         Silakan pilih periode lain atau input potongan terlebih dahulu.
                                     </p>
                                 </div>

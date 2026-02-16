@@ -33,9 +33,8 @@
                         {{-- Cabang --}}
                         <div>
                             <label class="block mb-1 text-xs font-medium text-gray-500">Cabang</label>
-                            <select name="branch_id" onchange="submitFilter()"
+                            {{-- <select name="branch_id" onchange="submitFilter()"
                                 class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
-                                {{-- Opsi "Semua Cabang" untuk superadmin & marketing --}}
                                 @if ($canViewAll)
                                     <option value="all" {{ $branchIdParam === 'all' ? 'selected' : '' }}>
                                         🌐 Semua Cabang
@@ -47,7 +46,48 @@
                                         {{ $branch->name }}
                                     </option>
                                 @endforeach
+                            </select> --}}
+                            {{--
+                                Ganti bagian <select name="branch_id"> di filter form dengan ini.
+                                Perubahan: hapus kondisi @if ($canViewAll), semua role dapat opsi "Semua Cabang"
+                                tapi isinya dibatasi $accessibleBranches dari controller (manager hanya cabangnya)
+                            --}}
+
+                            <select name="branch_id" onchange="submitFilter()"
+                                class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+
+                                {{-- Opsi "Semua Cabang" untuk semua role --}}
+                                <option value="all" {{ $branchIdParam === 'all' ? 'selected' : '' }}>
+                                    🌐 Semua Cabang
+                                    {{-- @if (!auth()->user()->hasRole('superadmin') && !auth()->user()->hasRole('marketing'))
+                                        (yang saya kelola)
+                                    @endif --}}
+                                </option>
+
+                                {{-- Daftar cabang sesuai akses masing-masing role --}}
+                                @foreach ($accessibleBranches as $branch)
+                                    <option value="{{ $branch->id }}"
+                                        {{ $branchIdParam == $branch->id ? 'selected' : '' }}>
+                                        {{ $branch->name }}
+                                    </option>
+                                @endforeach
+
                             </select>
+
+                            {{--
+                                Juga hapus variabel $canViewAll dari view karena tidak dipakai lagi.
+                                Dan pastikan header subtitle juga sudah handle isAllBranches untuk manager:
+                            --}}
+
+                            {{-- Ganti subtitle di header dengan ini: --}}
+                            <p class="mt-1 text-sm text-gray-500">
+                                @if ($isAllBranches)
+                                    Semua Cabang ({{ $accessibleBranches->count() }} cabang)
+                                @else
+                                    {{ $selectedBranch->name }}
+                                @endif
+                                | {{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}
+                            </p>
                         </div>
 
                         {{-- Tanggal --}}
@@ -89,7 +129,7 @@
                         </div>
 
                         {{-- Loading indicator --}}
-                        <div id="filterLoading" class="hidden items-center gap-2 text-sm text-gray-400 pb-1">
+                        <div id="filterLoading" class="items-center hidden gap-2 pb-1 text-sm text-gray-400">
                             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
@@ -108,48 +148,48 @@
             <div class="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4 lg:grid-cols-7">
 
                 {{-- Total Laporan --}}
-                <div class="p-4 bg-white rounded-lg shadow-sm text-center col-span-1">
+                <div class="col-span-1 p-4 text-center bg-white rounded-lg shadow-sm">
                     <p class="text-xs text-gray-400">Total</p>
                     <p class="text-2xl font-bold text-gray-800">{{ $stats['total'] }}</p>
                     <p class="text-xs text-gray-400">laporan</p>
                 </div>
 
                 {{-- Pending --}}
-                <div class="p-4 bg-yellow-50 rounded-lg shadow-sm text-center">
+                <div class="p-4 text-center rounded-lg shadow-sm bg-yellow-50">
                     <p class="text-xs text-yellow-600">⏳ Pending</p>
                     <p class="text-2xl font-bold text-yellow-700">{{ $stats['pending'] }}</p>
                 </div>
 
                 {{-- Approved --}}
-                <div class="p-4 bg-green-50 rounded-lg shadow-sm text-center">
+                <div class="p-4 text-center rounded-lg shadow-sm bg-green-50">
                     <p class="text-xs text-green-600">✅ Disetujui</p>
                     <p class="text-2xl font-bold text-green-700">{{ $stats['approved'] }}</p>
                 </div>
 
                 {{-- Rejected --}}
-                <div class="p-4 bg-red-50 rounded-lg shadow-sm text-center">
+                <div class="p-4 text-center rounded-lg shadow-sm bg-red-50">
                     <p class="text-xs text-red-600">❌ Ditolak</p>
                     <p class="text-2xl font-bold text-red-700">{{ $stats['rejected'] }}</p>
                 </div>
 
                 {{-- Total Omset --}}
-                <div class="p-4 bg-blue-50 rounded-lg shadow-sm text-center col-span-1 sm:col-span-1">
+                <div class="col-span-1 p-4 text-center rounded-lg shadow-sm bg-blue-50 sm:col-span-1">
                     <p class="text-xs text-blue-600">💰 Total Omset</p>
-                    <p class="text-lg font-bold text-blue-800 leading-tight">
+                    <p class="text-lg font-bold leading-tight text-blue-800">
                         Rp {{ number_format($stats['total_omset'], 0, ',', '.') }}
                     </p>
                 </div>
 
                 {{-- Total Revenue --}}
-                <div class="p-4 bg-indigo-50 rounded-lg shadow-sm text-center">
+                <div class="p-4 text-center rounded-lg shadow-sm bg-indigo-50">
                     <p class="text-xs text-indigo-600">📈 Total Revenue</p>
-                    <p class="text-lg font-bold text-indigo-800 leading-tight">
+                    <p class="text-lg font-bold leading-tight text-indigo-800">
                         Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}
                     </p>
                 </div>
 
                 {{-- Total Akad --}}
-                <div class="p-4 bg-purple-50 rounded-lg shadow-sm text-center">
+                <div class="p-4 text-center rounded-lg shadow-sm bg-purple-50">
                     <p class="text-xs text-purple-600">🤝 Total Akad</p>
                     <p class="text-2xl font-bold text-purple-700">
                         {{ number_format($stats['total_akad'], 0, ',', '.') }}
@@ -164,35 +204,35 @@
             <div class="bg-white rounded-lg shadow-sm">
                 @if ($reports->isEmpty())
                     <div class="p-12 text-center text-gray-400">
-                        <p class="text-4xl mb-3">📋</p>
+                        <p class="mb-3 text-4xl">📋</p>
                         <p>Tidak ada laporan untuk filter ini.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
-                            <thead class="bg-gray-50 border-b border-gray-200">
+                            <thead class="border-b border-gray-200 bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">FO
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">FO
                                     </th>
                                     @if ($isAllBranches)
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                        <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
                                             Cabang</th>
                                     @endif
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Shift
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">Shift
                                         / Slot</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Upload
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">Upload
                                     </th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Omset
+                                    <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">Omset
                                     </th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+                                    <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
                                         Revenue</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Akad
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">Akad
                                     </th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
                                         Status</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
                                         Window</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Aksi
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">Aksi
                                     </th>
                                 </tr>
                             </thead>
@@ -206,7 +246,7 @@
                                         $windowStatus = $report->manager_window_status;
                                     @endphp
 
-                                    <tr class="hover:bg-gray-50 transition-colors">
+                                    <tr class="transition-colors hover:bg-gray-50">
                                         {{-- FO --}}
                                         <td class="px-4 py-3">
                                             <p class="font-medium text-gray-800">{{ $report->user->name }}</p>
@@ -232,13 +272,13 @@
                                         </td>
 
                                         {{-- Metrik Bisnis --}}
-                                        <td class="px-4 py-3 text-right font-medium text-gray-800">
+                                        <td class="px-4 py-3 font-medium text-right text-gray-800">
                                             Rp {{ number_format($omset, 0, ',', '.') }}
                                         </td>
-                                        <td class="px-4 py-3 text-right font-medium text-gray-800">
+                                        <td class="px-4 py-3 font-medium text-right text-gray-800">
                                             Rp {{ number_format($revenue, 0, ',', '.') }}
                                         </td>
-                                        <td class="px-4 py-3 text-center font-medium text-gray-800">
+                                        <td class="px-4 py-3 font-medium text-center text-gray-800">
                                             {{ number_format($akad, 0, ',', '.') }}
                                         </td>
 
@@ -260,9 +300,9 @@
                                         </td>
 
                                         {{-- Window Status --}}
-                                        <td class="px-4 py-3 text-center text-xs">
+                                        <td class="px-4 py-3 text-xs text-center">
                                             @if ($windowStatus === 'open')
-                                                <span class="text-orange-600 font-semibold">🟠 Buka</span>
+                                                <span class="font-semibold text-orange-600">🟠 Buka</span>
                                                 <br>
                                                 <span class="text-gray-400">s/d
                                                     {{ $report->manager_window_end->format('H:i') }}
@@ -292,7 +332,7 @@
                     </div>
 
                     {{-- Pagination --}}
-                    <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
                         <p class="text-xs text-gray-400">
                             Menampilkan {{ $reports->firstItem() }}–{{ $reports->lastItem() }} dari
                             {{ $reports->total() }} laporan

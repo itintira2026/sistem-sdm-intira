@@ -10,7 +10,6 @@
                     terakhir)
                 </p>
             </div>
-        </div>
     </x-slot>
 
     <div class="py-12">
@@ -18,100 +17,101 @@
 
             {{-- Alert Nasabah --}}
             @if (session('success_nasabah'))
-            <div class="p-4 mb-6 text-blue-700 bg-blue-100 rounded-lg">
-                {{ session('success_nasabah') }}
-            </div>
+                <div class="p-4 mb-6 text-blue-700 bg-blue-100 rounded-lg">
+                    {{ session('success_nasabah') }}
+                </div>
             @endif
 
             @if (session('error_nasabah'))
-            <div class="p-4 mb-6 text-blue-700 bg-blue-100 rounded-lg">
-                {{ session('error_nasabah') }}
-            </div>
+                <div class="p-4 mb-6 text-blue-700 bg-blue-100 rounded-lg">
+                    {{ session('error_nasabah') }}
+                </div>
             @endif
 
 
             {{-- Alert Revenue --}}
             @if (session('success_revenue'))
-            <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
-                {{ session('success_revenue') }}
-            </div>
+                <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
+                    {{ session('success_revenue') }}
+                </div>
             @endif
 
             @if (session('error_revenue'))
-            <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
-                {{ session('error_revenue') }}
-            </div>
+                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
+                    {{ session('error_revenue') }}
+                </div>
             @endif
 
 
             {{-- Progress Card --}}
-            @if(isset($stats))
-            <div class="mb-6 overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="mb-4 text-lg font-semibold text-gray-800">Progress Laporan Hari Ini</h3>
+            @if (isset($stats))
+                <div class="mb-6 overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-800">Progress Laporan Hari Ini</h3>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-                        <div class="p-4 rounded-lg bg-teal-50">
-                            <p class="text-sm text-teal-700">Total Laporan</p>
-                            <p class="mt-2 text-3xl font-bold text-teal-800">
-                                {{ $stats['total_today'] }}<span class="text-lg text-teal-400">/{{ $stats['target']
-                                    }}</span>
-                            </p>
-                            <div class="w-full h-2 mt-3 bg-gray-200 rounded-full">
-                                <div class="h-2 bg-teal-600 rounded-full"
-                                    style="width: {{ min(($stats['total_today'] / $stats['target']) * 100, 100) }}%">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                            <div class="p-4 rounded-lg bg-teal-50">
+                                <p class="text-sm text-teal-700">Total Laporan</p>
+                                <p class="mt-2 text-3xl font-bold text-teal-800">
+                                    {{ $stats['total_today'] }}<span
+                                        class="text-lg text-teal-400">/{{ $stats['target'] }}</span>
+                                </p>
+                                <div class="w-full h-2 mt-3 bg-gray-200 rounded-full">
+                                    <div class="h-2 bg-teal-600 rounded-full"
+                                        style="width: {{ min(($stats['total_today'] / $stats['target']) * 100, 100) }}%">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="p-4 rounded-lg {{ $stats['report_12'] ? 'bg-green-50' : 'bg-orange-50' }}">
-                            <p class="text-sm {{ $stats['report_12'] ? 'text-green-700' : 'text-orange-700' }}">
-                                Laporan 12:00
-                            </p>
-                            <p
-                                class="mt-2 text-2xl font-bold {{ $stats['report_12'] ? 'text-green-800' : 'text-orange-800' }}">
-                                @if ($stats['report_12'])
-                                ✅ Sudah
-                                @else
-                                ⏳ Belum
-                                @endif
-                            </p>
-                        </div>
+                            <div class="p-4 rounded-lg {{ $stats['report_12'] ? 'bg-green-50' : 'bg-orange-50' }}">
+                                <p class="text-sm {{ $stats['report_12'] ? 'text-green-700' : 'text-orange-700' }}">
+                                    Laporan 12:00
+                                </p>
+                                <p
+                                    class="mt-2 text-2xl font-bold {{ $stats['report_12'] ? 'text-green-800' : 'text-orange-800' }}">
+                                    @if ($stats['report_12'])
+                                        ✅ Sudah
+                                    @else
+                                        ⏳ Belum
+                                    @endif
+                                </p>
+                            </div>
 
-                        <div class="p-4 rounded-lg {{ $stats['report_16'] ? 'bg-green-50' : 'bg-orange-50' }}">
-                            <p class="text-sm {{ $stats['report_16'] ? 'text-green-700' : 'text-orange-700' }}">
-                                Laporan 16:00
-                            </p>
-                            <p
-                                class="mt-2 text-2xl font-bold {{ $stats['report_16'] ? 'text-green-800' : 'text-orange-800' }}">
-                                @if ($stats['report_16'])
-                                ✅ Sudah
-                                @else
-                                ⏳ Belum
-                                @endif
-                            </p>
-                        </div>
+                            <div class="p-4 rounded-lg {{ $stats['report_16'] ? 'bg-green-50' : 'bg-orange-50' }}">
+                                <p class="text-sm {{ $stats['report_16'] ? 'text-green-700' : 'text-orange-700' }}">
+                                    Laporan 16:00
+                                </p>
+                                <p
+                                    class="mt-2 text-2xl font-bold {{ $stats['report_16'] ? 'text-green-800' : 'text-orange-800' }}">
+                                    @if ($stats['report_16'])
+                                        ✅ Sudah
+                                    @else
+                                        ⏳ Belum
+                                    @endif
+                                </p>
+                            </div>
 
-                        <div class="p-4 rounded-lg {{ $stats['report_20'] ? 'bg-green-50' : 'bg-orange-50' }}">
-                            <p class="text-sm {{ $stats['report_20'] ? 'text-green-700' : 'text-orange-700' }}">
-                                Laporan 20:00
-                            </p>
-                            <p
-                                class="mt-2 text-2xl font-bold {{ $stats['report_20'] ? 'text-green-800' : 'text-orange-800' }}">
-                                @if ($stats['report_20'])
-                                ✅ Sudah
-                                @else
-                                ⏳ Belum
-                                @endif
-                            </p>
+                            <div class="p-4 rounded-lg {{ $stats['report_20'] ? 'bg-green-50' : 'bg-orange-50' }}">
+                                <p class="text-sm {{ $stats['report_20'] ? 'text-green-700' : 'text-orange-700' }}">
+                                    Laporan 20:00
+                                </p>
+                                <p
+                                    class="mt-2 text-2xl font-bold {{ $stats['report_20'] ? 'text-green-800' : 'text-orange-800' }}">
+                                    @if ($stats['report_20'])
+                                        ✅ Sudah
+                                    @else
+                                        ⏳ Belum
+                                    @endif
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             @endif
 
             {{-- Form Input --}}
-            <form action="{{ route('daily-reports.3hour-manager.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('daily-reports.3hour-manager.store') }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
 
                 <!-- Time Slots Card -->
@@ -124,44 +124,44 @@
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div class="p-4 transition rounded-lg cursor-pointer bg-gray-100 hover:bg-teal-100 time-slot {{ isset($stats) && $stats['report_12'] ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                onclick="selectTime(this, '12:00')" data-time="12:00" {{ isset($stats) &&
-                                $stats['report_12'] ? 'disabled' : '' }}>
+                                onclick="selectTime(this, '12:00')" data-time="12:00"
+                                {{ isset($stats) && $stats['report_12'] ? 'disabled' : '' }}>
                                 <div class="text-center">
                                     <p class="text-sm font-medium text-gray-700">Shift Pagi</p>
                                     <p class="mt-2 text-3xl font-bold text-gray-800">12:00</p>
-                                    @if(isset($stats) && $stats['report_12'])
-                                    <p class="mt-2 text-xs text-green-600">✅ Sudah diinput</p>
+                                    @if (isset($stats) && $stats['report_12'])
+                                        <p class="mt-2 text-xs text-green-600">✅ Sudah diinput</p>
                                     @endif
                                 </div>
                             </div>
 
                             <div class="p-4 transition rounded-lg cursor-pointer bg-gray-100 hover:bg-teal-100 time-slot {{ isset($stats) && $stats['report_16'] ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                onclick="selectTime(this, '16:00')" data-time="16:00" {{ isset($stats) &&
-                                $stats['report_16'] ? 'disabled' : '' }}>
+                                onclick="selectTime(this, '16:00')" data-time="16:00"
+                                {{ isset($stats) && $stats['report_16'] ? 'disabled' : '' }}>
                                 <div class="text-center">
                                     <p class="text-sm font-medium text-gray-700">Shift Tengah</p>
                                     <p class="mt-2 text-3xl font-bold text-gray-800">16:00</p>
-                                    @if(isset($stats) && $stats['report_16'])
-                                    <p class="mt-2 text-xs text-green-600">✅ Sudah diinput</p>
+                                    @if (isset($stats) && $stats['report_16'])
+                                        <p class="mt-2 text-xs text-green-600">✅ Sudah diinput</p>
                                     @endif
                                 </div>
                             </div>
 
                             <div class="p-4 transition rounded-lg cursor-pointer bg-gray-100 hover:bg-teal-100 time-slot {{ isset($stats) && $stats['report_20'] ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                onclick="selectTime(this, '20:00')" data-time="20:00" {{ isset($stats) &&
-                                $stats['report_20'] ? 'disabled' : '' }}>
+                                onclick="selectTime(this, '20:00')" data-time="20:00"
+                                {{ isset($stats) && $stats['report_20'] ? 'disabled' : '' }}>
                                 <div class="text-center">
                                     <p class="text-sm font-medium text-gray-700">Shift Siang</p>
                                     <p class="mt-2 text-3xl font-bold text-gray-800">20:00</p>
-                                    @if(isset($stats) && $stats['report_20'])
-                                    <p class="mt-2 text-xs text-green-600">✅ Sudah diinput</p>
+                                    @if (isset($stats) && $stats['report_20'])
+                                        <p class="mt-2 text-xs text-green-600">✅ Sudah diinput</p>
                                     @endif
                                 </div>
                             </div>
                         </div>
 
                         @error('time_slot')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -219,7 +219,7 @@
                             </div>
 
                             @error('file_omzet')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
 
                         </div>
@@ -277,9 +277,9 @@
                             </div>
 
                             @error('file_nasabah')
-                            <p class="mt-2 text-sm text-red-600">
-                                {{ $message }}
-                            </p>
+                                <p class="mt-2 text-sm text-red-600">
+                                    {{ $message }}
+                                </p>
                             @enderror
 
                         </div>
@@ -315,7 +315,7 @@
                                 </div>
                             </div>
                             @error('file_revenue')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -332,7 +332,7 @@
                             rows="8" placeholder="Masukkan keterangan di sini...">{{ old('keterangan') }}</textarea>
 
                         @error('keterangan')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
 
                         <!-- Action Buttons -->
@@ -356,83 +356,83 @@
 
     <script>
         function selectTime(element, time) {
-        // Check if disabled - PERBAIKAN INI
-        if (element.hasAttribute('disabled') || element.classList.contains('cursor-not-allowed')) {
-            console.log('Time slot disabled:', time);
-            return false; // Stop execution
-        }
-
-        // Remove active class from all time slots
-        document.querySelectorAll('.time-slot').forEach(slot => {
-            if (!slot.hasAttribute('disabled') && !slot.classList.contains('cursor-not-allowed')) {
-                slot.classList.remove('active', 'bg-teal-50');
-                slot.classList.add('bg-gray-100');
-                
-                const label = slot.querySelector('p:first-child');
-                const timeText = slot.querySelector('p:nth-child(2)');
-                if (label) {
-                    label.classList.remove('text-teal-700');
-                    label.classList.add('text-gray-700');
-                }
-                if (timeText) {
-                    timeText.classList.remove('text-teal-800');
-                    timeText.classList.add('text-gray-800');
-                }
+            // Check if disabled - PERBAIKAN INI
+            if (element.hasAttribute('disabled') || element.classList.contains('cursor-not-allowed')) {
+                console.log('Time slot disabled:', time);
+                return false; // Stop execution
             }
-        });
-        
-        // Add active class to clicked slot
-        element.classList.add('active', 'bg-teal-50');
-        element.classList.remove('bg-gray-100');
-        
-        const label = element.querySelector('p:first-child');
-        const timeText = element.querySelector('p:nth-child(2)');
-        if (label) {
-            label.classList.add('text-teal-700');
-            label.classList.remove('text-gray-700');
-        }
-        if (timeText) {
-            timeText.classList.add('text-teal-800');
-            timeText.classList.remove('text-gray-800');
-        }
-        
-        // Set hidden input value
-        document.getElementById('time_slot').value = time;
-        
-        console.log('Selected time:', time);
-    }
 
-    function handleFileSelect(event, type) {
-        const file = event.target.files[0];
-        if (file) {
-            // Update file name
-            const nameElement = document.getElementById('name-' + type);
-            nameElement.textContent = file.name;
-            nameElement.classList.remove('text-gray-600');
-            nameElement.classList.add('text-gray-800', 'font-medium');
-            
-            // Update status dot
-            const dotElement = document.getElementById('dot-' + type);
-            dotElement.classList.remove('bg-gray-400');
-            dotElement.classList.add('bg-green-500');
-            
-            console.log('File selected for', type + ':', file.name);
-        }
-    }
+            // Remove active class from all time slots
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                if (!slot.hasAttribute('disabled') && !slot.classList.contains('cursor-not-allowed')) {
+                    slot.classList.remove('active', 'bg-teal-50');
+                    slot.classList.add('bg-gray-100');
 
-    // VALIDASI SEBELUM SUBMIT
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        
-        form.addEventListener('submit', function(e) {
-            const timeSlot = document.getElementById('time_slot').value;
-            
-            if (!timeSlot) {
-                e.preventDefault();
-                alert('Silakan pilih waktu laporan terlebih dahulu!');
-                return false;
+                    const label = slot.querySelector('p:first-child');
+                    const timeText = slot.querySelector('p:nth-child(2)');
+                    if (label) {
+                        label.classList.remove('text-teal-700');
+                        label.classList.add('text-gray-700');
+                    }
+                    if (timeText) {
+                        timeText.classList.remove('text-teal-800');
+                        timeText.classList.add('text-gray-800');
+                    }
+                }
+            });
+
+            // Add active class to clicked slot
+            element.classList.add('active', 'bg-teal-50');
+            element.classList.remove('bg-gray-100');
+
+            const label = element.querySelector('p:first-child');
+            const timeText = element.querySelector('p:nth-child(2)');
+            if (label) {
+                label.classList.add('text-teal-700');
+                label.classList.remove('text-gray-700');
             }
+            if (timeText) {
+                timeText.classList.add('text-teal-800');
+                timeText.classList.remove('text-gray-800');
+            }
+
+            // Set hidden input value
+            document.getElementById('time_slot').value = time;
+
+            console.log('Selected time:', time);
+        }
+
+        function handleFileSelect(event, type) {
+            const file = event.target.files[0];
+            if (file) {
+                // Update file name
+                const nameElement = document.getElementById('name-' + type);
+                nameElement.textContent = file.name;
+                nameElement.classList.remove('text-gray-600');
+                nameElement.classList.add('text-gray-800', 'font-medium');
+
+                // Update status dot
+                const dotElement = document.getElementById('dot-' + type);
+                dotElement.classList.remove('bg-gray-400');
+                dotElement.classList.add('bg-green-500');
+
+                console.log('File selected for', type + ':', file.name);
+            }
+        }
+
+        // VALIDASI SEBELUM SUBMIT
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+
+            form.addEventListener('submit', function(e) {
+                const timeSlot = document.getElementById('time_slot').value;
+
+                if (!timeSlot) {
+                    e.preventDefault();
+                    alert('Silakan pilih waktu laporan terlebih dahulu!');
+                    return false;
+                }
+            });
         });
-    });
     </script>
 </x-app-layout>

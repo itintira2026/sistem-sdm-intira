@@ -8,14 +8,10 @@ use App\Helpers\ShiftHelper;
 use App\Helpers\TimeHelper;
 use App\Models\Branch;
 use App\Models\DailyReportFO;
-use App\Models\DailyReportFODetail;
 use App\Models\DailyReportFOPhoto;
-use App\Models\ReportCategory;
-use App\Models\ReportField;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DailyReportFoController extends Controller
@@ -31,18 +27,22 @@ class DailyReportFoController extends Controller
     {
         $user = Auth::user();
 
+        // Get user's branch
         $userBranches = $user->branches;
 
         if ($userBranches->isEmpty()) {
             return back()->with('error', 'Anda belum terdaftar di cabang manapun.');
         }
 
+        // Ambil cabang pertama user (asumsi 1 FO = 1 cabang utama)
         $branch = $userBranches->first();
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $today = $branchTime->toDateString();
 
+        // Determine shift (dari session atau dari laporan yang sudah ada)
         $selectedShift = ShiftHelper::determineShift($user->id);
 
+        // Jika belum pilih shift, redirect ke modal pilih shift
         if (! $selectedShift) {
             return view('daily-reports-fo.index', [
                 'branch' => $branch,
@@ -51,43 +51,18 @@ class DailyReportFoController extends Controller
             ]);
         }
 
+        // Get all slots untuk shift yang dipilih
         $slots = TimeHelper::getShiftSlots($selectedShift);
 
-        // $existingReports = DailyReportFO::where('user_id', $user->id)
-        //     ->whereDate('tanggal', $today)
-        //     ->where('shift', $selectedShift)
-        //     ->with([
-        //         'details' => function ($q) {
-        //             $q->with(['field', 'photos']);
-        //         },
-        //     ])
-        //     ->get()
-        //     ->each(function ($report) {
-        //         // Jumlahkan semua foto dari setiap detail
-        //         $report->total_photos = $report->details->sum(function ($detail) {
-        //             return $detail->photos->count();
-        //         });
-        //     })
-        //     ->keyBy('slot');
-
-        // Ganti seluruh bagian $existingReports dan $stats di method index() dengan ini:
+        // Get laporan yang sudah ada hari ini
         $existingReports = DailyReportFO::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
-            ->with([
-                'details' => function ($q) {
-                    $q->with(['field', 'photos']);
-                },
-                'validation.action', // ⬅️ TAMBAH: load validasi + nama tindakan
-            ])
+            ->with('photos')
             ->get()
-            ->each(function ($report) {
-                $report->total_photos = $report->details->sum(function ($detail) {
-                    return $detail->photos->count();
-                });
-            })
-            ->keyBy('slot');
+            ->keyBy('slot'); // Key by slot number untuk easy access
 
+        // Build slot data dengan status
         $slotData = [];
         foreach ($slots as $slot) {
             $slotNumber = $slot['slot_number'];
@@ -100,7 +75,7 @@ class DailyReportFoController extends Controller
                 'slot_number' => $slotNumber,
                 'slot_time' => $slotTime,
                 'slot_config' => $slot,
-                'status' => $status,
+                'status' => $status, // 'waiting', 'open', 'closed'
                 'window' => TimeHelper::getSlotWindowRange($slotTime, $branch->id, $today),
                 'existing_report' => $existingReport,
                 'has_report' => $existingReport !== null,
@@ -111,19 +86,11 @@ class DailyReportFoController extends Controller
             ];
         }
 
-        // $stats = [
-        //     'total_slots' => 4,
-        //     'completed_slots' => $existingReports->count(),
-        //     'progress_percentage' => ($existingReports->count() / 4) * 100,
-        // ];
-        // Update $stats: tambah hitungan per validation_status
+        // Stats hari ini
         $stats = [
             'total_slots' => 4,
             'completed_slots' => $existingReports->count(),
             'progress_percentage' => ($existingReports->count() / 4) * 100,
-            'approved' => $existingReports->where('validation_status', 'approved')->count(),
-            'rejected' => $existingReports->where('validation_status', 'rejected')->count(),
-            'pending' => $existingReports->where('validation_status', 'pending')->count(),
         ];
 
         return view('daily-reports-fo.index', [
@@ -146,14 +113,17 @@ class DailyReportFoController extends Controller
     {
         $user = Auth::user();
 
+        // Validation
         $validated = $request->validate([
             'shift' => 'required|in:pagi,siang',
         ]);
 
+        // Check if user can still change shift (belum ada laporan hari ini)
         if (! ShiftHelper::canChangeShiftToday($user->id)) {
             return back()->with('error', 'Shift sudah terkunci karena Anda sudah membuat laporan hari ini.');
         }
 
+        // Set shift
         ShiftHelper::setTodayShift($validated['shift']);
 
         return redirect()->route('daily-reports-fo.index')
@@ -162,7 +132,6 @@ class DailyReportFoController extends Controller
 
     /**
      * Show Slot Form (untuk upload atau edit)
-     * DIUBAH: Load categories + fields dari master data
      */
     public function showSlot($slotNumber)
     {
@@ -176,6 +145,7 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $today = $branchTime->toDateString();
 
+        // Get shift
         $selectedShift = ShiftHelper::determineShift($user->id);
 
         if (! $selectedShift) {
@@ -183,6 +153,7 @@ class DailyReportFoController extends Controller
                 ->with('error', 'Silakan pilih shift terlebih dahulu.');
         }
 
+        // Get slot config
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
         if (! $slotConfig) {
@@ -191,40 +162,23 @@ class DailyReportFoController extends Controller
 
         $slotTime = $slotConfig['slot_time'];
 
+        // Check if slot is open
         $status = TimeHelper::getSlotStatus($slotTime, $branch->id, $today);
 
         if ($status !== 'open') {
             return back()->with('error', 'Slot ini belum dibuka atau sudah ditutup.');
         }
 
-        // Load existing report beserta details dan photos
+        // Check if already has report
         $existingReport = DailyReportFO::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
             ->where('slot', $slotNumber)
-            ->with([
-                'details' => function ($q) {
-                    $q->with('field', 'photos');
-                },
-            ])
+            ->with('photos')
             ->first();
 
-        // DIUBAH: Load dari master data (bukan dari config)
-        $categories = ReportCategory::active()
-            ->ordered()
-            ->with(['fields' => function ($q) {
-                $q->active()->ordered();
-            }])
-            ->get();
-
-        // Jika edit mode, buat map detail yang sudah ada: field_id => detail
-        // Memudahkan view untuk pre-fill nilai
-        $existingDetails = collect();
-        if ($existingReport) {
-            $existingDetails = $existingReport->details->keyBy('field_id');
-        }
-
         $window = TimeHelper::getSlotWindowRange($slotTime, $branch->id, $today);
+        $categories = config('daily_report_fo.photo_categories');
 
         return view('daily-reports-fo.slot-form', [
             'branch' => $branch,
@@ -235,15 +189,13 @@ class DailyReportFoController extends Controller
             'slotTime' => $slotTime,
             'window' => $window,
             'existingReport' => $existingReport,
-            'existingDetails' => $existingDetails,
             'isEdit' => $existingReport !== null,
-            'categories' => $categories,   // dari master data
+            'categories' => $categories,
         ]);
     }
 
     /**
      * Store Slot Report (POST)
-     * DIUBAH TOTAL: Simpan ke daily_report_fo_details + photos via detail
      */
     public function storeSlot(Request $request, $slotNumber)
     {
@@ -257,6 +209,7 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $today = $branchTime->toDateString();
 
+        // Get shift
         $selectedShift = ShiftHelper::determineShift($user->id);
 
         if (! $selectedShift) {
@@ -264,6 +217,7 @@ class DailyReportFoController extends Controller
                 ->with('error', 'Silakan pilih shift terlebih dahulu.');
         }
 
+        // Get slot config
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
         if (! $slotConfig) {
@@ -272,10 +226,12 @@ class DailyReportFoController extends Controller
 
         $slotTime = $slotConfig['slot_time'];
 
+        // Check if slot is open
         if (! TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
             return back()->with('error', 'Window upload untuk slot ini sudah ditutup.');
         }
 
+        // Check if already exists
         $existing = DailyReportFO::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
@@ -286,140 +242,59 @@ class DailyReportFoController extends Controller
             return back()->with('error', 'Anda sudah melaporkan slot ini.');
         }
 
-        // -------------------------------------------------------
-        // Load semua field aktif dari master
-        // -------------------------------------------------------
-        $fields = ReportField::active()->ordered()->get();
+        // Build validation rules untuk photos
+        $categories = array_keys(config('daily_report_fo.photo_categories'));
+        $photoRules = [];
 
-        // -------------------------------------------------------
-        // Build validation rules secara dinamis dari master data
-        // -------------------------------------------------------
-        $validationRules = [
-            'keterangan' => 'nullable|string|max:1000',
-        ];
-        $validationMessages = [];
-
-        foreach ($fields as $field) {
-            $inputName = "field_{$field->id}";
-            $photoName = "photo_{$field->id}";
-
-            switch ($field->input_type) {
-                case 'number':
-                    // Wajib diisi (boleh 0), harus angka, tidak boleh negatif
-                    $rule = $field->is_required
-                        ? 'required|numeric|min:0'
-                        : 'nullable|numeric|min:0';
-                    $validationRules[$inputName] = $rule;
-                    if ($field->is_required) {
-                        $validationMessages["{$inputName}.required"] = "{$field->name} wajib diisi (isi 0 jika tidak ada).";
-                    }
-                    break;
-
-                case 'checkbox':
-                    // Checkbox tidak wajib — unchecked = false, checked = true
-                    $validationRules[$inputName] = 'nullable|boolean';
-                    break;
-
-                case 'photo_number':
-                    // Angka: opsional
-                    $validationRules[$inputName] = 'nullable|numeric|min:0';
-                    // Foto: wajib minimal 1 jika field is_required
-                    if ($field->is_required) {
-                        $validationRules[$photoName] = 'required|array|min:1';
-                        $validationRules["{$photoName}.*"] = 'required|image|mimes:jpg,jpeg,png|max:5120';
-                        $validationMessages["{$photoName}.required"] = "Foto bukti untuk {$field->name} wajib diupload.";
-                    } else {
-                        $validationRules[$photoName] = 'nullable|array';
-                        $validationRules["{$photoName}.*"] = 'nullable|image|mimes:jpg,jpeg,png|max:5120';
-                    }
-                    break;
-
-                case 'text':
-                    $rule = $field->is_required
-                        ? 'required|string|max:1000'
-                        : 'nullable|string|max:1000';
-                    $validationRules[$inputName] = $rule;
-                    break;
-            }
+        foreach ($categories as $category) {
+            $photoRules["photos_{$category}"] = 'required|array|min:1';
+            $photoRules["photos_{$category}.*"] = 'required|image|mimes:jpg,jpeg,png|max:5120';
         }
 
-        $request->validate($validationRules, $validationMessages);
+        // Validation
+        $validated = $request->validate(array_merge([
+            'keterangan' => 'nullable|string|max:1000',
+        ], $photoRules), [
+            'photos_*.required' => 'Setiap kategori wajib memiliki minimal 1 foto.',
+            'photos_*.min' => 'Setiap kategori wajib memiliki minimal 1 foto.',
+        ]);
 
-        // -------------------------------------------------------
-        // Simpan dengan DB transaction
-        // -------------------------------------------------------
-        DB::transaction(function () use ($request, $fields, $user, $branch, $today, $selectedShift, $slotNumber, $slotTime) {
+        // Create report
+        $report = DailyReportFO::create([
+            'user_id' => $user->id,
+            'branch_id' => $branch->id,
+            'tanggal' => $today,
+            'shift' => $selectedShift,
+            'slot' => $slotNumber,
+            'slot_time' => $slotTime,
+            'uploaded_at' => now(),
+            'keterangan' => $validated['keterangan'],
+        ]);
 
-            // 1. Buat header report
-            $report = DailyReportFO::create([
-                'user_id' => $user->id,
-                'branch_id' => $branch->id,
-                'tanggal' => $today,
-                'shift' => $selectedShift,
-                'slot' => $slotNumber,
-                'slot_time' => $slotTime,
-                'uploaded_at' => now(),
-                'keterangan' => $request->input('keterangan'),
-            ]);
+        // Upload photos per kategori
+        foreach ($categories as $category) {
+            $fieldName = "photos_{$category}";
 
-            // 2. Loop setiap field, simpan detail + foto
-            foreach ($fields as $field) {
-                $inputName = "field_{$field->id}";
-                $photoName = "photo_{$field->id}";
+            if ($request->hasFile($fieldName)) {
+                foreach ($request->file($fieldName) as $photo) {
+                    // Compress & save using ImageHelper
+                    $filePath = ImageHelper::compressAndSave(
+                        $photo,
+                        "daily_reports_fo/{$report->id}/{$category}",
+                        config('daily_report_fo.image_compression.max_width', 1920),
+                        config('daily_report_fo.image_compression.max_height', 1080),
+                        config('daily_report_fo.image_compression.quality', 80)
+                    );
 
-                // Tentukan value berdasarkan input_type
-                $valueBoolean = null;
-                $valueNumber = null;
-                $valueText = null;
-
-                switch ($field->input_type) {
-                    case 'checkbox':
-                        // Checkbox: true jika dicentang, false jika tidak
-                        $valueBoolean = $request->boolean($inputName);
-                        break;
-
-                    case 'number':
-                        $valueNumber = $request->input($inputName);
-                        break;
-
-                    case 'photo_number':
-                        $valueNumber = $request->input($inputName);
-                        break;
-
-                    case 'text':
-                        $valueText = $request->input($inputName);
-                        break;
-                }
-
-                // Buat record detail
-                $detail = DailyReportFODetail::create([
-                    'daily_report_fo_id' => $report->id,
-                    'field_id' => $field->id,
-                    'value_boolean' => $valueBoolean,
-                    'value_number' => $valueNumber,
-                    'value_text' => $valueText,
-                ]);
-
-                // 3. Upload foto jika field tipe photo / photo_number
-                if ($field->requiresPhoto() && $request->hasFile($photoName)) {
-                    foreach ($request->file($photoName) as $photo) {
-                        $filePath = ImageHelper::compressAndSave(
-                            $photo,
-                            "daily_reports_fo/{$report->id}/{$field->code}",
-                            config('daily_report_fo.image_compression.max_width', 1920),
-                            config('daily_report_fo.image_compression.max_height', 1080),
-                            config('daily_report_fo.image_compression.quality', 80)
-                        );
-
-                        DailyReportFOPhoto::create([
-                            'daily_report_fo_detail_id' => $detail->id,
-                            'file_path' => $filePath,
-                            'file_name' => $photo->getClientOriginalName(),
-                        ]);
-                    }
+                    DailyReportFOPhoto::create([
+                        'daily_report_fo_id' => $report->id,
+                        'kategori' => $category,
+                        'file_path' => $filePath,
+                        'file_name' => $photo->getClientOriginalName(),
+                    ]);
                 }
             }
-        });
+        }
 
         return redirect()->route('daily-reports-fo.index')
             ->with('success', "Laporan Slot {$slotNumber} berhasil diupload!");
@@ -430,12 +305,12 @@ class DailyReportFoController extends Controller
      */
     public function editSlot($slotNumber)
     {
+        // Reuse showSlot method (already handles edit mode)
         return $this->showSlot($slotNumber);
     }
 
     /**
      * Update Slot (PUT)
-     * DIUBAH TOTAL: Update detail + handle foto via detail_id
      */
     public function updateSlot(Request $request, $slotNumber)
     {
@@ -449,6 +324,7 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $today = $branchTime->toDateString();
 
+        // Get shift
         $selectedShift = ShiftHelper::determineShift($user->id);
 
         if (! $selectedShift) {
@@ -456,6 +332,7 @@ class DailyReportFoController extends Controller
                 ->with('error', 'Silakan pilih shift terlebih dahulu.');
         }
 
+        // Get slot config
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
         if (! $slotConfig) {
@@ -464,179 +341,90 @@ class DailyReportFoController extends Controller
 
         $slotTime = $slotConfig['slot_time'];
 
+        // Check if slot is still open
         if (! TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
             return back()->with('error', 'Window upload untuk slot ini sudah ditutup. Tidak bisa edit.');
         }
 
+        // Get existing report
         $report = DailyReportFO::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
             ->where('slot', $slotNumber)
-            ->with([
-                'details' => function ($q) {
-                    $q->with('field', 'photos');
-                },
-            ])
             ->firstOrFail();
 
-        // -------------------------------------------------------
-        // Load semua field aktif dari master
-        // -------------------------------------------------------
-        $fields = ReportField::active()->ordered()->get();
+        // Build validation rules
+        $categories = array_keys(config('daily_report_fo.photo_categories'));
+        $photoRules = [];
 
-        // -------------------------------------------------------
-        // Build validation rules (saat edit, foto opsional
-        // kecuali field is_required dan belum punya foto sama sekali)
-        // -------------------------------------------------------
-        $validationRules = [
+        foreach ($categories as $category) {
+            // Optional saat edit (bisa tidak upload foto baru)
+            $photoRules["photos_{$category}"] = 'nullable|array';
+            $photoRules["photos_{$category}.*"] = 'nullable|image|mimes:jpg,jpeg,png|max:5120';
+
+            // Delete photos rules
+            $photoRules["delete_photos_{$category}"] = 'nullable|array';
+            $photoRules["delete_photos_{$category}.*"] = 'exists:daily_report_fo_photos,id';
+        }
+
+        // Validation
+        $validated = $request->validate(array_merge([
             'keterangan' => 'nullable|string|max:1000',
-        ];
-        $validationMessages = [];
+        ], $photoRules));
 
-        // Map existing details: field_id => detail (untuk cek foto existing)
-        $existingDetails = $report->details->keyBy('field_id');
+        // Update keterangan
+        $report->update([
+            'keterangan' => $validated['keterangan'],
+        ]);
 
-        foreach ($fields as $field) {
-            $inputName = "field_{$field->id}";
-            $photoName = "photo_{$field->id}";
-            $deletePhotoName = "delete_photos_{$field->id}";
+        // Process each category
+        foreach ($categories as $category) {
+            $deleteFieldName = "delete_photos_{$category}";
+            $uploadFieldName = "photos_{$category}";
 
-            switch ($field->input_type) {
-                case 'number':
-                    $rule = $field->is_required
-                        ? 'required|numeric|min:0'
-                        : 'nullable|numeric|min:0';
-                    $validationRules[$inputName] = $rule;
-                    if ($field->is_required) {
-                        $validationMessages["{$inputName}.required"] = "{$field->name} wajib diisi (isi 0 jika tidak ada).";
-                    }
-                    break;
+            // Delete selected photos
+            if ($request->has($deleteFieldName)) {
+                $photosToDelete = DailyReportFOPhoto::whereIn('id', $request->input($deleteFieldName))
+                    ->where('daily_report_fo_id', $report->id)
+                    ->where('kategori', $category)
+                    ->get();
 
-                case 'checkbox':
-                    $validationRules[$inputName] = 'nullable|boolean';
-                    break;
+                foreach ($photosToDelete as $photo) {
+                    ImageHelper::delete($photo->file_path);
+                    $photo->delete();
+                }
+            }
 
-                case 'photo_number':
-                    $validationRules[$inputName] = 'nullable|numeric|min:0';
+            // Upload new photos
+            if ($request->hasFile($uploadFieldName)) {
+                foreach ($request->file($uploadFieldName) as $photo) {
+                    $filePath = ImageHelper::compressAndSave(
+                        $photo,
+                        "daily_reports_fo/{$report->id}/{$category}",
+                        config('daily_report_fo.image_compression.max_width', 1920),
+                        config('daily_report_fo.image_compression.max_height', 1080),
+                        config('daily_report_fo.image_compression.quality', 80)
+                    );
 
-                    // Cek apakah masih ada foto existing setelah dikurangi yang akan dihapus
-                    $existingDetail = $existingDetails->get($field->id);
-                    $existingPhotoCount = $existingDetail ? $existingDetail->photos->count() : 0;
-                    $deleteCount = count($request->input($deletePhotoName, []));
-                    $remainingPhotos = $existingPhotoCount - $deleteCount;
-
-                    // Foto baru wajib jika: field required DAN tidak ada foto yang tersisa
-                    if ($field->is_required && $remainingPhotos <= 0) {
-                        $validationRules[$photoName] = 'required|array|min:1';
-                        $validationRules["{$photoName}.*"] = 'required|image|mimes:jpg,jpeg,png|max:5120';
-                        $validationMessages["{$photoName}.required"] = "Foto bukti untuk {$field->name} wajib ada minimal 1.";
-                    } else {
-                        $validationRules[$photoName] = 'nullable|array';
-                        $validationRules["{$photoName}.*"] = 'nullable|image|mimes:jpg,jpeg,png|max:5120';
-                    }
-
-                    // Validasi ID foto yang akan dihapus (harus milik detail ini)
-                    $validationRules[$deletePhotoName] = 'nullable|array';
-                    $validationRules["{$deletePhotoName}.*"] = 'nullable|integer';
-                    break;
-
-                case 'text':
-                    $rule = $field->is_required
-                        ? 'required|string|max:1000'
-                        : 'nullable|string|max:1000';
-                    $validationRules[$inputName] = $rule;
-                    break;
+                    DailyReportFOPhoto::create([
+                        'daily_report_fo_id' => $report->id,
+                        'kategori' => $category,
+                        'file_path' => $filePath,
+                        'file_name' => $photo->getClientOriginalName(),
+                    ]);
+                }
             }
         }
 
-        $request->validate($validationRules, $validationMessages);
-
-        // -------------------------------------------------------
-        // Update dengan DB transaction
-        // -------------------------------------------------------
-        DB::transaction(function () use ($request, $fields, $report) {
-
-            // 1. Update keterangan
-            $report->update([
-                'keterangan' => $request->input('keterangan'),
-            ]);
-
-            // 2. Loop setiap field
-            foreach ($fields as $field) {
-                $inputName = "field_{$field->id}";
-                $photoName = "photo_{$field->id}";
-                $deletePhotoName = "delete_photos_{$field->id}";
-
-                // Tentukan value
-                $valueBoolean = null;
-                $valueNumber = null;
-                $valueText = null;
-
-                switch ($field->input_type) {
-                    case 'checkbox':
-                        $valueBoolean = $request->boolean($inputName);
-                        break;
-                    case 'number':
-                        $valueNumber = $request->input($inputName);
-                        break;
-                    case 'photo_number':
-                        $valueNumber = $request->input($inputName);
-                        break;
-                    case 'text':
-                        $valueText = $request->input($inputName);
-                        break;
-                }
-
-                // Update atau buat detail (updateOrCreate)
-                $detail = DailyReportFODetail::updateOrCreate(
-                    [
-                        'daily_report_fo_id' => $report->id,
-                        'field_id' => $field->id,
-                    ],
-                    [
-                        'value_boolean' => $valueBoolean,
-                        'value_number' => $valueNumber,
-                        'value_text' => $valueText,
-                    ]
-                );
-
-                // 3. Hapus foto yang ditandai untuk dihapus
-                if ($field->requiresPhoto() && $request->has($deletePhotoName)) {
-                    $photoIdsToDelete = $request->input($deletePhotoName, []);
-
-                    if (! empty($photoIdsToDelete)) {
-                        // Pastikan foto ini memang milik detail ini (security check)
-                        $photosToDelete = DailyReportFOPhoto::whereIn('id', $photoIdsToDelete)
-                            ->where('daily_report_fo_detail_id', $detail->id)
-                            ->get();
-
-                        foreach ($photosToDelete as $photo) {
-                            ImageHelper::delete($photo->file_path);
-                            $photo->delete();
-                        }
-                    }
-                }
-
-                // 4. Upload foto baru
-                if ($field->requiresPhoto() && $request->hasFile($photoName)) {
-                    foreach ($request->file($photoName) as $photo) {
-                        $filePath = ImageHelper::compressAndSave(
-                            $photo,
-                            "daily_reports_fo/{$report->id}/{$field->code}",
-                            config('daily_report_fo.image_compression.max_width', 1920),
-                            config('daily_report_fo.image_compression.max_height', 1080),
-                            config('daily_report_fo.image_compression.quality', 80)
-                        );
-
-                        DailyReportFOPhoto::create([
-                            'daily_report_fo_detail_id' => $detail->id,
-                            'file_path' => $filePath,
-                            'file_name' => $photo->getClientOriginalName(),
-                        ]);
-                    }
-                }
+        // Validate: Each category must have at least 1 photo
+        $report->refresh();
+        foreach ($categories as $category) {
+            if ($report->getPhotoCategoryCount($category) < 1) {
+                return back()
+                    ->withErrors(["photos_{$category}" => "Kategori {$category} harus memiliki minimal 1 foto."])
+                    ->withInput();
             }
-        });
+        }
 
         return redirect()->route('daily-reports-fo.index')
             ->with('success', "Laporan Slot {$slotNumber} berhasil diperbarui!");
@@ -662,19 +450,18 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $historyDays = config('daily_report_fo.history_days', 30);
 
+        // Query
         $query = DailyReportFO::where('user_id', $user->id)
             ->where('branch_id', $branch->id)
             ->where('tanggal', '>=', $branchTime->copy()->subDays($historyDays)->toDateString())
-            ->with([
-                'details' => function ($q) {
-                    $q->with('field.category', 'photos');
-                },
-            ]);
+            ->with('photos');
 
+        // Filter shift
         if ($shiftFilter) {
             $query->where('shift', $shiftFilter);
         }
 
+        // Filter date range
         if ($dateFrom) {
             $query->whereDate('tanggal', '>=', $dateFrom);
         }
@@ -689,6 +476,7 @@ class DailyReportFoController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
+        // Stats
         $stats = [
             'total_reports' => $query->count(),
             'total_days' => $query->select('tanggal')->distinct()->count(),
@@ -714,6 +502,7 @@ class DailyReportFoController extends Controller
         $user = Auth::user();
         $tanggal = $request->input('tanggal', now()->toDateString());
 
+        // Get managed branches
         if ($user->hasRole('superadmin')) {
             $managedBranches = Branch::orderBy('name')->get();
         } else {
@@ -724,6 +513,7 @@ class DailyReportFoController extends Controller
             return back()->with('error', 'Anda tidak mengelola cabang manapun.');
         }
 
+        // Selected branch (default to first)
         $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
         $selectedBranch = $managedBranches->find($selectedBranchId);
 
@@ -731,6 +521,7 @@ class DailyReportFoController extends Controller
             abort(403, 'Anda tidak memiliki akses ke cabang ini.');
         }
 
+        // Get all FO in this branch
         $foUsers = $selectedBranch->users()
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'fo');
@@ -738,16 +529,14 @@ class DailyReportFoController extends Controller
             ->with(['branches'])
             ->get();
 
+        // Get all reports for today
         $todayReports = DailyReportFO::where('branch_id', $selectedBranchId)
             ->whereDate('tanggal', $tanggal)
-            ->with([
-                'details' => function ($q) {
-                    $q->with('field.category', 'photos');
-                },
-            ])
+            ->with('photos')
             ->get()
             ->groupBy('user_id');
 
+        // Build FO progress data
         $foProgress = [];
         foreach ($foUsers as $fo) {
             $userReports = $todayReports->get($fo->id, collect());
@@ -761,7 +550,7 @@ class DailyReportFoController extends Controller
                 $slotStatus[$slotNumber] = [
                     'has_report' => $report !== null,
                     'report' => $report,
-                    'detail_count' => $report ? $report->details->count() : 0,
+                    'photo_count' => $report ? $report->photos->count() : 0,
                 ];
             }
 
@@ -778,6 +567,7 @@ class DailyReportFoController extends Controller
             ];
         }
 
+        // Overall stats
         $stats = [
             'total_fo' => $foUsers->count(),
             'total_reports_today' => DailyReportFO::where('branch_id', $selectedBranchId)
@@ -805,6 +595,7 @@ class DailyReportFoController extends Controller
     {
         $user = Auth::user();
 
+        // Get managed branches
         if ($user->hasRole('superadmin')) {
             $managedBranches = Branch::orderBy('name')->get();
         } else {
@@ -818,6 +609,7 @@ class DailyReportFoController extends Controller
             abort(403, 'Anda tidak memiliki akses ke cabang ini.');
         }
 
+        // Get FO users
         $foUsers = $selectedBranch->users()
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'fo');
@@ -837,12 +629,15 @@ class DailyReportFoController extends Controller
      */
     public function managerFODetail(Request $request, $userId)
     {
+        // dd($userId, $request);
         $user = Auth::user();
         $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
         $dateTo = $request->input('date_to', now()->toDateString());
 
+        // Get FO user
         $foUser = User::findOrFail($userId);
 
+        // Check permission
         if (! $user->hasRole('superadmin')) {
             $managedBranchIds = $user->managedBranches->pluck('id');
             $foUserBranchIds = $foUser->branches->pluck('id');
@@ -852,31 +647,27 @@ class DailyReportFoController extends Controller
             }
         }
 
+        // Get reports
         $reports = DailyReportFO::where('user_id', $userId)
             ->whereBetween('tanggal', [$dateFrom, $dateTo])
-            ->with([
-                'branch',
-                'details' => function ($q) {
-                    $q->with('field.category', 'photos');
-                },
-            ])
+            ->with(['branch', 'photos'])
             ->orderBy('tanggal', 'desc')
             ->orderBy('shift', 'asc')
             ->orderBy('slot', 'asc')
             ->paginate(20)
             ->withQueryString();
 
-        // Hitung total foto dari semua detail
-        $totalPhotos = DailyReportFOPhoto::whereHas('detail.report', function ($q) use ($userId, $dateFrom, $dateTo) {
-            $q->where('user_id', $userId)
-                ->whereBetween('tanggal', [$dateFrom, $dateTo]);
-        })->count();
-
+        // Stats
         $stats = [
             'total_reports' => DailyReportFO::where('user_id', $userId)
                 ->whereBetween('tanggal', [$dateFrom, $dateTo])
                 ->count(),
-            'total_photos' => $totalPhotos,
+            'total_photos' => DailyReportFOPhoto::whereIn('daily_report_fo_id', function ($query) use ($userId, $dateFrom, $dateTo) {
+                $query->select('id')
+                    ->from('daily_report_fo')
+                    ->where('user_id', $userId)
+                    ->whereBetween('tanggal', [$dateFrom, $dateTo]);
+            })->count(),
             'total_days' => DailyReportFO::where('user_id', $userId)
                 ->whereBetween('tanggal', [$dateFrom, $dateTo])
                 ->select('tanggal')
@@ -894,12 +685,13 @@ class DailyReportFoController extends Controller
     }
 
     /**
-     * Manager - Reports List
+     * Manager - Reports List (All reports dari semua FO)
      */
     public function managerReports(Request $request)
     {
         $user = Auth::user();
 
+        // Get managed branches
         if ($user->hasRole('superadmin')) {
             $managedBranches = Branch::orderBy('name')->get();
         } else {
@@ -917,15 +709,10 @@ class DailyReportFoController extends Controller
         $shiftFilter = $request->input('shift');
         $perPage = (int) $request->input('per_page', 25);
 
+        // Query
         $query = DailyReportFO::where('branch_id', $selectedBranchId)
             ->whereDate('tanggal', $tanggal)
-            ->with([
-                'user',
-                'branch',
-                'details' => function ($q) {
-                    $q->with('field.category', 'photos');
-                },
-            ]);
+            ->with(['user', 'branch', 'photos']);
 
         if ($shiftFilter) {
             $query->where('shift', $shiftFilter);
@@ -937,16 +724,17 @@ class DailyReportFoController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $totalPhotos = DailyReportFOPhoto::whereHas('detail.report', function ($q) use ($selectedBranchId, $tanggal) {
-            $q->where('branch_id', $selectedBranchId)
-                ->whereDate('tanggal', $tanggal);
-        })->count();
-
+        // Stats
         $stats = [
             'total_reports' => DailyReportFO::where('branch_id', $selectedBranchId)
                 ->whereDate('tanggal', $tanggal)
                 ->count(),
-            'total_photos' => $totalPhotos,
+            'total_photos' => DailyReportFOPhoto::whereIn('daily_report_fo_id', function ($q) use ($selectedBranchId, $tanggal) {
+                $q->select('id')
+                    ->from('daily_report_fo')
+                    ->where('branch_id', $selectedBranchId)
+                    ->whereDate('tanggal', $tanggal);
+            })->count(),
         ];
 
         return view('daily-reports-fo.manager.reports', [
@@ -964,14 +752,9 @@ class DailyReportFoController extends Controller
     public function managerReportDetail($reportId)
     {
         $user = Auth::user();
-        $report = DailyReportFO::with([
-            'user',
-            'branch',
-            'details' => function ($q) {
-                $q->with('field.category', 'photos');
-            },
-        ])->findOrFail($reportId);
+        $report = DailyReportFO::with(['user', 'branch', 'photos'])->findOrFail($reportId);
 
+        // Check permission
         if (! $user->hasRole('superadmin')) {
             $managedBranchIds = $user->managedBranches->pluck('id');
 
@@ -980,85 +763,66 @@ class DailyReportFoController extends Controller
             }
         }
 
-        // Group details by category untuk tampilan
-        $detailsByCategory = $report->details->groupBy(function ($detail) {
-            return $detail->field->category->name ?? 'Lainnya';
-        });
+        // Group photos by category
+        $photosByCategory = $report->photos->groupBy('kategori');
 
         return view('daily-reports-fo.manager.report-detail', [
             'report' => $report,
-            'detailsByCategory' => $detailsByCategory,
+            'photosByCategory' => $photosByCategory,
         ]);
     }
 
     /**
      * Manager - Export Excel
      */
-    public function managerExport(Request $request)
-    {
-        $user = Auth::user();
-
-        if ($user->hasRole('superadmin')) {
-            $managedBranches = Branch::orderBy('name')->get();
-        } else {
-            $managedBranches = $user->managedBranches;
-        }
-
-        $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
-        $selectedBranch = $managedBranches->find($selectedBranchId);
-
-        if (! $selectedBranch) {
-            abort(403, 'Anda tidak memiliki akses ke cabang ini.');
-        }
-
-        $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
-        $dateTo = $request->input('date_to', now()->toDateString());
-        $shiftFilter = $request->input('shift');
-
-        $query = DailyReportFO::where('branch_id', $selectedBranchId)
-            ->whereBetween('tanggal', [$dateFrom, $dateTo]);
-
-        if ($shiftFilter) {
-            $query->where('shift', $shiftFilter);
-        }
-
-        $query->orderBy('tanggal', 'desc')
-            ->orderBy('shift', 'asc')
-            ->orderBy('slot', 'asc');
-
-        $filename = 'Daily_Report_FO_'.$selectedBranch->name.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
-        $title = 'Report '.$selectedBranch->name;
-
-        return Excel::download(new DailyReportFOExport($query, $title), $filename);
-    }
+    // public function managerExport(Request $request)
+    // {
+    //     // TODO: Implement Excel export using Laravel Excel
+    //     return back()->with('info', 'Fitur export sedang dalam pengembangan.');
+    // }
 
     // ==============================
     // MARKETING SECTION
     // ==============================
 
     /**
-     * Marketing Dashboard
+     * Marketing Dashboard - Analytics semua cabang
      */
     public function marketingDashboard(Request $request)
     {
         $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
         $dateTo = $request->input('date_to', now()->toDateString());
 
+        // Get all branches
         $branches = Branch::orderBy('name')->get();
 
-        $totalPhotos = DailyReportFOPhoto::whereHas('detail.report', function ($q) use ($dateFrom, $dateTo) {
-            $q->whereBetween('tanggal', [$dateFrom, $dateTo]);
-        })->count();
-
+        // Overall stats
         $stats = [
             'total_reports' => DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])->count(),
-            'total_photos' => $totalPhotos,
+            'total_photos' => DailyReportFOPhoto::whereIn('daily_report_fo_id', function ($q) use ($dateFrom, $dateTo) {
+                $q->select('id')
+                    ->from('daily_report_fo')
+                    ->whereBetween('tanggal', [$dateFrom, $dateTo]);
+            })->count(),
             'total_fo' => User::whereHas('roles', function ($q) {
                 $q->where('name', 'fo');
             })->count(),
             'total_branches' => $branches->count(),
         ];
 
+        // Photos by category
+        $photosByCategory = DailyReportFOPhoto::whereIn('daily_report_fo_id', function ($q) use ($dateFrom, $dateTo) {
+            $q->select('id')
+                ->from('daily_report_fo')
+                ->whereBetween('tanggal', [$dateFrom, $dateTo]);
+        })
+            ->selectRaw('kategori, COUNT(*) as total')
+            ->groupBy('kategori')
+            ->get()
+            ->pluck('total', 'kategori')
+            ->toArray();
+
+        // Reports per day (for chart)
         $reportsPerDay = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->selectRaw('DATE(tanggal) as date, COUNT(*) as total')
             ->groupBy('date')
@@ -1067,6 +831,7 @@ class DailyReportFoController extends Controller
             ->pluck('total', 'date')
             ->toArray();
 
+        // Top performing FO
         $topFO = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->selectRaw('user_id, COUNT(*) as total_reports')
             ->groupBy('user_id')
@@ -1077,6 +842,7 @@ class DailyReportFoController extends Controller
 
         return view('daily-reports-fo.marketing.dashboard', [
             'stats' => $stats,
+            'photosByCategory' => $photosByCategory,
             'reportsPerDay' => $reportsPerDay,
             'topFO' => $topFO,
             'branches' => $branches,
@@ -1094,51 +860,54 @@ class DailyReportFoController extends Controller
         $dateTo = $request->input('date_to', now()->toDateString());
         $branchId = $request->input('branch_id');
 
+        // Base query
         $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo]);
+
         if ($branchId) {
             $query->where('branch_id', $branchId);
         }
 
+        // Photos by category (detailed)
+        $categoryStats = [];
+        $categories = config('daily_report_fo.photo_categories');
+
+        foreach ($categories as $key => $label) {
+            $total = DailyReportFOPhoto::where('kategori', $key)
+                ->whereIn('daily_report_fo_id', function ($q) use ($dateFrom, $dateTo, $branchId) {
+                    $q->select('id')
+                        ->from('daily_report_fo')
+                        ->whereBetween('tanggal', [$dateFrom, $dateTo]);
+
+                    if ($branchId) {
+                        $q->where('branch_id', $branchId);
+                    }
+                })
+                ->count();
+
+            $categoryStats[$key] = [
+                'label' => $label,
+                'total' => $total,
+            ];
+        }
+
+        // Reports by shift
         $reportsByShift = $query->selectRaw('shift, COUNT(*) as total')
             ->groupBy('shift')
             ->get()
             ->pluck('total', 'shift')
             ->toArray();
 
+        // Reports by branch
         $reportsByBranch = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->selectRaw('branch_id, COUNT(*) as total')
             ->groupBy('branch_id')
             ->with('branch')
             ->get();
 
-        // Stats per field marketing dari master data
-        $marketingCategory = ReportCategory::where('code', 'marketing')->first();
-        $marketingStats = [];
-
-        if ($marketingCategory) {
-            $marketingFields = $marketingCategory->fields()->active()->ordered()->get();
-
-            foreach ($marketingFields as $field) {
-                $totalNilai = DailyReportFODetail::where('field_id', $field->id)
-                    ->whereHas('report', function ($q) use ($dateFrom, $dateTo, $branchId) {
-                        $q->whereBetween('tanggal', [$dateFrom, $dateTo]);
-                        if ($branchId) {
-                            $q->where('branch_id', $branchId);
-                        }
-                    })
-                    ->sum('value_number');
-
-                $marketingStats[] = [
-                    'field' => $field,
-                    'total' => $totalNilai,
-                ];
-            }
-        }
-
         $branches = Branch::orderBy('name')->get();
 
         return view('daily-reports-fo.marketing.analytics', [
-            'marketingStats' => $marketingStats,
+            'categoryStats' => $categoryStats,
             'reportsByShift' => $reportsByShift,
             'reportsByBranch' => $reportsByBranch,
             'branches' => $branches,
@@ -1159,14 +928,9 @@ class DailyReportFoController extends Controller
         $shiftFilter = $request->input('shift');
         $perPage = (int) $request->input('per_page', 25);
 
+        // Query
         $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
-            ->with([
-                'user',
-                'branch',
-                'details' => function ($q) {
-                    $q->with('field.category', 'photos');
-                },
-            ]);
+            ->with(['user', 'branch', 'photos']);
 
         if ($branchId) {
             $query->where('branch_id', $branchId);
@@ -1197,23 +961,68 @@ class DailyReportFoController extends Controller
      */
     public function marketingReportDetail($reportId)
     {
-        $report = DailyReportFO::with([
-            'user',
-            'branch',
-            'details' => function ($q) {
-                $q->with('field.category', 'photos');
-            },
-        ])->findOrFail($reportId);
+        $report = DailyReportFO::with(['user', 'branch', 'photos'])->findOrFail($reportId);
 
-        // Group details by category untuk tampilan
-        $detailsByCategory = $report->details->groupBy(function ($detail) {
-            return $detail->field->category->name ?? 'Lainnya';
-        });
+        // Group photos by category
+        $photosByCategory = $report->photos->groupBy('kategori');
 
         return view('daily-reports-fo.marketing.report-detail', [
             'report' => $report,
-            'detailsByCategory' => $detailsByCategory,
+            'photosByCategory' => $photosByCategory,
         ]);
+    }
+
+    /**
+     * Marketing - Export
+     */
+    // public function marketingExport(Request $request)
+    // {
+    //     // TODO: Implement Excel/PDF export
+    //     return back()->with('info', 'Fitur export sedang dalam pengembangan.');
+    // }
+
+    /**
+     * Manager - Export Excel
+     */
+    public function managerExport(Request $request)
+    {
+        $user = Auth::user();
+
+        // Get managed branches
+        if ($user->hasRole('superadmin')) {
+            $managedBranches = Branch::orderBy('name')->get();
+        } else {
+            $managedBranches = $user->managedBranches;
+        }
+
+        $selectedBranchId = $request->input('branch_id', $managedBranches->first()->id);
+        $selectedBranch = $managedBranches->find($selectedBranchId);
+
+        if (! $selectedBranch) {
+            abort(403, 'Anda tidak memiliki akses ke cabang ini.');
+        }
+
+        $dateFrom = $request->input('date_from', now()->subDays(7)->toDateString());
+        $dateTo = $request->input('date_to', now()->toDateString());
+        $shiftFilter = $request->input('shift');
+
+        // Build query
+        $query = DailyReportFO::where('branch_id', $selectedBranchId)
+            ->whereBetween('tanggal', [$dateFrom, $dateTo]);
+
+        if ($shiftFilter) {
+            $query->where('shift', $shiftFilter);
+        }
+
+        $query->orderBy('tanggal', 'desc')
+            ->orderBy('shift', 'asc')
+            ->orderBy('slot', 'asc');
+
+        // Generate filename
+        $filename = 'Daily_Report_FO_'.$selectedBranch->name.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
+        $title = 'Report '.$selectedBranch->name;
+
+        return Excel::download(new DailyReportFOExport($query, $title), $filename);
     }
 
     /**
@@ -1226,6 +1035,7 @@ class DailyReportFoController extends Controller
         $branchId = $request->input('branch_id');
         $shiftFilter = $request->input('shift');
 
+        // Build query
         $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo]);
 
         if ($branchId) {
@@ -1241,6 +1051,7 @@ class DailyReportFoController extends Controller
             ->orderBy('shift', 'asc')
             ->orderBy('slot', 'asc');
 
+        // Generate filename
         $branchName = $branchId ? Branch::find($branchId)->name : 'All_Branches';
         $filename = 'Daily_Report_FO_'.$branchName.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
         $title = 'Report '.$branchName;

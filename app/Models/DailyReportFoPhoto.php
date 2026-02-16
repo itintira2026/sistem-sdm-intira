@@ -20,20 +20,35 @@ class DailyReportFoPhoto extends Model
 
     protected $table = 'daily_report_fo_photos';
 
+    // protected $fillable = [
+    //     'daily_report_fo_id',
+    //     'kategori',
+    //     'file_path',
+    //     'file_name',
+    // ];
+
     protected $fillable = [
-        'daily_report_fo_id',
-        'kategori',
+        'daily_report_fo_detail_id', // ⬅️ UBAH dari daily_report_fo_id
+        // 'kategori', // ⬅️ HAPUS (tidak perlu lagi)
         'file_path',
         'file_name',
     ];
 
     /**
+     * Relasi ke Detail (UBAH)
+     */
+    public function detail() // ⬅️ UBAH dari dailyReportFO()
+    {
+        return $this->belongsTo(DailyReportFODetail::class, 'daily_report_fo_detail_id');
+    }
+
+    /**
      * Relasi ke DailyReportFO
      */
-    public function dailyReportFO()
-    {
-        return $this->belongsTo(DailyReportFO::class);
-    }
+    // public function dailyReportFO()
+    // {
+    //     return $this->belongsTo(DailyReportFO::class);
+    // }
 
     /**
      * Get kategori label
@@ -43,6 +58,7 @@ class DailyReportFoPhoto extends Model
     public function getKategoriLabelAttribute()
     {
         $categories = config('daily_report_fo.photo_categories');
+
         return $categories[$this->kategori] ?? ucfirst($this->kategori);
     }
 
@@ -53,7 +69,7 @@ class DailyReportFoPhoto extends Model
      */
     public function getUrlAttribute()
     {
-        return asset('storage/' . $this->file_path);
+        return asset('storage/'.$this->file_path);
     }
 
     /**

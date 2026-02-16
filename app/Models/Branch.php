@@ -158,4 +158,8 @@ class Branch extends Model
     //         ->where('tahun', $tahun)
     //         ->sum('amount');
     // }
+    public function branchUsers()
+    {
+        return $this->hasMany(BranchUser::class);
+    }
 }

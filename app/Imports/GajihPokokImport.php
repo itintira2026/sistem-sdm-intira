@@ -47,17 +47,7 @@ class GajihPokokImport implements
         ) {
             return null;
         }
-        // if (
-        //     empty($data['email_karyawan']) &&
-        //     empty($data['cabang']) &&
-        //     empty($data['nominal_gaji'])
-        // ) {
-        //     return null;
-        // }
-
-        // ===============================
-        // CARI USER
-        // ===============================
+    
         $user = User::where('email', $data['email'])->first();
         if (!$user) {
             throw new \Exception("User dengan email {$data['email']} tidak ditemukan");
@@ -66,24 +56,7 @@ class GajihPokokImport implements
         //
         $bonus_revenue = $data['total_revenue'] * $data['persentase_revenue'] / 100;
 
-        // ===============================
-        // CARI CABANG
-        // ===============================
-        // $branch = Branch::where('code', $data['cabang'])->first();
-        // if (!$branch) {
-        //     throw new \Exception("Cabang {$data['cabang']} tidak ditemukan");
-        // }
-
-        // ===============================
-        // CARI RELASI USER-CABANG
-        // ===============================
-        // $branchUser = BranchUser::where('user_id', $user->id)
-        //     ->where('branch_id', $branch->id)
-        //     ->first();
-
-        // if (!$branchUser) {
-        //     throw new \Exception("User belum terdaftar di cabang {$data['cabang']}");
-        // }
+        
 
         // ===============================
         // SIMPAN GAJI

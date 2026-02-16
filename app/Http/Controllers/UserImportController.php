@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -15,7 +14,7 @@ class UserImportController extends Controller
             'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
 
-        $import = new UsersImport();
+        $import = new UsersImport;
         Excel::import($import, $request->file('file'));
 
         return response()->json([

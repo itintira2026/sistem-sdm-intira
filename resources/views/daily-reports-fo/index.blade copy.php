@@ -25,11 +25,18 @@
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
 
+            {{-- Alert Success --}}
             @if (session('success'))
-                <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">{{ session('success') }}</div>
+                <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
+                    {{ session('success') }}
+                </div>
             @endif
+
+            {{-- Alert Error --}}
             @if (session('error'))
-                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">{{ session('error') }}</div>
+                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
+                    {{ session('error') }}
+                </div>
             @endif
 
             @if ($needShiftSelection)
@@ -38,7 +45,9 @@
                 {{-- ============================================================ --}}
                 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div class="w-full max-w-md p-6 mx-4 bg-white rounded-lg shadow-xl">
-                        <h3 class="mb-4 text-xl font-semibold text-gray-800">🕐 Pilih Shift Hari Ini</h3>
+                        <h3 class="mb-4 text-xl font-semibold text-gray-800">
+                            🕐 Pilih Shift Hari Ini
+                        </h3>
                         <p class="mb-6 text-sm text-gray-600">
                             Pilih shift yang akan Anda kerjakan hari ini. Setelah memilih dan membuat laporan pertama,
                             shift tidak dapat diubah.
@@ -68,9 +77,11 @@
                                     </div>
                                 </label>
                             </div>
+
                             @error('shift')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+
                             <button type="submit"
                                 class="w-full px-6 py-3 mt-6 text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
                                 ✅ Konfirmasi Shift
@@ -124,113 +135,59 @@
                         <div class="h-4 transition-all bg-teal-600 rounded-full"
                             style="width: {{ $stats['progress_percentage'] }}%"></div>
                     </div>
-                    <div class="flex items-center justify-between mt-2">
-                        <p class="text-sm text-gray-600">{{ number_format($stats['progress_percentage'], 0) }}% selesai
-                        </p>
-                        {{-- Ringkasan status validasi --}}
-                        @if ($stats['completed_slots'] > 0)
-                            <div class="flex items-center gap-3 text-xs">
-                                @if ($stats['approved'] > 0)
-                                    <span class="text-green-600 font-semibold">✅ {{ $stats['approved'] }}
-                                        disetujui</span>
-                                @endif
-                                @if ($stats['rejected'] > 0)
-                                    <span class="text-red-600 font-semibold">❌ {{ $stats['rejected'] }} ditolak</span>
-                                @endif
-                                @if ($stats['pending'] > 0)
-                                    <span class="text-yellow-600 font-semibold">⏳ {{ $stats['pending'] }}
-                                        pending</span>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
+                    <p class="mt-2 text-sm text-gray-600">
+                        {{ number_format($stats['progress_percentage'], 0) }}% selesai
+                    </p>
                 </div>
 
                 {{-- Slot Cards --}}
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     @foreach ($slotData as $slot)
-                        @php
-                            $report = $slot['existing_report'];
-                            $validationStatus = $report?->validation_status ?? null;
-                            // Border color: prioritaskan validation status jika laporan ada
-                            $borderColor = 'border-gray-300'; // default: belum ada laporan / waiting / closed
-                            if ($slot['has_report']) {
-                                $borderColor = match ($validationStatus) {
-                                    'approved' => 'border-green-500',
-                                    'rejected' => 'border-red-500',
-                                    default => 'border-yellow-400', // pending
-                                };
-                            } elseif ($slot['status'] === 'open') {
-                                $borderColor = 'border-orange-500';
-                            }
-                        @endphp
-
-                        <div class="p-6 bg-white rounded-lg shadow-sm border-l-4 {{ $borderColor }}">
+                        <div
+                            class="p-6 bg-white rounded-lg shadow-sm border-l-4
+                            {{ $slot['has_report'] ? 'border-green-500' : ($slot['status'] === 'open' ? 'border-orange-500' : 'border-gray-300') }}">
 
                             {{-- Slot Header --}}
-                            <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800">
-                                        📍 Slot {{ $slot['slot_number'] }} — {{ $slot['slot_time'] }}
+                                        📍 Slot {{ $slot['slot_number'] }} - {{ $slot['slot_time'] }}
                                     </h4>
-                                    <p class="text-xs text-gray-500 mt-0.5">
-                                        Window FO: {{ $slot['window']['start']->format('H:i') }} –
+                                    <p class="text-sm text-gray-600">
+                                        Window: {{ $slot['window']['start']->format('H:i') }} -
                                         {{ $slot['window']['end']->format('H:i') }}
-                                        &nbsp;|&nbsp;
-                                        Validasi: {{ $slot['window']['end']->format('H:i') }} –
-                                        {{ $slot['window']['end']->copy()->addMinutes(config('daily_report_fo.validation_window_minutes', 15))->format('H:i') }}
                                     </p>
                                 </div>
 
-                                {{-- Badge Upload Status --}}
-                                <div class="flex flex-col items-end gap-1">
-                                    @if ($slot['has_report'])
-                                        <span
-                                            class="px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">
-                                            📤 Terkirim
-                                        </span>
-                                    @elseif ($slot['status'] === 'open')
-                                        <span
-                                            class="px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full">
-                                            ⏰ Bisa Lapor
-                                        </span>
-                                    @elseif ($slot['status'] === 'closed')
-                                        <span
-                                            class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
-                                            🔒 Tutup
-                                        </span>
-                                    @else
-                                        <span
-                                            class="px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100 rounded-full">
-                                            ⏳ Menunggu
-                                        </span>
-                                    @endif
-
-                                    {{-- Badge Validasi (hanya jika ada laporan) --}}
-                                    @if ($slot['has_report'])
-                                        @if ($validationStatus === 'approved')
-                                            <span
-                                                class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
-                                                ✅ Disetujui
-                                            </span>
-                                        @elseif ($validationStatus === 'rejected')
-                                            <span
-                                                class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
-                                                ❌ Ditolak
-                                            </span>
-                                        @else
-                                            <span
-                                                class="px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded-full">
-                                                ⏳ Belum Divalidasi
-                                            </span>
-                                        @endif
-                                    @endif
-                                </div>
+                                {{-- Status Badge --}}
+                                @if ($slot['has_report'])
+                                    <span
+                                        class="px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
+                                        ✅ Sudah Lapor
+                                    </span>
+                                @elseif ($slot['status'] === 'open')
+                                    <span
+                                        class="px-3 py-1 text-sm font-semibold text-orange-700 bg-orange-100 rounded-full">
+                                        ⏰ Bisa Lapor
+                                    </span>
+                                @elseif ($slot['status'] === 'closed')
+                                    <span class="px-3 py-1 text-sm font-semibold text-red-700 bg-red-100 rounded-full">
+                                        🔒 Tutup
+                                    </span>
+                                @else
+                                    <span
+                                        class="px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-100 rounded-full">
+                                        ⏳ Menunggu
+                                    </span>
+                                @endif
                             </div>
 
                             {{-- Slot Content --}}
                             @if ($slot['has_report'])
                                 @php
+                                    $report = $slot['existing_report'];
+
+                                    // Ambil detail metrik bisnis dari details yang sudah di-eager load
                                     $metrikDetails = $report->details
                                         ->filter(function ($detail) {
                                             return in_array($detail->field->code, [
@@ -242,53 +199,53 @@
                                         ->keyBy(fn($d) => $d->field->code);
                                 @endphp
 
-                                {{-- Background sesuai status validasi --}}
-                                <div
-                                    class="p-4 rounded-lg
-                                    {{ $validationStatus === 'approved'
-                                        ? 'bg-green-50'
-                                        : ($validationStatus === 'rejected'
-                                            ? 'bg-red-50'
-                                            : 'bg-yellow-50') }}">
-
+                                <div class="p-4 rounded-lg bg-green-50">
                                     {{-- Upload time & total foto --}}
                                     <div class="flex items-center justify-between mb-3">
-                                        <p class="text-sm text-gray-600">
-                                            <strong>Upload:</strong> {{ $report->uploaded_at->format('H:i:s') }}
+                                        <p class="text-sm text-green-800">
+                                            <strong>Upload:</strong>
+                                            {{ $report->uploaded_at->format('H:i:s') }}
                                         </p>
-                                        <p class="text-sm text-gray-600">
-                                            <strong>📷</strong> {{ $report->total_photos }} foto
+                                        <p class="text-sm text-green-800">
+                                            <strong>📷 Foto:</strong>
+                                            {{ $report->total_photos }}
                                         </p>
                                     </div>
 
                                     {{-- Metrik Bisnis --}}
                                     @if ($metrikDetails->count() > 0)
-                                        <div class="pt-3 mt-2 border-t border-gray-200">
-                                            <p class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                                        <div class="pt-3 mt-3 border-t border-green-200 ">
+                                            <p
+                                                class="mb-2 text-xs font-semibold tracking-wide text-green-700 uppercase">
                                                 📊 Metrik Bisnis
                                             </p>
-                                            <div class="grid grid-cols-3 gap-2">
+                                            <div class="grid gap-2 grid-cols-1 md:grid-cols-3">
+                                                {{-- Omset --}}
                                                 @if ($metrikDetails->has('mb_omset'))
                                                     <div class="p-2 text-center bg-white rounded-lg shadow-sm">
-                                                        <p class="text-xs text-gray-400">Omset</p>
+                                                        <p class="text-xs text-gray-500">Omset</p>
                                                         <p class="text-sm font-bold text-gray-800">
                                                             Rp
                                                             {{ number_format($metrikDetails['mb_omset']->value_number, 0, ',', '.') }}
                                                         </p>
                                                     </div>
                                                 @endif
+
+                                                {{-- Revenue --}}
                                                 @if ($metrikDetails->has('mb_revenue'))
                                                     <div class="p-2 text-center bg-white rounded-lg shadow-sm">
-                                                        <p class="text-xs text-gray-400">Revenue</p>
+                                                        <p class="text-xs text-gray-500">Revenue</p>
                                                         <p class="text-sm font-bold text-gray-800">
                                                             Rp
                                                             {{ number_format($metrikDetails['mb_revenue']->value_number, 0, ',', '.') }}
                                                         </p>
                                                     </div>
                                                 @endif
+
+                                                {{-- Jumlah Akad --}}
                                                 @if ($metrikDetails->has('mb_jumlah_akad'))
                                                     <div class="p-2 text-center bg-white rounded-lg shadow-sm">
-                                                        <p class="text-xs text-gray-400">Akad</p>
+                                                        <p class="text-xs text-gray-500">Akad</p>
                                                         <p class="text-sm font-bold text-gray-800">
                                                             {{ number_format($metrikDetails['mb_jumlah_akad']->value_number, 0, ',', '.') }}
                                                         </p>
@@ -298,35 +255,29 @@
                                         </div>
                                     @endif
 
-                                    {{-- Info validasi jika sudah divalidasi --}}
-                                    @if ($report->validation)
-                                        <div class="pt-3 mt-3 border-t border-gray-200">
-                                            <p class="text-xs text-gray-500">
-                                                <strong>Tindakan:</strong> {{ $report->validation->action->name }}
-                                                &nbsp;·&nbsp;
-                                                {{ $report->validation->validated_at->format('H:i') }}
-                                            </p>
-                                            @if ($report->validation->catatan)
-                                                <p class="mt-1 text-xs text-gray-500">
-                                                    <strong>Catatan:</strong> {{ $report->validation->catatan }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                    @endif
-
                                     {{-- Action Button --}}
-                                    <div class="mt-3">
+                                    <div class="flex gap-2 mt-3">
                                         @if ($slot['can_edit'])
                                             <a href="{{ route('daily-reports-fo.slot.show', $slot['slot_number']) }}"
-                                                class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-blue-600 rounded-lg hover:bg-blue-700 w-fit">
-                                                ✏️ Edit Laporan
+                                                class="flex items-center gap-2 px-4 py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                                Edit Laporan
                                             </a>
                                         @else
-                                            <span class="text-xs text-gray-400">Window edit sudah tutup</span>
+                                            <button disabled
+                                                class="flex items-center gap-2 px-4 py-2 text-gray-500 bg-gray-100 rounded-lg cursor-not-allowed">
+                                                🔒 Sudah Ditutup
+                                            </button>
                                         @endif
                                     </div>
                                 </div>
                             @elseif ($slot['status'] === 'open')
+                                {{-- Slot Terbuka --}}
                                 <div class="p-4 rounded-lg bg-orange-50">
                                     <p class="mb-2 text-sm font-semibold text-orange-800">⏱️ Waktu Tersisa:</p>
                                     <p class="mb-3 text-2xl font-bold text-orange-600 countdown-timer"
@@ -335,20 +286,27 @@
                                     </p>
                                     <a href="{{ route('daily-reports-fo.slot.show', $slot['slot_number']) }}"
                                         class="flex items-center justify-center gap-2 px-6 py-3 text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
                                         📝 Upload Laporan Sekarang
                                     </a>
                                 </div>
                             @elseif ($slot['status'] === 'waiting')
+                                {{-- Slot Menunggu --}}
                                 <div class="p-4 rounded-lg bg-gray-50">
-                                    <p class="mb-2 text-sm text-gray-600">Slot akan dibuka dalam:</p>
+                                    <p class="mb-2 text-sm text-gray-700">Slot akan dibuka dalam:</p>
                                     <p class="text-xl font-semibold text-gray-800 countdown-timer"
                                         data-seconds="{{ $slot['time_until_open'] }}">
                                         {{ \App\Helpers\TimeHelper::formatCountdown($slot['time_until_open']) }}
                                     </p>
                                 </div>
                             @else
+                                {{-- Slot Tutup --}}
                                 <div class="p-4 rounded-lg bg-red-50">
-                                    <p class="text-sm text-red-600">❌ Window upload sudah ditutup tanpa laporan.</p>
+                                    <p class="text-sm text-red-700">❌ Window upload sudah ditutup.</p>
                                 </div>
                             @endif
 
@@ -359,10 +317,9 @@
                 {{-- Info Box --}}
                 <div class="p-4 mt-6 rounded-lg bg-blue-50">
                     <p class="text-sm text-blue-800">
-                        💡 <strong>Info:</strong>
-                        Setiap slot punya window <strong>15 menit</strong> untuk upload laporan.
-                        Setelah itu manager punya <strong>15 menit</strong> untuk memvalidasi.
-                        Laporan yang disetujui ditandai hijau, ditolak merah.
+                        💡 <strong>Petunjuk:</strong>
+                        Upload laporan saat slot berwarna orange.
+                        Isi Metrik Bisnis, checklist kegiatan, dan foto bukti marketing di setiap slot.
                     </p>
                 </div>
 
@@ -370,6 +327,7 @@
         </div>
     </div>
 
+    {{-- JavaScript --}}
     <script>
         @if (!$needShiftSelection)
             let serverTime = {{ $serverTimestamp }} * 1000;
@@ -409,6 +367,7 @@
         }
 
         setInterval(updateCountdowns, 1000);
+
         setTimeout(() => location.reload(), 5 * 60 * 1000);
     </script>
 </x-app-layout>

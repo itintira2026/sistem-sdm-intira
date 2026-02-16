@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BranchController;
-use App\Http\Controllers\ThreeHourReportManagerController;
 use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Contact90Controller;
 use App\Http\Controllers\DailyReportController;
@@ -14,7 +13,13 @@ use App\Http\Controllers\Payroll\PotonganImportController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiImportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ThreeHourReportDashboardController;
+// use App\Http\Controllers\Payroll\PotonganImportController;
+use App\Http\Controllers\ThreeHourReportManagerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ValidationController;
+// use App\Http\Controllers\ProfileController;
+// use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -107,13 +112,64 @@ Route::middleware('auth')->group(function () {
         // File: routes/web.php
         // Tambahkan di dalam group Route yang sudah ada
 
+        // Route::prefix('daily-reports-3hour-manager')->name('daily-reports.3hour-manager.')->group(function () {
+        //     // Dashboard & List Laporan
+        //     Route::get('/', [ThreeHourReportManagerController::class, 'index'])->name('index');
+        //     // Form Input
+        //     Route::get('/create', [ThreeHourReportManagerController::class, 'create'])->name('create');
+        //     // Simpan Laporan
+        //     Route::post('/', [ThreeHourReportManagerController::class, 'store'])->name('store');
+        // });
+    });
+
+    Route::middleware('role:manager|superadmin|marketing')->group(function () {
+        // Tambahkan di routes/web.php, di dalam middleware auth
+
+        // ============================================================
+        // VALIDASI LAPORAN FO
+        // Akses: manager (cabangnya), marketing (read-only), superadmin
+        // ============================================================
+        Route::prefix('validation')->name('validation.')->group(function () {
+
+            // Dashboard validasi (manager + marketing + superadmin)
+            Route::get('/', [ValidationController::class, 'index'])->name('index');
+
+            // Detail laporan + form validasi
+            Route::get('/{reportId}', [ValidationController::class, 'show'])->name('show');
+
+            // Proses validasi (approve/reject) — manager + superadmin
+            Route::post('/{reportId}/validate', [ValidationController::class, 'validate'])->name('validate');
+
+            // Reset validasi ke pending — superadmin only
+            Route::delete('/{reportId}/reset', [ValidationController::class, 'reset'])->name('reset');
+        });
+
         Route::prefix('daily-reports-3hour-manager')->name('daily-reports.3hour-manager.')->group(function () {
-            // Dashboard & List Laporan
-            Route::get('/', [ThreeHourReportManagerController::class, 'index'])->name('index');
-            // Form Input
-            Route::get('/create', [ThreeHourReportManagerController::class, 'create'])->name('create');
-            // Simpan Laporan
-            Route::post('/', [ThreeHourReportManagerController::class, 'store'])->name('store');
+            // Dashboard (All Roles: manager, superadmin, marketing)
+            Route::get('/', [ThreeHourReportDashboardController::class, 'index'])
+                ->name('index');
+
+            Route::get('/{id}', [ThreeHourReportDashboardController::class, 'show'])
+                ->name('show');
+
+            Route::get('/export/excel', [ThreeHourReportDashboardController::class, 'export'])
+                ->name('export');
+
+            // Upload Laporan (Manager only)
+            Route::middleware('role:manager|superadmin')->group(function () {
+                Route::get('/create', [ThreeHourReportManagerController::class, 'create'])
+                    ->name('create');
+                Route::post('/', [ThreeHourReportManagerController::class, 'store'])
+                    ->name('store');
+                Route::get('/{id}/edit', [ThreeHourReportManagerController::class, 'edit'])
+                    ->name('edit');
+                Route::put('/{id}', [ThreeHourReportManagerController::class, 'update'])
+                    ->name('update');
+            });
+
+            Route::delete('/{id}', [ThreeHourReportManagerController::class, 'destroy'])
+                ->middleware('role:superadmin')
+                ->name('destroy');
         });
     });
 

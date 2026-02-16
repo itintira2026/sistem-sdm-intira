@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolesAndPermissionsSeeder::class);
+        $this->call(ReportMasterSeeder::class);
+        $this->call(ValidationActionSeeder::class);
         // User Front Manager
         $frontOffice = User::create([
             'name' => 'FO',

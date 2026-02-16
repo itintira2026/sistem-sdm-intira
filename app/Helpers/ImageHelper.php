@@ -2,32 +2,40 @@
 
 namespace App\Helpers;
 
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver; // atau Imagick\Driver
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str; // atau Imagick\Driver
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+
+// use Intervention\Image\Drivers\Gd\Driver;
+// use Intervention\Image\ImageManager;
 
 class ImageHelper
 {
     /**
      * Compress and convert image to WebP
      *
-     * @param \Illuminate\Http\UploadedFile $file
-     * @param string $directory Directory path (e.g., 'daily_reports/123')
-     * @param int $maxWidth Maximum width (default: 1920)
-     * @param int $maxHeight Maximum height (default: 1080)
-     * @param int $quality WebP quality (default: 80)
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @param  string  $directory  Directory path (e.g., 'daily_reports/123')
+     * @param  int  $maxWidth  Maximum width (default: 1920)
+     * @param  int  $maxHeight  Maximum height (default: 1080)
+     * @param  int  $quality  WebP quality (default: 80)
      * @return string File path
      */
     public static function compressAndSave($file, $directory, $maxWidth = 1920, $maxHeight = 1080, $quality = 80)
     {
         // Generate unique filename
-        $fileName = time() . '_' . uniqid() . '.webp';
+        // $fileName = time() . '_' . uniqid() . '.webp';
+        // FIX: Str::uuid() dijamin unik — tidak bergantung pada waktu
+        // Sebelumnya: time() . '_' . uniqid() → collision saat banyak foto
+        // diupload dalam satu request karena time() sama semua
+        $fileName = Str::uuid()->toString().'.webp';
 
         // Full path
-        $fullPath = $directory . '/' . $fileName;
+        $fullPath = $directory.'/'.$fileName;
 
         // Create ImageManager instance with GD driver
-        $manager = new ImageManager(new Driver());
+        $manager = new ImageManager(new Driver);
 
         // Load image
         $img = $manager->read($file);
@@ -47,7 +55,7 @@ class ImageHelper
     /**
      * Delete image from storage
      *
-     * @param string $filePath
+     * @param  string  $filePath
      * @return bool
      */
     public static function delete($filePath)
@@ -62,7 +70,7 @@ class ImageHelper
     /**
      * Check if file exists
      *
-     * @param string $filePath
+     * @param  string  $filePath
      * @return bool
      */
     public static function exists($filePath)

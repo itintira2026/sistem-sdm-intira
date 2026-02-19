@@ -58,10 +58,10 @@ class BranchUser extends Pivot
     /**
      * Scope to filter only managers.
      */
-    public function scopeManagers($query)
-    {
-        return $query->where('is_manager', true);
-    }
+    // public function scopeManagers($query)
+    // {
+    //     return $query->where('is_manager', true);
+    // }
 
     /**
      * Scope to filter by branch.
@@ -127,8 +127,6 @@ class BranchUser extends Pivot
         //     'id'              // PK di branch_users
         // );
         return $this->hasMany(GajihPokok::class, 'user_id', 'user_id');
-
-
     }
 
     /**
@@ -195,20 +193,96 @@ class BranchUser extends Pivot
     /**
      * Boot method untuk event listeners
      */
+    // protected static function boot()
+    // {
+    //     parent::boot();
+
+    //     // Event setelah user di-assign
+    //     static::created(function ($assignment) {
+    //         // Log atau kirim notifikasi
+    //         \Log::info("User {$assignment->user->name} assigned to {$assignment->branch->name}");
+    //     });
+
+    //     // Event sebelum user di-remove
+    //     static::deleting(function ($assignment) {
+    //         // Log atau kirim notifikasi
+    //         \Log::info("User {$assignment->user->name} removed from {$assignment->branch->name}");
+    //     });
+    // }
+
+    // Patch untuk BranchUser model — tambahkan scope dan method:
+
+    /**
+     * Scope to filter only active assignments
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to filter only inactive assignments
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    /**
+     * Scope to filter only managers (yang aktif)
+     */
+    public function scopeManagers($query)
+    {
+        return $query->where('is_manager', true)->where('is_active', true);
+    }
+
+    /**
+     * Soft delete assignment — set is_active = false
+     */
+    public function softDelete()
+    {
+        return $this->update(['is_active' => false]);
+    }
+
+    /**
+     * Reactivate assignment — set is_active = true
+     */
+    public function reactivate()
+    {
+        return $this->update(['is_active' => true]);
+    }
+
+    /**
+     * Check if assignment is active
+     */
+    public function isActive()
+    {
+        return $this->is_active;
+    }
+
+    /**
+     * Boot method — update logging
+     */
     protected static function boot()
     {
         parent::boot();
 
-        // Event setelah user di-assign
+        // Log saat assignment dibuat
         static::created(function ($assignment) {
-            // Log atau kirim notifikasi
             \Log::info("User {$assignment->user->name} assigned to {$assignment->branch->name}");
         });
 
-        // Event sebelum user di-remove
+        // Log saat is_active berubah
+        static::updated(function ($assignment) {
+            if ($assignment->wasChanged('is_active')) {
+                $status = $assignment->is_active ? 'activated' : 'deactivated';
+                \Log::info("User {$assignment->user->name} {$status} at {$assignment->branch->name}");
+            }
+        });
+
+        // Log saat assignment benar-benar dihapus (hard delete, jarang terjadi)
         static::deleting(function ($assignment) {
-            // Log atau kirim notifikasi
-            \Log::info("User {$assignment->user->name} removed from {$assignment->branch->name}");
+            \Log::warning("User {$assignment->user->name} PERMANENTLY removed from {$assignment->branch->name}");
         });
     }
 }

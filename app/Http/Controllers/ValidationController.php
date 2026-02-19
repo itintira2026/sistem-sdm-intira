@@ -25,14 +25,11 @@ class ValidationController extends Controller
     //     $user = Auth::user();
 
     //     // Tentukan cabang yang bisa diakses
-    //     if ($user->hasRole('superadmin')) {
+    //     if ($user->hasRole('superadmin') || $user->hasRole('marketing')) {
     //         $accessibleBranches = Branch::orderBy('name')->get();
-    //     } elseif ($user->hasRole('marketing')) {
-    //         $accessibleBranches = Branch::orderBy('name')->get();
-    //         // Marketing: read-only, tidak bisa validasi
     //     } else {
     //         // Manager: hanya cabang yang dikelolanya
-    //         $accessibleBranches = $user->managedBranches;
+    //         $accessibleBranches = $user->managedBranches()->orderBy('name')->get();
     //     }
 
     //     if ($accessibleBranches->isEmpty()) {
@@ -40,25 +37,82 @@ class ValidationController extends Controller
     //     }
 
     //     // Filter dari request
-    //     $selectedBranchId = $request->input('branch_id', $accessibleBranches->first()->id);
-    //     $selectedBranch = $accessibleBranches->find($selectedBranchId);
+    //     // branch_id = 'all' untuk superadmin/marketing yang mau lihat semua cabang
+    //     $branchIdParam = $request->input('branch_id', $accessibleBranches->first()->id);
     //     $tanggal = $request->input('tanggal', now()->toDateString());
-    //     $validationStatusFilter = $request->input('validation_status'); // pending|approved|rejected
+    //     $validationStatusFilter = $request->input('validation_status');
     //     $shiftFilter = $request->input('shift');
     //     $perPage = (int) $request->input('per_page', 25);
 
-    //     if (! $selectedBranch) {
-    //         abort(403, 'Anda tidak memiliki akses ke cabang ini.');
+    //     $isAllBranches = $branchIdParam === 'all'
+    //         && ($user->hasRole('superadmin') || $user->hasRole('marketing'));
+
+    //     // Resolve selectedBranch (null jika "all")
+    //     $selectedBranch = null;
+    //     if (! $isAllBranches) {
+    //         $selectedBranch = $accessibleBranches->find($branchIdParam);
+    //         if (! $selectedBranch) {
+    //             abort(403, 'Anda tidak memiliki akses ke cabang ini.');
+    //         }
     //     }
 
-    //     // Query laporan
-    //     $query = DailyReportFo::where('branch_id', $selectedBranchId)
-    //         ->whereDate('tanggal', $tanggal)
+    //     // -------------------------------------------------------
+    //     // Base query
+    //     // -------------------------------------------------------
+    //     $baseQuery = DailyReportFo::query()
+    //         ->whereDate('tanggal', $tanggal);
+
+    //     if ($isAllBranches) {
+    //         // Superadmin/marketing: semua cabang
+    //         $baseQuery->whereIn('branch_id', $accessibleBranches->pluck('id'));
+    //     } else {
+    //         $baseQuery->where('branch_id', $selectedBranch->id);
+    //     }
+
+    //     // -------------------------------------------------------
+    //     // Stats — hitung sebelum filter status/shift
+    //     // -------------------------------------------------------
+    //     $statsBase = (clone $baseQuery);
+
+    //     // Hitung total metrik bisnis dari detail
+    //     $metrikFieldCodes = ['mb_omset', 'mb_revenue', 'mb_jumlah_akad'];
+
+    //     $metrikTotals = \App\Models\DailyReportFODetail::query()
+    //         ->whereHas('report', function ($q) use ($tanggal, $isAllBranches, $selectedBranch, $accessibleBranches) {
+    //             $q->whereDate('tanggal', $tanggal);
+    //             if ($isAllBranches) {
+    //                 $q->whereIn('branch_id', $accessibleBranches->pluck('id'));
+    //             } else {
+    //                 $q->where('branch_id', $selectedBranch->id);
+    //             }
+    //         })
+    //         ->whereHas('field', function ($q) use ($metrikFieldCodes) {
+    //             $q->whereIn('code', $metrikFieldCodes);
+    //         })
+    //         ->with('field')
+    //         ->get()
+    //         ->groupBy(fn ($d) => $d->field->code)
+    //         ->map(fn ($group) => $group->sum('value_number'));
+
+    //     $stats = [
+    //         'total' => (clone $statsBase)->count(),
+    //         'pending' => (clone $statsBase)->where('validation_status', 'pending')->count(),
+    //         'approved' => (clone $statsBase)->where('validation_status', 'approved')->count(),
+    //         'rejected' => (clone $statsBase)->where('validation_status', 'rejected')->count(),
+    //         'total_omset' => $metrikTotals->get('mb_omset', 0),
+    //         'total_revenue' => $metrikTotals->get('mb_revenue', 0),
+    //         'total_akad' => $metrikTotals->get('mb_jumlah_akad', 0),
+    //     ];
+
+    //     // -------------------------------------------------------
+    //     // Query laporan dengan filter tambahan
+    //     // -------------------------------------------------------
+    //     $reportQuery = (clone $baseQuery)
     //         ->with([
     //             'user',
+    //             'branch',
     //             'validation.manager',
     //             'validation.action',
-    //             // Hanya load detail Metrik Bisnis untuk dashboard
     //             'details' => function ($q) {
     //                 $q->whereHas('field.category', function ($q) {
     //                     $q->where('code', 'metrik_bisnis');
@@ -67,40 +121,35 @@ class ValidationController extends Controller
     //         ]);
 
     //     if ($validationStatusFilter) {
-    //         $query->where('validation_status', $validationStatusFilter);
+    //         $reportQuery->where('validation_status', $validationStatusFilter);
     //     }
 
     //     if ($shiftFilter) {
-    //         $query->where('shift', $shiftFilter);
+    //         $reportQuery->where('shift', $shiftFilter);
     //     }
 
-    //     $reports = $query->orderBy('shift', 'asc')
+    //     $reports = $reportQuery
+    //         ->orderBy('shift', 'asc')
     //         ->orderBy('slot', 'asc')
     //         ->orderBy('uploaded_at', 'asc')
     //         ->paginate($perPage)
     //         ->withQueryString();
 
-    //     // Stats
-    //     $statsQuery = DailyReportFo::where('branch_id', $selectedBranchId)
-    //         ->whereDate('tanggal', $tanggal);
-
-    //     $stats = [
-    //         'total' => (clone $statsQuery)->count(),
-    //         'pending' => (clone $statsQuery)->where('validation_status', 'pending')->count(),
-    //         'approved' => (clone $statsQuery)->where('validation_status', 'approved')->count(),
-    //         'rejected' => (clone $statsQuery)->where('validation_status', 'rejected')->count(),
-    //     ];
-
     //     return view('daily-reports-fo.validation.index', [
     //         'accessibleBranches' => $accessibleBranches,
-    //         'selectedBranch' => $selectedBranch,
+    //         'selectedBranch' => $selectedBranch,       // null jika "all"
+    //         'isAllBranches' => $isAllBranches,
+    //         'branchIdParam' => $branchIdParam,
     //         'tanggal' => $tanggal,
     //         'reports' => $reports,
     //         'stats' => $stats,
     //         'canValidate' => ! $user->hasRole('marketing'),
     //         'isSuperadmin' => $user->hasRole('superadmin'),
+    //         'canViewAll' => $user->hasRole('superadmin') || $user->hasRole('marketing'),
     //     ]);
     // }
+    // Ganti method index() di ValidationController:
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -118,15 +167,15 @@ class ValidationController extends Controller
         }
 
         // Filter dari request
-        // branch_id = 'all' untuk superadmin/marketing yang mau lihat semua cabang
-        $branchIdParam = $request->input('branch_id', $accessibleBranches->first()->id);
-        $tanggal = $request->input('tanggal', now()->toDateString());
+        $branchIdParam          = $request->input('branch_id', 'all'); // default: semua cabang
+        $tanggal                = $request->input('tanggal', now()->toDateString());
         $validationStatusFilter = $request->input('validation_status');
-        $shiftFilter = $request->input('shift');
-        $perPage = (int) $request->input('per_page', 25);
+        $shiftFilter            = $request->input('shift');
+        $perPage                = (int) $request->input('per_page', 25);
 
-        $isAllBranches = $branchIdParam === 'all'
-            && ($user->hasRole('superadmin') || $user->hasRole('marketing'));
+        // "Semua Cabang" sekarang tersedia untuk SEMUA role (termasuk manager)
+        // tapi manager hanya melihat cabang yang dia kelola
+        $isAllBranches = $branchIdParam === 'all';
 
         // Resolve selectedBranch (null jika "all")
         $selectedBranch = null;
@@ -138,68 +187,58 @@ class ValidationController extends Controller
         }
 
         // -------------------------------------------------------
-        // Base query
+        // Base query — selalu dibatasi oleh $accessibleBranches
+        // sehingga manager tidak bisa lihat cabang orang lain
+        // meski manipulasi parameter
         // -------------------------------------------------------
         $baseQuery = DailyReportFo::query()
-            ->whereDate('tanggal', $tanggal);
+            ->whereDate('tanggal', $tanggal)
+            ->whereIn('branch_id', $accessibleBranches->pluck('id')); // security gate
 
-        if ($isAllBranches) {
-            // Superadmin/marketing: semua cabang
-            $baseQuery->whereIn('branch_id', $accessibleBranches->pluck('id'));
-        } else {
+        if (! $isAllBranches) {
             $baseQuery->where('branch_id', $selectedBranch->id);
         }
 
         // -------------------------------------------------------
-        // Stats — hitung sebelum filter status/shift
+        // Stats
         // -------------------------------------------------------
-        $statsBase = (clone $baseQuery);
-
-        // Hitung total metrik bisnis dari detail
-        $metrikFieldCodes = ['mb_omset', 'mb_revenue', 'mb_jumlah_akad'];
-
         $metrikTotals = \App\Models\DailyReportFODetail::query()
-            ->whereHas('report', function ($q) use ($tanggal, $isAllBranches, $selectedBranch, $accessibleBranches) {
-                $q->whereDate('tanggal', $tanggal);
-                if ($isAllBranches) {
-                    $q->whereIn('branch_id', $accessibleBranches->pluck('id'));
-                } else {
-                    $q->where('branch_id', $selectedBranch->id);
-                }
+            ->whereHas('report', function ($q) use ($baseQuery) {
+                // Subquery ikut constraint yang sama dengan baseQuery
+                $q->whereIn('id', (clone $baseQuery)->select('id'));
             })
-            ->whereHas('field', function ($q) use ($metrikFieldCodes) {
-                $q->whereIn('code', $metrikFieldCodes);
+            ->whereHas('field', function ($q) {
+                $q->whereIn('code', ['mb_omset', 'mb_revenue', 'mb_jumlah_akad']);
             })
-            ->with('field')
+            ->with('field:id,code')
             ->get()
-            ->groupBy(fn ($d) => $d->field->code)
-            ->map(fn ($group) => $group->sum('value_number'));
+            ->groupBy(fn($d) => $d->field->code)
+            ->map(fn($group) => $group->sum('value_number'));
 
         $stats = [
-            'total' => (clone $statsBase)->count(),
-            'pending' => (clone $statsBase)->where('validation_status', 'pending')->count(),
-            'approved' => (clone $statsBase)->where('validation_status', 'approved')->count(),
-            'rejected' => (clone $statsBase)->where('validation_status', 'rejected')->count(),
-            'total_omset' => $metrikTotals->get('mb_omset', 0),
+            'total'         => (clone $baseQuery)->count(),
+            'pending'       => (clone $baseQuery)->where('validation_status', 'pending')->count(),
+            'approved'      => (clone $baseQuery)->where('validation_status', 'approved')->count(),
+            'rejected'      => (clone $baseQuery)->where('validation_status', 'rejected')->count(),
+            'total_omset'   => $metrikTotals->get('mb_omset', 0),
             'total_revenue' => $metrikTotals->get('mb_revenue', 0),
-            'total_akad' => $metrikTotals->get('mb_jumlah_akad', 0),
+            'total_akad'    => $metrikTotals->get('mb_jumlah_akad', 0),
         ];
 
         // -------------------------------------------------------
         // Query laporan dengan filter tambahan
         // -------------------------------------------------------
-        $reportQuery = (clone $baseQuery)
-            ->with([
-                'user',
-                'branch',
-                'validation.manager',
-                'validation.action',
-                'details' => function ($q) {
-                    $q->whereHas('field.category', function ($q) {
-                        $q->where('code', 'metrik_bisnis');
-                    })->with('field');
-                },
-            ]);
+        $reportQuery = (clone $baseQuery)->with([
+            'user:id,name',
+            'branch:id,name,timezone',
+            'validation.manager:id,name',
+            'validation.action:id,name',
+            'details' => function ($q) {
+                $q->whereHas('field.category', function ($q) {
+                    $q->where('code', 'metrik_bisnis');
+                })->with('field:id,code,name');
+            },
+        ]);
 
         if ($validationStatusFilter) {
             $reportQuery->where('validation_status', $validationStatusFilter);
@@ -218,15 +257,14 @@ class ValidationController extends Controller
 
         return view('daily-reports-fo.validation.index', [
             'accessibleBranches' => $accessibleBranches,
-            'selectedBranch' => $selectedBranch,       // null jika "all"
-            'isAllBranches' => $isAllBranches,
-            'branchIdParam' => $branchIdParam,
-            'tanggal' => $tanggal,
-            'reports' => $reports,
-            'stats' => $stats,
-            'canValidate' => ! $user->hasRole('marketing'),
-            'isSuperadmin' => $user->hasRole('superadmin'),
-            'canViewAll' => $user->hasRole('superadmin') || $user->hasRole('marketing'),
+            'selectedBranch'     => $selectedBranch,
+            'isAllBranches'      => $isAllBranches,
+            'branchIdParam'      => $branchIdParam,
+            'tanggal'            => $tanggal,
+            'reports'            => $reports,
+            'stats'              => $stats,
+            'canValidate'        => ! $user->hasRole('marketing'),
+            'isSuperadmin'       => $user->hasRole('superadmin'),
         ]);
     }
 
@@ -433,8 +471,8 @@ class ValidationController extends Controller
             $status = $report->manager_window_status;
 
             $message = match ($status) {
-                'waiting' => 'Window validasi belum dibuka. Tunggu hingga '.$report->manager_window_start->format('H:i').' '.$report->branch->timezone.'.',
-                'expired' => 'Window validasi sudah tutup sejak '.$report->manager_window_end->format('H:i').' '.$report->branch->timezone.'.',
+                'waiting' => 'Window validasi belum dibuka. Tunggu hingga ' . $report->manager_window_start->format('H:i') . ' ' . $report->branch->timezone . '.',
+                'expired' => 'Window validasi sudah tutup sejak ' . $report->manager_window_end->format('H:i') . ' ' . $report->branch->timezone . '.',
                 default => 'Window validasi tidak tersedia.',
             };
 
@@ -523,7 +561,7 @@ class ValidationController extends Controller
 
         $metrikDetails = $report->details->filter(function ($detail) {
             return $detail->field->category->code === 'metrik_bisnis';
-        })->keyBy(fn ($d) => $d->field->code);
+        })->keyBy(fn($d) => $d->field->code);
 
         return view('daily-reports-fo.validation.show', [
             'report' => $report,

@@ -157,7 +157,7 @@ class DailyReportFoController extends Controller
         ShiftHelper::setTodayShift($validated['shift']);
 
         return redirect()->route('daily-reports-fo.index')
-            ->with('success', 'Shift '.config('daily_report_fo.shifts')[$validated['shift']]['label'].' berhasil dipilih!');
+            ->with('success', 'Shift ' . config('daily_report_fo.shifts')[$validated['shift']]['label'] . ' berhasil dipilih!');
     }
 
     /**
@@ -662,14 +662,33 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $historyDays = config('daily_report_fo.history_days', 30);
 
+        // $query = DailyReportFO::where('user_id', $user->id)
+        //     ->where('branch_id', $branch->id)
+        //     ->where('tanggal', '>=', $branchTime->copy()->subDays($historyDays)->toDateString())
+        //     // ->with([
+        //     //     'details' => function ($q) {
+        //     //         $q->with('field.category', 'photos');
+        //     //     },
+        //     // ]);
+        //     // Di controller history(), ganti bagian with:
+        //     ->with([
+        //         'details' => function ($q) {
+        //             $q->with(['field.category', 'photos']);
+        //         },
+        //         'validation.action', // ← TAMBAH
+        //     ]);
+
         $query = DailyReportFO::where('user_id', $user->id)
             ->where('branch_id', $branch->id)
             ->where('tanggal', '>=', $branchTime->copy()->subDays($historyDays)->toDateString())
             ->with([
+                'branch:id,name,timezone',  // ← TAMBAH: eager load branch
                 'details' => function ($q) {
-                    $q->with('field.category', 'photos');
+                    $q->with(['field.category', 'photos']);
                 },
+                'validation.action',
             ]);
+
 
         if ($shiftFilter) {
             $query->where('shift', $shiftFilter);
@@ -689,9 +708,15 @@ class DailyReportFoController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
+        // Tambah stats total_photos:
+        $totalPhotos = $reports->sum(function ($report) {
+            return $report->details->sum(fn($detail) => $detail->photos->count());
+        });
+
         $stats = [
             'total_reports' => $query->count(),
             'total_days' => $query->select('tanggal')->distinct()->count(),
+            'total_photos' => $totalPhotos,
         ];
 
         return view('daily-reports-fo.history', [
@@ -1026,8 +1051,8 @@ class DailyReportFoController extends Controller
             ->orderBy('shift', 'asc')
             ->orderBy('slot', 'asc');
 
-        $filename = 'Daily_Report_FO_'.$selectedBranch->name.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
-        $title = 'Report '.$selectedBranch->name;
+        $filename = 'Daily_Report_FO_' . $selectedBranch->name . '_' . $dateFrom . '_to_' . $dateTo . '.xlsx';
+        $title = 'Report ' . $selectedBranch->name;
 
         return Excel::download(new DailyReportFOExport($query, $title), $filename);
     }
@@ -1242,8 +1267,8 @@ class DailyReportFoController extends Controller
             ->orderBy('slot', 'asc');
 
         $branchName = $branchId ? Branch::find($branchId)->name : 'All_Branches';
-        $filename = 'Daily_Report_FO_'.$branchName.'_'.$dateFrom.'_to_'.$dateTo.'.xlsx';
-        $title = 'Report '.$branchName;
+        $filename = 'Daily_Report_FO_' . $branchName . '_' . $dateFrom . '_to_' . $dateTo . '.xlsx';
+        $title = 'Report ' . $branchName;
 
         return Excel::download(new DailyReportFOExport($query, $title), $filename);
     }

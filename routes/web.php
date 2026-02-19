@@ -5,6 +5,7 @@ use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Contact90Controller;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DailyReportFoController;
+use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\Payroll\GajihPokokController;
 use App\Http\Controllers\Payroll\GajihPokokImportController;
 use App\Http\Controllers\Payroll\PayrollController;
@@ -212,6 +213,26 @@ Route::middleware('auth')->group(function () {
 
             // Validasi Laporan (Single)
             Route::post('/validate/{dailyReport}', [DailyReportController::class, 'validate'])->name('validate');
+        });
+
+        Route::prefix('master')->name('master.')->group(function () {
+            // Kategori Laporan
+            Route::get('/categories',                    [MasterDataController::class, 'categoriesIndex'])->name('categories.index');
+            Route::post('/categories',                   [MasterDataController::class, 'categoriesStore'])->name('categories.store');
+            Route::put('/categories/{category}',         [MasterDataController::class, 'categoriesUpdate'])->name('categories.update');
+            Route::delete('/categories/{category}',      [MasterDataController::class, 'categoriesDestroy'])->name('categories.destroy');
+
+            // Field Laporan
+            Route::get('/fields',                        [MasterDataController::class, 'fieldsIndex'])->name('fields.index');
+            Route::post('/fields',                       [MasterDataController::class, 'fieldsStore'])->name('fields.store');
+            Route::put('/fields/{field}',                [MasterDataController::class, 'fieldsUpdate'])->name('fields.update');
+            Route::delete('/fields/{field}',             [MasterDataController::class, 'fieldsDestroy'])->name('fields.destroy');
+
+            // Tindakan Validasi
+            Route::get('/validation-actions',            [MasterDataController::class, 'validationActionsIndex'])->name('validation-actions.index');
+            Route::post('/validation-actions',           [MasterDataController::class, 'validationActionsStore'])->name('validation-actions.store');
+            Route::put('/validation-actions/{action}',   [MasterDataController::class, 'validationActionsUpdate'])->name('validation-actions.update');
+            Route::delete('/validation-actions/{action}', [MasterDataController::class, 'validationActionsDestroy'])->name('validation-actions.destroy');
         });
     });
 

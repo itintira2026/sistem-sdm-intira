@@ -60,15 +60,14 @@
                 <span x-show="desktopOpen || isMobile" class="transition-all duration-200">Dashboard</span>
             </a>
 
-            <!-- HR Section -->
+            {{-- ============================================================ --}}
+            {{-- HR Management                                                  --}}
+            {{-- ============================================================ --}}
             @role('hr|superadmin')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
-                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                        HR Management
-                    </p>
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">HR Management</p>
                 </div>
 
-                <!-- Users -->
                 <a href="{{ route('users.index') }}"
                     class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('users.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -79,7 +78,6 @@
                     <span x-show="desktopOpen || isMobile">User</span>
                 </a>
 
-                <!-- Branches -->
                 <a href="{{ route('branches.index') }}"
                     class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('branches.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -90,7 +88,6 @@
                     <span x-show="desktopOpen || isMobile">Branch</span>
                 </a>
 
-                <!-- Gaji -->
                 <a href="{{ route('gaji-pokok.index') }}"
                     class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('gaji-pokok.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -101,7 +98,6 @@
                     <span x-show="desktopOpen || isMobile">Gaji</span>
                 </a>
 
-                <!-- Presensi -->
                 <a href="{{ route('presensi.index') }}"
                     class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -113,15 +109,14 @@
                 </a>
             @endrole
 
-            <!-- Marketing Section -->
+            {{-- ============================================================ --}}
+            {{-- Marketing                                                       --}}
+            {{-- ============================================================ --}}
             @role('marketing|superadmin')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
-                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                        Marketing
-                    </p>
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Marketing</p>
                 </div>
 
-                <!-- Daily Content -->
                 <a href="{{ route('daily-contents.index') }}"
                     class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-contents.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -133,17 +128,16 @@
                 </a>
             @endrole
 
-            <!-- Contact 90 Section -->
+            {{-- ============================================================ --}}
+            {{-- Contact 90                                                      --}}
+            {{-- ============================================================ --}}
             @role('fo|manager|superadmin')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
-                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                        Contact 90
-                    </p>
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Contact 90</p>
                 </div>
 
-                <!-- My Contacts -->
                 <a href="{{ route('contact90.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('contact90.index') || request()->routeIs('contact90.create') || request()->routeIs('contact90.edit') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('contact90.index|contact90.create|contact90.edit') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -153,7 +147,6 @@
                 </a>
 
                 @role('manager|superadmin')
-                    <!-- Manager Dashboard -->
                     <a href="{{ route('contact90.manager.dashboard') }}"
                         class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('contact90.manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -161,18 +154,21 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        <span x-show="desktopOpen || isMobile">Manager- Contact 90</span>
+                        <span x-show="desktopOpen || isMobile">Manager - Contact 90</span>
                     </a>
                 @endrole
+            @endrole
+
+            {{-- ============================================================ --}}
+            {{-- Daily Reports                                                   --}}
+            {{-- ============================================================ --}}
+            @role('fo|manager|superadmin')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
-                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                        Daily Reports
-                    </p>
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Daily Reports</p>
                 </div>
 
-                <!-- Daily Reports -->
                 <a href="{{ route('daily-reports.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports.index') || request()->routeIs('daily-reports.create') || request()->routeIs('daily-reports.edit') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports.index|daily-reports.create|daily-reports.edit') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -182,7 +178,6 @@
                 </a>
 
                 @role('manager|superadmin')
-                    <!-- Manager Dashboard -->
                     <a href="{{ route('daily-reports.manager.dashboard') }}"
                         class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports.manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -193,17 +188,20 @@
                         <span x-show="desktopOpen || isMobile">Manager - Daily Reports</span>
                     </a>
                 @endrole
-                {{-- 🔥 DAILY REPORTS FO SECTION (NEW) --}}
+            @endrole
+
+            {{-- ============================================================ --}}
+            {{-- Daily Reports FO                                                --}}
+            {{-- ============================================================ --}}
+            @role('fo|manager|superadmin|marketing')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
-                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                        Daily Reports FO
-                    </p>
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Daily Reports FO</p>
                 </div>
 
+                {{-- FO: dashboard upload --}}
                 @role('fo')
-                    <!-- Daily Reports FO - Dashboard -->
                     <a href="{{ route('daily-reports-fo.index') }}"
-                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.index') || request()->routeIs('daily-reports-fo.slot.*') || request()->routeIs('daily-reports-fo.history') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.index|daily-reports-fo.slot.*|daily-reports-fo.history') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -213,10 +211,9 @@
                     </a>
                 @endrole
 
-
+                {{-- Manager: FO Reports + Validasi --}}
                 @role('manager|superadmin')
-                    <!-- Manager - Daily Reports FO -->
-                    <a href="{{ route('daily-reports-fo.manager.dashboard') }}"
+                    {{-- <a href="{{ route('daily-reports-fo.manager.dashboard') }}"
                         class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
@@ -224,33 +221,99 @@
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         <span x-show="desktopOpen || isMobile">Manager - FO Reports</span>
+                    </a> --}}
+
+                    {{-- Validasi Laporan FO --}}
+                    <a href="{{ route('validation.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('validation.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Validasi FO</span>
                     </a>
                 @endrole
+
+                {{-- Marketing: FO Reports (read-only) + Validasi (read-only) --}}
+                {{-- @role('marketing')
+                    <a href="{{ route('daily-reports-fo.marketing.dashboard') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.marketing.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Marketing - FO Reports</span>
+                    </a>
+
+                    <a href="{{ route('validation.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('validation.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Lihat Validasi FO</span>
+                    </a>
+                @endrole --}}
+
+                {{-- Daily Reports Manager (3 jam) — manager, superadmin, marketing --}}
+                {{-- @role('manager|superadmin|marketing')
+                    <a href="{{ route('daily-reports.3hour-manager.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-3hour-manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Daily Reports Manager</span>
+                    </a>
+                @endrole --}}
+
             @endrole
-            @role('marketing|superadmin')
-                <!-- Marketing - Daily Reports FO -->
-                <a href="{{ route('daily-reports-fo.marketing.dashboard') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.marketing.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+
+            {{-- ============================================================ --}}
+            {{-- Pengaturan — Master Data                                        --}}
+            {{-- Hanya superadmin & marketing yang bisa edit                    --}}
+            {{-- ============================================================ --}}
+            {{-- @role('superadmin|marketing')
+                <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Pengaturan</p>
+                </div>
+
+                <a href="{{ route('master.categories.index') }}"
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('master.categories.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
-                    <span x-show="desktopOpen || isMobile">Marketing - FO Reports</span>
+                    <span x-show="desktopOpen || isMobile">Kategori Laporan</span>
                 </a>
-            @endrole
-            @role('manager|superadmin|marketing')
-                <!-- Manager - Daily Reports Manager -->
-                <a href="{{ route('daily-reports.3hour-manager.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-3hour-manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+
+                <a href="{{ route('master.fields.index') }}"
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('master.fields.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    <span x-show="desktopOpen || isMobile">Daily Reports Manager</span>
+                    <span x-show="desktopOpen || isMobile">Field Laporan</span>
                 </a>
-            @endrole
+
+                <a href="{{ route('master.validation-actions.index') }}"
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('master.validation-actions.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span x-show="desktopOpen || isMobile">Tindakan Validasi</span>
+                </a>
+            @endrole --}}
 
         </nav>
 
@@ -309,17 +372,9 @@
                 </svg>
             </button>
             <x-application-logo class="block w-auto h-8 text-gray-800 fill-current" />
-            <div class="w-10"></div> <!-- Spacer for centering logo -->
+            <div class="w-10"></div>
         </div>
 
-        <!-- Desktop Header -->
-        {{-- <header class="hidden bg-white border-b border-gray-200 lg:block shrink-0">
-            <div class="px-6 py-3">
-                @isset($header)
-                    {{ $header }}
-                @endisset
-            </div>
-        </header> --}}
         <!-- Header (Mobile & Desktop) -->
         <header class="bg-white border-b border-gray-200 shrink-0">
             <div class="px-4 py-3 sm:px-6">
@@ -335,91 +390,3 @@
         </main>
     </div>
 </div>
-{{-- ```
-
----
-
-## ✅ **Perbaikan yang Dilakukan:**
-
-### **1. Responsive Design:**
-- ✅ **Mobile (<1024px):** Sidebar slide dari kiri dengan overlay
-- ✅ **Desktop (≥1024px):** Sidebar collapsible (64px ↔ 256px)
-- ✅ **Hamburger Menu** di mobile
-- ✅ **Smooth transitions** semua state
-
-### **2. Mobile Behavior:**
-```
-Mobile:
-- Sidebar hidden by default
-- Click hamburger → sidebar slides in
-- Click overlay → sidebar slides out
-- Full width sidebar (256px)
-
-Desktop:
-- Sidebar visible by default
-- Click toggle → minimize (64px) / expand (256px)
-- Icons only mode saat minimize
-```
-
-### **3. Fixed Issues:**
-| Issue | Before | After |
-|-------|--------|-------|
-| **Mobile sidebar** | Selalu visible, menutupi konten | Hidden, slide in saat klik hamburger |
-| **Header di mobile** | Tidak ada | Ada top bar dengan hamburger menu |
-| **Overflow** | Sidebar gede banget | Proper z-index & transitions |
-| **Icon spacing** | Tidak konsisten | Flex-shrink-0 + conditional margin |
-| **Profile dropdown** | Positioning error | Fixed with absolute positioning |
-
-### **4. UX Improvements:**
-- ✅ **Smooth transitions** (300ms ease)
-- ✅ **Click outside to close** (dropdown & mobile sidebar)
-- ✅ **Overlay backdrop** di mobile
-- ✅ **Truncate text** untuk nama panjang
-- ✅ **Responsive logo** di mobile top bar
-
----
-
-## 📱 **Preview Behavior:**
-
-### **Desktop (≥1024px):**
-```
-┌─────────┬────────────────────────────┐
-│         │ Header                     │
-│ SIDEBAR ├────────────────────────────┤
-│  [<-]   │                            │
-│ (Full)  │     MAIN CONTENT           │
-│         │                            │
-└─────────┴────────────────────────────┘
-
-Click [<-] →
-
-┌──┬─────────────────────────────────┐
-│  │ Header                          │
-│[]├─────────────────────────────────┤
-│  │                                 │
-│  │     MAIN CONTENT (Wider)        │
-│  │                                 │
-└──┴─────────────────────────────────┘
-```
-
-### **Mobile (<1024px):**
-```
-Default:
-┌─────────────────────┐
-│ [☰] LOGO        [ ] │
-├─────────────────────┤
-│                     │
-│   MAIN CONTENT      │
-│   (Full Width)      │
-│                     │
-└─────────────────────┘
-
-Click [☰] →
-
-┌────────┬────────────┐
-│SIDEBAR │ [Overlay]  │
-│        │            │
-│  Full  │   Dimmed   │
-│  Menu  │   Content  │
-│        │            │
-└────────┴────────────┘ --}}

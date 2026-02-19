@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     🔍 Detail Laporan — Validasi
@@ -18,7 +18,7 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-4xl mx-auto space-y-6 sm:px-6 lg:px-8">
 
             {{-- Alerts --}}
             @if (session('success'))
@@ -42,8 +42,8 @@
             {{-- INFO LAPORAN + STATUS                                         --}}
             {{-- ============================================================ --}}
             <div class="p-5 bg-white rounded-lg shadow-sm">
-                <div class="flex items-start justify-between">
-                    <div class="space-y-1">
+                <div class="flex flex-wrap items-start justify-center gap-4 md:justify-between">
+                    <div class="space-y-1 text-center sm:text-start">
                         <p class="text-sm text-gray-500">
                             Upload: <strong>{{ $report->uploaded_at->format('H:i:s') }}</strong>
                         </p>
@@ -59,22 +59,22 @@
                         </p>
                     </div>
 
-                    <div class="text-right space-y-2">
+                    <div class="space-y-2 text-center sm:text-left">
                         @if ($report->validation_status === 'approved')
                             <span
-                                class="px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full block">✅
+                                class="block px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">✅
                                 Disetujui</span>
                         @elseif ($report->validation_status === 'rejected')
-                            <span class="px-3 py-1 text-sm font-semibold text-red-700 bg-red-100 rounded-full block">❌
+                            <span class="block px-3 py-1 text-sm font-semibold text-red-700 bg-red-100 rounded-full">❌
                                 Ditolak</span>
                         @else
                             <span
-                                class="px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 rounded-full block">⏳
+                                class="block px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 rounded-full">⏳
                                 Menunggu Validasi</span>
                         @endif
 
                         @if ($managerWindowStatus === 'open')
-                            <p class="text-xs text-orange-600 font-semibold">🟠 Window validasi sedang buka</p>
+                            <p class="text-xs font-semibold text-orange-600">🟠 Window validasi sedang buka</p>
                         @elseif ($managerWindowStatus === 'waiting')
                             <p class="text-xs text-gray-400">⏳ Window validasi belum buka</p>
                         @else
@@ -85,8 +85,8 @@
 
                 {{-- Riwayat validasi --}}
                 @if ($report->validation)
-                    <div class="mt-4 p-3 bg-gray-50 rounded-lg text-sm border border-gray-200">
-                        <p class="font-semibold text-gray-700 mb-1">Riwayat Validasi:</p>
+                    <div class="p-3 mt-4 text-sm border border-gray-200 rounded-lg bg-gray-50">
+                        <p class="mb-1 font-semibold text-gray-700">Riwayat Validasi:</p>
                         <p class="text-gray-600">
                             Oleh: <strong>{{ $report->validation->manager->name }}</strong>
                             pada {{ $report->validation->validated_at->format('d M Y H:i') }}
@@ -102,24 +102,24 @@
             {{-- ============================================================ --}}
             {{-- METRIK BISNIS                                                  --}}
             {{-- ============================================================ --}}
-            <div class="p-5 bg-blue-50 rounded-lg shadow-sm border border-blue-200">
+            <div class="p-5 border border-blue-200 rounded-lg shadow-sm bg-blue-50">
                 <h3 class="mb-4 text-base font-semibold text-blue-800">📊 Metrik Bisnis</h3>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     @php
                         $omset = $metrikDetails->get('mb_omset')?->value_number ?? 0;
                         $revenue = $metrikDetails->get('mb_revenue')?->value_number ?? 0;
                         $akad = $metrikDetails->get('mb_jumlah_akad')?->value_number ?? 0;
                     @endphp
-                    <div class="p-4 bg-white rounded-lg text-center shadow-sm">
-                        <p class="text-xs text-gray-500 mb-1">Omset</p>
+                    <div class="p-4 text-center bg-white rounded-lg shadow-sm">
+                        <p class="mb-1 text-xs text-gray-500">Omset</p>
                         <p class="text-xl font-bold text-gray-800">Rp {{ number_format($omset, 0, ',', '.') }}</p>
                     </div>
-                    <div class="p-4 bg-white rounded-lg text-center shadow-sm">
-                        <p class="text-xs text-gray-500 mb-1">Revenue</p>
+                    <div class="p-4 text-center bg-white rounded-lg shadow-sm">
+                        <p class="mb-1 text-xs text-gray-500">Revenue</p>
                         <p class="text-xl font-bold text-gray-800">Rp {{ number_format($revenue, 0, ',', '.') }}</p>
                     </div>
-                    <div class="p-4 bg-white rounded-lg text-center shadow-sm">
-                        <p class="text-xs text-gray-500 mb-1">Jumlah Akad</p>
+                    <div class="p-4 text-center bg-white rounded-lg shadow-sm">
+                        <p class="mb-1 text-xs text-gray-500">Jumlah Akad</p>
                         <p class="text-xl font-bold text-gray-800">{{ number_format($akad, 0, ',', '.') }}</p>
                     </div>
                 </div>
@@ -144,14 +144,14 @@
                             </label>
                             <div class="flex gap-3">
                                 <label
-                                    class="flex items-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 hover:bg-green-50 flex-1">
+                                    class="flex items-center flex-1 gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 hover:bg-green-50">
                                     <input type="radio" name="status" value="approved"
                                         {{ old('status', $report->validation?->status) === 'approved' ? 'checked' : '' }}
                                         class="w-4 h-4 text-green-600">
                                     <span class="font-semibold text-green-700">✅ Setujui</span>
                                 </label>
                                 <label
-                                    class="flex items-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-500 hover:bg-red-50 flex-1">
+                                    class="flex items-center flex-1 gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-500 hover:bg-red-50">
                                     <input type="radio" name="status" value="rejected"
                                         {{ old('status', $report->validation?->status) === 'rejected' ? 'checked' : '' }}
                                         class="w-4 h-4 text-red-600">
@@ -187,7 +187,7 @@
                         {{-- Catatan --}}
                         <div class="mb-6">
                             <label class="block mb-1 text-sm font-medium text-gray-700">
-                                Catatan <span class="text-gray-400 font-normal">(opsional)</span>
+                                Catatan <span class="font-normal text-gray-400">(opsional)</span>
                             </label>
                             <textarea name="catatan" rows="2" placeholder="Tambahkan catatan jika perlu..."
                                 class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">{{ old('catatan', $report->validation?->catatan) }}</textarea>
@@ -212,8 +212,8 @@
 
             {{-- Reset (superadmin only) --}}
             @if ($isSuperadmin && $report->validation)
-                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex items-center justify-between">
+                <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-700">Reset Validasi</p>
                             <p class="text-xs text-gray-500">Hapus validasi dan kembalikan status ke pending.</p>
@@ -234,9 +234,9 @@
             {{-- ============================================================ --}}
             {{-- DETAIL LAPORAN LENGKAP + FOTO                                 --}}
             {{-- ============================================================ --}}
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="overflow-hidden bg-white rounded-lg shadow-sm">
                 <button onclick="toggleDetails()"
-                    class="w-full flex items-center justify-between px-5 py-4 text-left border-b border-gray-200 hover:bg-gray-50">
+                    class="flex items-center justify-between w-full px-5 py-4 text-left border-b border-gray-200 hover:bg-gray-50">
                     <span class="font-semibold text-gray-700">📋 Detail Laporan Lengkap</span>
                     <span id="toggleIcon" class="text-gray-400 transition-transform">▼</span>
                 </button>
@@ -244,7 +244,7 @@
                 <div id="detailsPanel" class="hidden divide-y divide-gray-100">
                     @foreach ($detailsByCategory as $categoryName => $details)
                         <div class="px-5 py-4">
-                            <h4 class="mb-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <h4 class="mb-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
                                 {{ $categoryName }}
                             </h4>
 
@@ -252,7 +252,7 @@
                                 <div class="py-2 border-b border-gray-50 last:border-0">
                                     {{-- Baris atas: nama field + nilai --}}
                                     <div class="flex items-center justify-between gap-4">
-                                        <p class="text-sm text-gray-700 flex-1">{{ $detail->field->name }}</p>
+                                        <p class="flex-1 text-sm text-gray-700">{{ $detail->field->name }}</p>
                                         <div class="text-right shrink-0">
                                             @if ($detail->field->input_type === 'checkbox')
                                                 <span
@@ -285,13 +285,13 @@
                                             @foreach ($detail->photos as $photo)
                                                 <button type="button"
                                                     onclick="openLightbox('{{ $photo->url }}', '{{ $detail->field->name }}')"
-                                                    class="relative group overflow-hidden rounded-lg w-16 h-16 shrink-0 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                                    class="relative w-16 h-16 overflow-hidden rounded-lg group shrink-0 focus:outline-none focus:ring-2 focus:ring-teal-500">
                                                     <img src="{{ $photo->url }}" alt="{{ $detail->field->name }}"
                                                         loading="lazy"
-                                                        class="w-full h-full object-cover transition group-hover:scale-110 group-hover:brightness-75">
+                                                        class="object-cover w-full h-full transition group-hover:scale-110 group-hover:brightness-75">
                                                     {{-- Overlay zoom icon --}}
                                                     <div
-                                                        class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                                        class="absolute inset-0 flex items-center justify-center transition opacity-0 group-hover:opacity-100">
                                                         <svg class="w-6 h-6 text-white drop-shadow" fill="none"
                                                             stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -316,14 +316,14 @@
     {{-- ============================================================ --}}
     {{-- LIGHTBOX                                                       --}}
     {{-- ============================================================ --}}
-    <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-90"
+    <div id="lightbox" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-90"
         onclick="closeLightboxOnBackdrop(event)">
 
-        <div class="relative max-w-5xl max-h-screen w-full mx-4 flex flex-col items-center">
+        <div class="relative flex flex-col items-center w-full max-w-5xl max-h-screen mx-4">
 
             {{-- Caption --}}
             <p id="lightboxCaption"
-                class="mb-3 text-sm font-semibold text-white text-center px-4 py-1 bg-black bg-opacity-50 rounded-full">
+                class="px-4 py-1 mb-3 text-sm font-semibold text-center text-white bg-black bg-opacity-50 rounded-full">
             </p>
 
             {{-- Gambar --}}
@@ -332,14 +332,14 @@
 
             {{-- Tombol tutup --}}
             <button onclick="closeLightbox()"
-                class="absolute top-0 right-0 -translate-y-10 translate-x-0 text-white text-3xl font-bold leading-none hover:text-gray-300 focus:outline-none"
+                class="absolute top-0 right-0 text-3xl font-bold leading-none text-white translate-x-0 -translate-y-10 hover:text-gray-300 focus:outline-none"
                 aria-label="Tutup">
                 ✕
             </button>
 
             {{-- Open in new tab --}}
             <a id="lightboxLink" href="#" target="_blank"
-                class="mt-4 px-4 py-2 text-sm text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                class="px-4 py-2 mt-4 text-sm text-white bg-teal-600 rounded-lg hover:bg-teal-700">
                 🔗 Buka di tab baru
             </a>
         </div>

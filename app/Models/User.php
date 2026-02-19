@@ -34,42 +34,42 @@ class User extends Authenticatable
     /**
      * Relasi many-to-many dengan Branch menggunakan BranchUser model
      */
-    public function branches()
-    {
-        return $this->belongsToMany(Branch::class, 'branch_users')
-            ->using(BranchUser::class)
-            ->withPivot('is_manager')
-            ->withTimestamps();
-    }
+    // public function branches()
+    // {
+    //     return $this->belongsToMany(Branch::class, 'branch_users')
+    //         ->using(BranchUser::class)
+    //         ->withPivot('is_manager')
+    //         ->withTimestamps();
+    // }
 
     /**
      * Get all branch assignments dengan detail
      */
-    public function branchAssignments()
-    {
-        return $this->hasMany(BranchUser::class);
-    }
+    // public function branchAssignments()
+    // {
+    //     return $this->hasMany(BranchUser::class);
+    // }
 
-    public function displayBranchName(): string
-    {
-        $branches = $this->branches;
+    // public function displayBranchName(): string
+    // {
+    //     $branches = $this->branches;
 
-        if ($branches->isEmpty()) {
-            return 'Tidak ada cabang';
-        }
+    //     if ($branches->isEmpty()) {
+    //         return 'Tidak ada cabang';
+    //     }
 
-        // Jika manager (punya is_manager = 1)
-        $isManager = $this->branchAssignments()
-            ->where('is_manager', 1)
-            ->exists();
+    //     // Jika manager (punya is_manager = 1)
+    //     $isManager = $this->branchAssignments()
+    //         ->where('is_manager', 1)
+    //         ->exists();
 
-        if ($isManager && $branches->count() > 1) {
-            return $branches->first()->name . ' +' . ($branches->count() - 1);
-        }
+    //     if ($isManager && $branches->count() > 1) {
+    //         return $branches->first()->name . ' +' . ($branches->count() - 1);
+    //     }
 
-        // FO / non manager
-        return $branches->first()->name;
-    }
+    //     // FO / non manager
+    //     return $branches->first()->name;
+    // }
     public function gajihPokoks()
     {
         return $this->hasMany(GajihPokok::class, 'user_id');
@@ -94,23 +94,23 @@ class User extends Authenticatable
     /**
      * Get cabang dimana user adalah manager
      */
-    public function managedBranches()
-    {
-        return $this->belongsToMany(Branch::class, 'branch_users')
-            ->using(BranchUser::class)
-            ->wherePivot('is_manager', true)
-            ->withTimestamps();
-    }
+    // public function managedBranches()
+    // {
+    //     return $this->belongsToMany(Branch::class, 'branch_users')
+    //         ->using(BranchUser::class)
+    //         ->wherePivot('is_manager', true)
+    //         ->withTimestamps();
+    // }
 
     /**
      * Get assignment untuk cabang tertentu
      */
-    public function getAssignmentFor($branchId)
-    {
-        return $this->branchAssignments()
-            ->where('branch_id', $branchId)
-            ->first();
-    }
+    // public function getAssignmentFor($branchId)
+    // {
+    //     return $this->branchAssignments()
+    //         ->where('branch_id', $branchId)
+    //         ->first();
+    // }
 
     /**
      * Assign user ke branch
@@ -184,5 +184,88 @@ class User extends Authenticatable
     public function contact90s()
     {
         return $this->hasMany(Contact90::class);
+    }
+
+    // Patch untuk User model — tambahkan/ganti method berikut:
+
+    /**
+     * Get branches yang aktif (is_active = true di pivot)
+     */
+    public function branches()
+    {
+        return $this->belongsToMany(Branch::class, 'branch_users')
+            ->using(BranchUser::class)
+            ->wherePivot('is_active', true) // ← filter aktif
+            ->withPivot('is_manager', 'is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get SEMUA assignments (termasuk inactive) — untuk audit
+     */
+    public function allBranchAssignments()
+    {
+        return $this->hasMany(BranchUser::class);
+    }
+
+    /**
+     * Get assignments yang aktif saja
+     */
+    public function branchAssignments()
+    {
+        return $this->hasMany(BranchUser::class)->where('is_active', true);
+    }
+
+    /**
+     * Get cabang dimana user adalah manager (aktif)
+     */
+    public function managedBranches()
+    {
+        return $this->belongsToMany(Branch::class, 'branch_users')
+            ->using(BranchUser::class)
+            ->wherePivot('is_manager', true)
+            ->wherePivot('is_active', true) // ← filter aktif
+            ->withTimestamps();
+    }
+
+    /**
+     * Cek apakah user memiliki assignment aktif di cabang manapun
+     */
+    public function hasActiveBranch()
+    {
+        return $this->branchAssignments()->exists();
+    }
+
+    /**
+     * Get assignment aktif untuk cabang tertentu
+     */
+    public function getAssignmentFor($branchId)
+    {
+        return $this->branchAssignments()
+            ->where('branch_id', $branchId)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    /**
+     * Display branch name (hanya yang aktif)
+     */
+    public function displayBranchName(): string
+    {
+        $branches = $this->branches; // ← sudah filter is_active = true
+
+        if ($branches->isEmpty()) {
+            return 'Tidak ada cabang';
+        }
+
+        $isManager = $this->branchAssignments()
+            ->where('is_manager', true)
+            ->exists();
+
+        if ($isManager && $branches->count() > 1) {
+            return $branches->first()->name . ' +' . ($branches->count() - 1);
+        }
+
+        return $branches->first()->name;
     }
 }

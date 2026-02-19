@@ -66,6 +66,7 @@ class GajihPokokImport implements
         return new GajihPokok([
             // 'branchuser_id'         => $branchUser->id,
             'user_id'         => $user->id,
+            'golongan'        => $data['golongan'],
             'amount'                 => (int) $data['gaji_pokok'],
             'tunjangan_makan'        => (int) ($data['tunjangan_makan'] ?? 0),
             'tunjangan_transportasi' => (int) ($data['tunjangan_transportasi'] ?? 0),
@@ -76,6 +77,10 @@ class GajihPokokImport implements
             'total_revenue'   => (int) ($data['total_revenue'] ?? 0),
             'persentase_revenue'     => (int) $data['persentase_revenue'],
             'bonus_revenue'   => (int) $bonus_revenue,
+            'total_kpi'   => (int) ($data['total_kpi'] ?? 0),
+            'persentase_kpi'     => (int) $data['persentase_kpi'],
+            'bonus_kpi'   => (int) ($data['bonus_kpi'] ?? 0),
+            'simpanan'   => (int) ($data['simpanan'] ?? 0),
             'bulan'                  => (int) $data['bulan'],
             'tahun'                  => (int) $data['tahun'],
             'hari_kerja'                  => (int) $data['hari_kerja'],

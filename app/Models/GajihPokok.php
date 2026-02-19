@@ -10,6 +10,7 @@ class GajihPokok extends Model
 
     protected $fillable = [
         'user_id',
+        'golongan',
         'amount',
         'tunjangan_makan',
         'tunjangan_transportasi',
@@ -24,9 +25,14 @@ class GajihPokok extends Model
         'tahun',
         'hari_kerja',
         'keterangan',
+        'total_kpi',
+        'persentase_kpi',
+        'bonus_kpi',
+        'simpanan',
     ];
 
     protected $casts = [
+        'golongan' => 'string',
         'amount' => 'decimal:2',
         'tunjangan_makan' => 'decimal:2',
         'tunjangan_transportasi' => 'decimal:2',
@@ -37,6 +43,10 @@ class GajihPokok extends Model
         'total_revenue' => 'decimal:2',
         'persentase_revenue' => 'integer',
         'bonus_revenue' => 'decimal:2',
+        'total_kpi' => 'decimal:2',
+        'persentase_kpi' => 'integer',
+        'bonus_kpi' => 'decimal:2',
+        'simpanan' => 'decimal:2',
         'bulan' => 'integer',
         'tahun' => 'integer',
         'hari_kerja' => 'integer',
@@ -75,20 +85,6 @@ class GajihPokok extends Model
         );
     }
 
-    // /**
-    //  * Get branch via branch_user
-    //  */
-    // public function branch()
-    // {
-    //     return $this->hasOneThrough(
-    //         Branch::class,
-    //         BranchUser::class,
-    //         'id', // Foreign key on branch_user table
-    //         'id', // Foreign key on branches table
-    //         'branch_user_id', // Local key on gaji_pokok table
-    //         'branch_id' // Local key on branch_user table
-    //     );
-    // }
 
     /**
      * Get formatted amount
@@ -119,7 +115,7 @@ class GajihPokok extends Model
     public function getTotalGajiKotorAttribute()
     {
         return $this->amount + $this->total_tunjangan +
-            $this->bonus_revenue - $this->total_potongan_bpjs;
+            $this->bonus_revenue - $this->total_potongan_bpjs - $this->simpanan - $this->bonus_kpi;
     }
 
     /**

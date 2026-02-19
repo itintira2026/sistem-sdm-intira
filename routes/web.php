@@ -295,7 +295,10 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/gaji-pokok-import', [GajihPokokImportController::class, 'store'])->name('gaji-pokok.import');
         Route::get('/gaji-pokok/template', [GajihPokokImportController::class, 'template'])->name('gaji-pokok.template');
+        Route::get('/gaji-pokok/{gajihPokok}/export-pdf', [GajihPokokController::class, 'exportPdf'])
+            ->name('gaji-pokok.export-pdf');
 
+            
         /*
         |--------------------------------------------------------------------------
         | POTONGAN

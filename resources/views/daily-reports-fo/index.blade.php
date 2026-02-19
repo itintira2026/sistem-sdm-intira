@@ -131,14 +131,14 @@
                         @if ($stats['completed_slots'] > 0)
                             <div class="flex items-center gap-3 text-xs">
                                 @if ($stats['approved'] > 0)
-                                    <span class="text-green-600 font-semibold">✅ {{ $stats['approved'] }}
+                                    <span class="font-semibold text-green-600">✅ {{ $stats['approved'] }}
                                         disetujui</span>
                                 @endif
                                 @if ($stats['rejected'] > 0)
-                                    <span class="text-red-600 font-semibold">❌ {{ $stats['rejected'] }} ditolak</span>
+                                    <span class="font-semibold text-red-600">❌ {{ $stats['rejected'] }} ditolak</span>
                                 @endif
                                 @if ($stats['pending'] > 0)
-                                    <span class="text-yellow-600 font-semibold">⏳ {{ $stats['pending'] }}
+                                    <span class="font-semibold text-yellow-600">⏳ {{ $stats['pending'] }}
                                         pending</span>
                                 @endif
                             </div>
@@ -168,7 +168,7 @@
                         <div class="p-6 bg-white rounded-lg shadow-sm border-l-4 {{ $borderColor }}">
 
                             {{-- Slot Header --}}
-                            <div class="flex items-start justify-between mb-4">
+                            <div class="flex flex-wrap items-start justify-between gap-4 mb-4 md:gap-0">
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800">
                                         📍 Slot {{ $slot['slot_number'] }} — {{ $slot['slot_time'] }}
@@ -183,7 +183,7 @@
                                 </div>
 
                                 {{-- Badge Upload Status --}}
-                                <div class="flex flex-col items-end gap-1">
+                                <div class="flex flex-row items-end gap-1 md:flex-col">
                                     @if ($slot['has_report'])
                                         <span
                                             class="px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">

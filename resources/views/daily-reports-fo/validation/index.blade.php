@@ -145,34 +145,29 @@
             {{-- ============================================================ --}}
             {{-- STATS — 7 card                                                --}}
             {{-- ============================================================ --}}
-            <div class="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4 lg:grid-cols-7">
+            {{-- <div class="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4 lg:grid-cols-7">
 
-                {{-- Total Laporan --}}
                 <div class="col-span-1 p-4 text-center bg-white rounded-lg shadow-sm">
                     <p class="text-xs text-gray-400">Total</p>
                     <p class="text-2xl font-bold text-gray-800">{{ $stats['total'] }}</p>
                     <p class="text-xs text-gray-400">laporan</p>
                 </div>
 
-                {{-- Pending --}}
                 <div class="p-4 text-center rounded-lg shadow-sm bg-yellow-50">
                     <p class="text-xs text-yellow-600">⏳ Pending</p>
                     <p class="text-2xl font-bold text-yellow-700">{{ $stats['pending'] }}</p>
                 </div>
 
-                {{-- Approved --}}
                 <div class="p-4 text-center rounded-lg shadow-sm bg-green-50">
                     <p class="text-xs text-green-600">✅ Disetujui</p>
                     <p class="text-2xl font-bold text-green-700">{{ $stats['approved'] }}</p>
                 </div>
 
-                {{-- Rejected --}}
                 <div class="p-4 text-center rounded-lg shadow-sm bg-red-50">
                     <p class="text-xs text-red-600">❌ Ditolak</p>
                     <p class="text-2xl font-bold text-red-700">{{ $stats['rejected'] }}</p>
                 </div>
 
-                {{-- Total Omset --}}
                 <div class="col-span-1 p-4 text-center rounded-lg shadow-sm bg-blue-50 sm:col-span-1">
                     <p class="text-xs text-blue-600">💰 Total Omset</p>
                     <p class="text-lg font-bold leading-tight text-blue-800">
@@ -180,7 +175,6 @@
                     </p>
                 </div>
 
-                {{-- Total Revenue --}}
                 <div class="p-4 text-center rounded-lg shadow-sm bg-indigo-50">
                     <p class="text-xs text-indigo-600">📈 Total Revenue</p>
                     <p class="text-lg font-bold leading-tight text-indigo-800">
@@ -188,7 +182,6 @@
                     </p>
                 </div>
 
-                {{-- Total Akad --}}
                 <div class="p-4 text-center rounded-lg shadow-sm bg-purple-50">
                     <p class="text-xs text-purple-600">🤝 Total Akad</p>
                     <p class="text-2xl font-bold text-purple-700">
@@ -196,6 +189,58 @@
                     </p>
                 </div>
 
+            </div> --}}
+            {{-- ============================================================ --}}
+            {{-- STATS — Grouped by Status & Metrics                           --}}
+            {{-- ============================================================ --}}
+
+            {{-- Baris 1: Status Validasi --}}
+            <div class="mx-4 mb-3 md:mx-0">
+                <p class="mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Status Validasi</p>
+                <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    <div class="p-4 text-center bg-white rounded-lg shadow-sm">
+                        <p class="text-xs text-gray-400">Total</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ $stats['total'] }}</p>
+                        <p class="text-xs text-gray-400">laporan</p>
+                    </div>
+                    <div class="p-4 text-center rounded-lg shadow-sm bg-yellow-50">
+                        <p class="text-xs text-yellow-600">⏳ Pending</p>
+                        <p class="text-2xl font-bold text-yellow-700">{{ $stats['pending'] }}</p>
+                    </div>
+                    <div class="p-4 text-center rounded-lg shadow-sm bg-green-50">
+                        <p class="text-xs text-green-600">✅ Disetujui</p>
+                        <p class="text-2xl font-bold text-green-700">{{ $stats['approved'] }}</p>
+                    </div>
+                    <div class="p-4 text-center rounded-lg shadow-sm bg-red-50">
+                        <p class="text-xs text-red-600">❌ Ditolak</p>
+                        <p class="text-2xl font-bold text-red-700">{{ $stats['rejected'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Baris 2: Metrik Bisnis --}}
+            <div class="mx-4 mb-3 md:mx-0">
+                <p class="mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Metrik Bisnis</p>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <div class="p-4 text-center rounded-lg shadow-sm bg-blue-50">
+                        <p class="text-xs text-blue-600">💰 Total Omset</p>
+                        <p class="text-lg font-bold leading-tight text-blue-800">
+                            Rp {{ number_format($stats['total_omset'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <div class="p-4 text-center rounded-lg shadow-sm bg-indigo-50">
+                        <p class="text-xs text-indigo-600">📈 Total Revenue</p>
+                        <p class="text-lg font-bold leading-tight text-indigo-800">
+                            Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <div class="p-4 text-center rounded-lg shadow-sm bg-purple-50">
+                        <p class="text-xs text-purple-600">🤝 Total Akad</p>
+                        <p class="text-2xl font-bold text-purple-700">
+                            {{ number_format($stats['total_akad'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {{-- ============================================================ --}}

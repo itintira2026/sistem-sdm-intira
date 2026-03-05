@@ -127,6 +127,10 @@ Route::middleware('auth')->group(function () {
         //     Route::post('/', [ThreeHourReportManagerController::class, 'store'])->name('store');
         // });
     });
+    Route::middleware('role:fo|superadmin|marketing')->group(function () {
+        Route::get('/branches/search', [BranchController::class, 'search'])->name('branches.search');
+        Route::resource('daily-contents', App\Http\Controllers\DailyContentController::class);
+    });
 
     Route::middleware('role:manager|superadmin|marketing')->group(function () {
         // Tambahkan di routes/web.php, di dalam middleware auth
@@ -220,25 +224,25 @@ Route::middleware('auth')->group(function () {
             Route::post('/validate/{dailyReport}', [DailyReportController::class, 'validate'])->name('validate');
         });
 
-        Route::prefix('master')->name('master.')->group(function () {
-            // Kategori Laporan
-            Route::get('/categories',                    [MasterDataController::class, 'categoriesIndex'])->name('categories.index');
-            Route::post('/categories',                   [MasterDataController::class, 'categoriesStore'])->name('categories.store');
-            Route::put('/categories/{category}',         [MasterDataController::class, 'categoriesUpdate'])->name('categories.update');
-            Route::delete('/categories/{category}',      [MasterDataController::class, 'categoriesDestroy'])->name('categories.destroy');
+        // Route::prefix('master')->name('master.')->group(function () {
+        //     // Kategori Laporan
+        //     Route::get('/categories',                    [MasterDataController::class, 'categoriesIndex'])->name('categories.index');
+        //     Route::post('/categories',                   [MasterDataController::class, 'categoriesStore'])->name('categories.store');
+        //     Route::put('/categories/{category}',         [MasterDataController::class, 'categoriesUpdate'])->name('categories.update');
+        //     Route::delete('/categories/{category}',      [MasterDataController::class, 'categoriesDestroy'])->name('categories.destroy');
 
-            // Field Laporan
-            Route::get('/fields',                        [MasterDataController::class, 'fieldsIndex'])->name('fields.index');
-            Route::post('/fields',                       [MasterDataController::class, 'fieldsStore'])->name('fields.store');
-            Route::put('/fields/{field}',                [MasterDataController::class, 'fieldsUpdate'])->name('fields.update');
-            Route::delete('/fields/{field}',             [MasterDataController::class, 'fieldsDestroy'])->name('fields.destroy');
+        //     // Field Laporan
+        //     Route::get('/fields',                        [MasterDataController::class, 'fieldsIndex'])->name('fields.index');
+        //     Route::post('/fields',                       [MasterDataController::class, 'fieldsStore'])->name('fields.store');
+        //     Route::put('/fields/{field}',                [MasterDataController::class, 'fieldsUpdate'])->name('fields.update');
+        //     Route::delete('/fields/{field}',             [MasterDataController::class, 'fieldsDestroy'])->name('fields.destroy');
 
-            // Tindakan Validasi
-            Route::get('/validation-actions',            [MasterDataController::class, 'validationActionsIndex'])->name('validation-actions.index');
-            Route::post('/validation-actions',           [MasterDataController::class, 'validationActionsStore'])->name('validation-actions.store');
-            Route::put('/validation-actions/{action}',   [MasterDataController::class, 'validationActionsUpdate'])->name('validation-actions.update');
-            Route::delete('/validation-actions/{action}', [MasterDataController::class, 'validationActionsDestroy'])->name('validation-actions.destroy');
-        });
+        //     // Tindakan Validasi
+        //     Route::get('/validation-actions',            [MasterDataController::class, 'validationActionsIndex'])->name('validation-actions.index');
+        //     Route::post('/validation-actions',           [MasterDataController::class, 'validationActionsStore'])->name('validation-actions.store');
+        //     Route::put('/validation-actions/{action}',   [MasterDataController::class, 'validationActionsUpdate'])->name('validation-actions.update');
+        //     Route::delete('/validation-actions/{action}', [MasterDataController::class, 'validationActionsDestroy'])->name('validation-actions.destroy');
+        // });
     });
 
     // Route::middleware('role:superadmin')->group(function () {
@@ -260,14 +264,34 @@ Route::middleware('auth')->group(function () {
             Route::get('/export', [DailyReportFOController::class, 'marketingExport'])
                 ->name('export');
         });
+        
+        Route::prefix('master')->name('master.')->group(function () {
+            // Kategori Laporan
+            Route::get('/categories',                    [MasterDataController::class, 'categoriesIndex'])->name('categories.index');
+            Route::post('/categories',                   [MasterDataController::class, 'categoriesStore'])->name('categories.store');
+            Route::put('/categories/{category}',         [MasterDataController::class, 'categoriesUpdate'])->name('categories.update');
+            Route::delete('/categories/{category}',      [MasterDataController::class, 'categoriesDestroy'])->name('categories.destroy');
+
+            // Field Laporan
+            Route::get('/fields',                        [MasterDataController::class, 'fieldsIndex'])->name('fields.index');
+            Route::post('/fields',                       [MasterDataController::class, 'fieldsStore'])->name('fields.store');
+            Route::put('/fields/{field}',                [MasterDataController::class, 'fieldsUpdate'])->name('fields.update');
+            Route::delete('/fields/{field}',             [MasterDataController::class, 'fieldsDestroy'])->name('fields.destroy');
+
+            // Tindakan Validasi
+            Route::get('/validation-actions',            [MasterDataController::class, 'validationActionsIndex'])->name('validation-actions.index');
+            Route::post('/validation-actions',           [MasterDataController::class, 'validationActionsStore'])->name('validation-actions.store');
+            Route::put('/validation-actions/{action}',   [MasterDataController::class, 'validationActionsUpdate'])->name('validation-actions.update');
+            Route::delete('/validation-actions/{action}', [MasterDataController::class, 'validationActionsDestroy'])->name('validation-actions.destroy');
+        });
 
         /*
             |--------------------------------------------------------------------------
             | DAILY CONTENTS
             |--------------------------------------------------------------------------
             */
-        Route::get('/branches/search', [BranchController::class, 'search'])->name('branches.search');
-        Route::resource('daily-contents', App\Http\Controllers\DailyContentController::class);
+        // Route::get('/branches/search', [BranchController::class, 'search'])->name('branches.search');
+        // Route::resource('daily-contents', App\Http\Controllers\DailyContentController::class);
     });
 
     Route::middleware('role:superadmin|hr')->group(function () {
@@ -333,7 +357,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/potongan/{branch}/detail', [PotonganController::class, 'index'])->name('potongan.index');
         Route::get('/potongan/{branch}/create', [PotonganController::class, 'create'])->name('potongan.create');
         Route::post('/potongan/{branch}/create', [PotonganController::class, 'store'])->name('potongan.store');
-        Route::delete('/potongan/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
+      Route::delete('/potongan/{branch}/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy'); 
+        // Route::delete('/potongan/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
 
         Route::post('/potongan-import', [PotonganImportController::class, 'store'])->name('potongan.import');
         Route::get('/potongan/template', [PotonganImportController::class, 'template'])->name('potongan.template');

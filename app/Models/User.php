@@ -74,6 +74,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(GajihPokok::class, 'user_id');
     }
+    public function potongans()
+    {
+        return $this->hasMany(Potongan::class, 'user_id');
+    }
 
     public function presensis()
     {

@@ -91,9 +91,20 @@
                             Oleh: <strong>{{ $report->validation->manager->name }}</strong>
                             pada {{ $report->validation->validated_at->format('d M Y H:i') }}
                         </p>
-                        <p class="text-gray-600">Tindakan: <strong>{{ $report->validation->action->name }}</strong></p>
+                        <div class="mt-1">
+                            <span class="text-gray-600">Tindakan: </span>
+                            <div class="inline-flex flex-wrap gap-1 mt-1">
+                                @forelse ($report->validation->actions as $action)
+                                    <span class="inline-block px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700 rounded-full">
+                                        {{ $action->name }}
+                                    </span>
+                                @empty
+                                    <span class="text-xs text-gray-400">Tidak ada tindakan</span>
+                                @endforelse
+                            </div>
+                        </div>
                         @if ($report->validation->catatan)
-                            <p class="text-gray-600">Catatan: {{ $report->validation->catatan }}</p>
+                            <p class="mt-1 text-gray-600">Catatan: {{ $report->validation->catatan }}</p>
                         @endif
                     </div>
                 @endif
@@ -164,23 +175,155 @@
                         </div>
 
                         {{-- Opsi Tindakan --}}
-                        <div class="mb-4">
+                        <div class="mb-4" x-data="{ 
+                            open: false, 
+                            selected: @js(old('validation_action_ids', $report->validation?->actions->pluck('id')->toArray() ?? [])),
+                            allActions: @js($validationActions->map(fn($a) => ['id' => $a->id, 'name' => $a->name])->toArray()),
+                            
+                            get availableActions() {
+                                return this.allActions.filter(a => !this.selected.includes(a.id));
+                            },
+                            
+                            get selectedActions() {
+                                return this.allActions.filter(a => this.selected.includes(a.id));
+                            },
+                            
+                            add(id) {
+                                if (!this.selected.includes(id)) {
+                                    this.selected.push(id);
+                                }
+                            },
+                            
+                            remove(id) {
+                                this.selected = this.selected.filter(i => i !== id);
+                            }
+                        }">
                             <label class="block mb-2 text-sm font-medium text-gray-700">
                                 Tindakan yang Dilakukan <span class="text-red-500">*</span>
                             </label>
-                            <div class="space-y-2">
-                                @foreach ($validationActions as $action)
-                                    <label
-                                        class="flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-lg cursor-pointer hover:border-teal-500 hover:bg-teal-50">
-                                        <input type="radio" name="validation_action_id" value="{{ $action->id }}"
-                                            {{ old('validation_action_id', $report->validation?->validation_action_id) == $action->id ? 'checked' : '' }}
-                                            class="w-4 h-4 text-teal-600">
-                                        <span class="text-sm text-gray-700">{{ $action->name }}</span>
-                                    </label>
-                                @endforeach
+                        
+                            {{-- ============================================================ --}}
+                            {{-- AREA 1: TINDAKAN TERPILIH (Selected Tags di Atas)             --}}
+                            {{-- ============================================================ --}}
+                            <div class="p-4 mb-3 border-2 border-gray-200 rounded-lg bg-gray-50" 
+                                 :class="{ 'border-dashed': selected.length === 0 }">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                                        Tindakan Terpilih
+                                    </span>
+                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full"
+                                          :class="selected.length > 0 ? 'bg-teal-100 text-teal-700' : 'bg-gray-200 text-gray-500'"
+                                          x-text="selected.length">
+                                        0
+                                    </span>
+                                </div>
+                        
+                                {{-- Badges --}}
+                                <div x-show="selected.length > 0" 
+                                     class="flex flex-wrap gap-2">
+                                    <template x-for="action in selectedActions" :key="action.id">
+                                        <div class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg shadow-sm">
+                                            <span x-text="action.name"></span>
+                                            <button type="button" 
+                                                    @click="remove(action.id)"
+                                                    class="flex items-center justify-center w-4 h-4 text-white transition rounded-full hover:bg-teal-700">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                            {{-- Hidden input untuk submit --}}
+                                            <input type="hidden" name="validation_action_ids[]" :value="action.id">
+                                        </div>
+                                    </template>
+                                </div>
+                        
+                                {{-- Empty state --}}
+                                <div x-show="selected.length === 0" 
+                                     class="py-6 text-center text-gray-400">
+                                    <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <p class="text-xs">Belum ada tindakan dipilih</p>
+                                    <p class="text-xs text-gray-400">Pilih dari dropdown di bawah</p>
+                                </div>
                             </div>
-                            @error('validation_action_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        
+                            {{-- ============================================================ --}}
+                            {{-- AREA 2: DROPDOWN TINDAKAN TERSEDIA (Available Actions)       --}}
+                            {{-- ============================================================ --}}
+                            <div class="relative">
+                                <button type="button" @click="open = !open"
+                                    class="flex items-center justify-between w-full px-4 py-3 text-left bg-white border-2 border-gray-300 rounded-lg hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                                    :class="{ 'border-teal-500 bg-teal-50': open }">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        <span class="text-sm font-medium text-gray-700">Tambah Tindakan</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-gray-500" x-text="`${availableActions.length} tersedia`"></span>
+                                        <svg class="w-5 h-5 text-gray-400 transition-transform" 
+                                             :class="{ 'rotate-180': open }"
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </button>
+                        
+                                {{-- Dropdown Panel --}}
+                                <div x-show="open" 
+                                     @click.away="open = false"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 -translate-y-1"
+                                     x-transition:enter-end="opacity-100 translate-y-0"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 translate-y-0"
+                                     x-transition:leave-end="opacity-0 -translate-y-1"
+                                     class="absolute z-10 w-full mt-2 overflow-hidden bg-white border-2 border-gray-200 rounded-lg shadow-xl">
+                                    
+                                    {{-- Header --}}
+                                    <div class="px-4 py-2 text-xs font-semibold tracking-wider text-gray-500 uppercase border-b bg-gray-50">
+                                        Pilih Tindakan
+                                    </div>
+                        
+                                    {{-- Available Actions List --}}
+                                    <div class="max-h-64 overflow-y-auto divide-y divide-gray-100">
+                                        <template x-for="action in availableActions" :key="action.id">
+                                            <button type="button"
+                                                    @click="add(action.id)"
+                                                    class="flex items-center justify-between w-full px-4 py-3 text-left transition group hover:bg-teal-50">
+                                                <span class="text-sm font-medium text-gray-700 group-hover:text-teal-700" 
+                                                      x-text="action.name"></span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xs font-semibold text-teal-600 transition opacity-0 group-hover:opacity-100">
+                                                        Tambah
+                                                    </span>
+                                                    <svg class="w-5 h-5 text-teal-600 transition opacity-0 group-hover:opacity-100" 
+                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                        </template>
+                        
+                                        {{-- Empty State --}}
+                                        <div x-show="availableActions.length === 0" 
+                                             class="px-4 py-8 text-center">
+                                            <div class="inline-flex items-center justify-center w-16 h-16 mb-3 bg-teal-100 rounded-full">
+                                                <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <p class="text-sm font-medium text-gray-700">Semua tindakan sudah dipilih</p>
+                                            <p class="text-xs text-gray-500">Hapus tindakan di atas untuk memilih ulang</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            @error('validation_action_ids')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 

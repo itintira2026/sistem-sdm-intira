@@ -334,11 +334,11 @@ public function exportPdf($id, Request $request)
 
 
         // ===== AMBIL DATA POTONGAN & TAMBAHAN DARI MODEL POTONGAN =====
-        $potongans = Potongan::where('branch_user_id', $gajihPokok->branchUser->id)
-            ->where('bulan', $gajihPokok->bulan)
-            ->where('tahun', $gajihPokok->tahun)
-            ->orderBy('tanggal', 'asc')
-            ->get();
+       $potongans = Potongan::where('user_id', $gajihPokok->branchUser->user_id)
+        ->where('bulan', $gajihPokok->bulan)
+        ->where('tahun', $gajihPokok->tahun)
+        ->orderBy('tanggal', 'asc')
+        ->get();
 
         // Hitung total potongan & tambahan dari model Potongan
         $totalPotonganLain = $potongans->where('jenis', 'potongan')->sum('amount');

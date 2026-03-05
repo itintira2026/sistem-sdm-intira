@@ -186,6 +186,7 @@ class UsersImport implements ToModel, WithHeadingRow, SkipsEmptyRows
         'superadmin',
         'finance',
         'hr',
+        'marketing',
     ];
 
     public function model(array $row)

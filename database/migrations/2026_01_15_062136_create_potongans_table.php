@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('potongans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_user_id')->constrained('branch_users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
             $table->tinyInteger('bulan'); // 1-12
             $table->year('tahun'); // 2024, 2025
             $table->date('tanggal');

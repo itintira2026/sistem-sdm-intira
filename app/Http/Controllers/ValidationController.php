@@ -205,7 +205,7 @@ class ValidationController extends Controller
         $metrikTotals = \App\Models\DailyReportFODetail::query()
             ->whereHas('report', function ($q) use ($baseQuery) {
                 // Subquery ikut constraint yang sama dengan baseQuery
-                $q->whereIn('id', (clone $baseQuery)->select('id'));
+                $q->whereIn('id', (clone $baseQuery)->where('validation_status', 'approved')->select('id'));
             })
             ->whereHas('field', function ($q) {
                 $q->whereIn('code', ['mb_omset', 'mb_revenue', 'mb_jumlah_akad']);
@@ -232,7 +232,7 @@ class ValidationController extends Controller
             'user:id,name',
             'branch:id,name,timezone',
             'validation.manager:id,name',
-            'validation.action:id,name',
+            'validation.actions:id,name',
             'details' => function ($q) {
                 $q->whereHas('field.category', function ($q) {
                     $q->where('code', 'metrik_bisnis');
@@ -457,63 +457,130 @@ class ValidationController extends Controller
     public function validate(Request $request, $reportId)
     {
         $user = Auth::user();
-        $report = DailyReportFo::with(['validation', 'branch'])->findOrFail($reportId);
-        // ↑ PENTING: eager load 'branch' agar getBranchTimezone() tidak N+1 query
-
+        $report = DailyReportFo::with(['validation.actions', 'branch'])->findOrFail($reportId);
+        // ↑ PENTING: eager load 'validation.actions' untuk edit mode
+    
         $this->authorizeAccess($user, $report);
-
+    
         if ($user->hasRole('marketing')) {
             abort(403, 'Marketing tidak memiliki akses untuk memvalidasi laporan.');
         }
-
+    
         // Cek window — isManagerWindowOpen() sudah pakai timezone cabang laporan secara otomatis
         if (! $user->hasRole('superadmin') && ! $report->isManagerWindowOpen()) {
             $status = $report->manager_window_status;
-
+    
             $message = match ($status) {
                 'waiting' => 'Window validasi belum dibuka. Tunggu hingga ' . $report->manager_window_start->format('H:i') . ' ' . $report->branch->timezone . '.',
                 'expired' => 'Window validasi sudah tutup sejak ' . $report->manager_window_end->format('H:i') . ' ' . $report->branch->timezone . '.',
                 default => 'Window validasi tidak tersedia.',
             };
-
+    
             return back()->with('error', $message);
         }
-
+    
         if (! $user->hasRole('superadmin') && $report->validation_status !== 'pending') {
             return back()->with('error', 'Laporan ini sudah divalidasi sebelumnya.');
         }
-
+    
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected',
-            'validation_action_id' => 'required|exists:validation_actions,id',
+            'validation_action_ids' => 'required|array|min:1', // ← UBAH: array, min 1
+            'validation_action_ids.*' => 'exists:validation_actions,id',
             'catatan' => 'nullable|string|max:500',
         ], [
             'status.required' => 'Status validasi wajib dipilih.',
-            'validation_action_id.required' => 'Opsi tindakan wajib dipilih.',
-            'validation_action_id.exists' => 'Opsi tindakan tidak valid.',
+            'validation_action_ids.required' => 'Minimal pilih 1 tindakan.',
+            'validation_action_ids.min' => 'Minimal pilih 1 tindakan.',
+            'validation_action_ids.*.exists' => 'Tindakan tidak valid.',
         ]);
-
+    
         DB::transaction(function () use ($validated, $report, $user) {
+            // Hapus validasi lama (cascade delete pivot juga)
             $report->validation()->delete();
-
-            DailyReportFoValidation::create([
+    
+            // Buat validasi baru
+            $validation = DailyReportFoValidation::create([
                 'daily_report_fo_id' => $report->id,
                 'manager_id' => $user->id,
-                'validation_action_id' => $validated['validation_action_id'],
                 'status' => $validated['status'],
                 'catatan' => $validated['catatan'] ?? null,
                 'validated_at' => now(),
             ]);
-
+    
+            // Attach multiple actions ke pivot table
+            $validation->actions()->attach($validated['validation_action_ids']);
+    
+            // Update status di report
             $report->update(['validation_status' => $validated['status']]);
         });
-
+    
         $statusLabel = $validated['status'] === 'approved' ? 'disetujui' : 'ditolak';
-
+    
         return redirect()
             ->route('validation.index', ['branch_id' => $report->branch_id])
             ->with('success', "Laporan berhasil {$statusLabel}.");
     }
+    // public function validate(Request $request, $reportId)
+    // {
+    //     $user = Auth::user();
+    //     $report = DailyReportFo::with(['validation', 'branch'])->findOrFail($reportId);
+    //     // ↑ PENTING: eager load 'branch' agar getBranchTimezone() tidak N+1 query
+
+    //     $this->authorizeAccess($user, $report);
+
+    //     if ($user->hasRole('marketing')) {
+    //         abort(403, 'Marketing tidak memiliki akses untuk memvalidasi laporan.');
+    //     }
+
+    //     // Cek window — isManagerWindowOpen() sudah pakai timezone cabang laporan secara otomatis
+    //     if (! $user->hasRole('superadmin') && ! $report->isManagerWindowOpen()) {
+    //         $status = $report->manager_window_status;
+
+    //         $message = match ($status) {
+    //             'waiting' => 'Window validasi belum dibuka. Tunggu hingga ' . $report->manager_window_start->format('H:i') . ' ' . $report->branch->timezone . '.',
+    //             'expired' => 'Window validasi sudah tutup sejak ' . $report->manager_window_end->format('H:i') . ' ' . $report->branch->timezone . '.',
+    //             default => 'Window validasi tidak tersedia.',
+    //         };
+
+    //         return back()->with('error', $message);
+    //     }
+
+    //     if (! $user->hasRole('superadmin') && $report->validation_status !== 'pending') {
+    //         return back()->with('error', 'Laporan ini sudah divalidasi sebelumnya.');
+    //     }
+
+    //     $validated = $request->validate([
+    //         'status' => 'required|in:approved,rejected',
+    //         'validation_action_id' => 'required|exists:validation_actions,id',
+    //         'catatan' => 'nullable|string|max:500',
+    //     ], [
+    //         'status.required' => 'Status validasi wajib dipilih.',
+    //         'validation_action_id.required' => 'Opsi tindakan wajib dipilih.',
+    //         'validation_action_id.exists' => 'Opsi tindakan tidak valid.',
+    //     ]);
+
+    //     DB::transaction(function () use ($validated, $report, $user) {
+    //         $report->validation()->delete();
+
+    //         DailyReportFoValidation::create([
+    //             'daily_report_fo_id' => $report->id,
+    //             'manager_id' => $user->id,
+    //             'validation_action_id' => $validated['validation_action_id'],
+    //             'status' => $validated['status'],
+    //             'catatan' => $validated['catatan'] ?? null,
+    //             'validated_at' => now(),
+    //         ]);
+
+    //         $report->update(['validation_status' => $validated['status']]);
+    //     });
+
+    //     $statusLabel = $validated['status'] === 'approved' ? 'disetujui' : 'ditolak';
+
+    //     return redirect()
+    //         ->route('validation.index', ['branch_id' => $report->branch_id])
+    //         ->with('success', "Laporan berhasil {$statusLabel}.");
+    // }
 
     /**
      * Cek apakah user bisa memvalidasi laporan ini
@@ -544,7 +611,7 @@ class ValidationController extends Controller
             'user',
             'branch',          // ← WAJIB untuk timezone calculation
             'validation.manager',
-            'validation.action',
+            'validation.actions',
             'details' => function ($q) {
                 $q->with(['field.category', 'photos']);
             },

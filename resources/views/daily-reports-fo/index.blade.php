@@ -302,7 +302,7 @@
                                     @if ($report->validation)
                                         <div class="pt-3 mt-3 border-t border-gray-200">
                                             <p class="text-xs text-gray-500">
-                                                <strong>Tindakan:</strong> {{ $report->validation->action->name }}
+                                                <strong>Tindakan:</strong> {{ $report->validation->actions->pluck('name')->join(', ') }}
                                                 &nbsp;·&nbsp;
                                                 {{ $report->validation->validated_at->format('H:i') }}
                                             </p>
@@ -360,8 +360,8 @@
                 <div class="p-4 mt-6 rounded-lg bg-blue-50">
                     <p class="text-sm text-blue-800">
                         💡 <strong>Info:</strong>
-                        Setiap slot punya window <strong>15 menit</strong> untuk upload laporan.
-                        Setelah itu manager punya <strong>15 menit</strong> untuk memvalidasi.
+                        Setiap slot punya window <strong>30 menit</strong> untuk upload laporan.
+                        Setelah itu manager punya <strong>30 menit</strong> untuk memvalidasi.
                         Laporan yang disetujui ditandai hijau, ditolak merah.
                     </p>
                 </div>

@@ -67,8 +67,10 @@
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-500">Status</label>
-                                    <p class="mt-1 font-semibold text-gray-900">{{ $gajihPokok->branchUser->is_manager ?
-                                        'Manager' : 'Staff' }}</p>
+                                    <p class="mt-1 font-semibold text-gray-900">
+                                        {{ $gajihPokok->golongan ? $gajihPokok->golongan : 'N/A' }}
+                                    </p>
+
                                 </div>
                             </div>
                         </div>
@@ -132,19 +134,61 @@
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">Bonus Revenue</span>
                                         <span class="text-sm font-semibold text-gray-900">Rp {{
-                                            number_format($gajihPokok->total_revenue, 0, ',', '.') }}</span>
+                                            number_format($gajihPokok->bonus_revenue, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">persentasi Revenue</span>
                                         <span class="text-sm font-semibold text-gray-900">{{
-                                            $gajihPokok->persentase_revenue}}%</span>
+                                            $gajihPokok->persentase_revenue}}
+
+                                            @if($gajihPokok->branchUser && $gajihPokok->branchUser->is_manager)
+                                            Cabang
+                                            @else
+                                            %
+                                            @endif
+
+
+
+                                        </span>
                                     </div>
                                     <div class="flex items-center justify-between pt-3 border-t border-gray-200">
-                                        <span class="text-sm font-semibold text-gray-700">Total Potongan</span>
+                                        <span class="text-sm font-semibold text-gray-700">Total Revenue</span>
                                         <span class="text-sm font-bold text-blue-600">Rp {{
-                                            number_format($gajihPokok->bonus_revenue, 0, ',', '.') }}</span>
+                                            number_format($gajihPokok->total_revenue, 0, ',', '.') }}</span>
                                     </div>
                                 </div>
+
+                                <div class="p-4 space-y-3 bg-gray-50 rounded-lg">
+                                    <p class="mb-2 text-sm font-semibold text-gray-700">KPI:</p>
+
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Total KPI</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp {{
+                                            number_format($gajihPokok->total_kpi, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Persentasi KPI</span>
+                                        <span class="text-sm font-semibold text-gray-900">{{
+                                            $gajihPokok->persentase_kpi}}%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                        <span class="text-sm font-semibold text-gray-700"> Bonus KPI</span>
+                                        <span class="text-sm font-bold text-red-600">Rp {{
+                                            number_format($gajihPokok->bonus_kpi, 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 space-y-3 bg-gray-50 rounded-lg">
+                                    <p class="mb-2 text-sm font-semibold text-gray-700">Simpanan:</p>
+
+
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                        <span class="text-sm font-semibold text-gray-700">Total Simpanan</span>
+                                        <span class="text-sm font-bold text-red-600">Rp {{
+                                            number_format($gajihPokok->simpanan, 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+
                                 <div class="p-4 space-y-3 bg-gray-50 rounded-lg">
                                     <p class="mb-2 text-sm font-semibold text-gray-700">Potongan Kesehatan:</p>
 
@@ -295,14 +339,14 @@
                                 <h3 class="text-lg font-semibold text-gray-900">Potongan & Tambahan Lainnya</h3>
                                 <p class="text-sm text-gray-500">Bonus, denda, atau adjustment lainnya</p>
                             </div>
-                            {{-- <a href="{{ route('potongan.create', ['branch' => $gajihPokok->branchUser->branch_id, 'branch_user_id' => $gajihPokok->branchUser->id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
+                            <a href="{{ route('potongan.create', ['branch' => $gajihPokok->branchUser->branch_id, 'branch_user_id' => $gajihPokok->branchUser->id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
                                 class="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
                                 Tambah
-                            </a> --}}
+                            </a>
                         </div>
 
                         <div class="p-6 overflow-x-auto">
@@ -522,7 +566,7 @@
                         <div class="p-6">
                             <div class="space-y-3">
                                 @foreach($riwayatGaji as $index => $riwayat)
-                                <a href="{{ route('gaji-saya.show', ['bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun]) }}"
+                                <a href="{{ route('gaji-saya.show', ['gajihPokok' => $initialGajihPokok->id, 'bulan' => $riwayat->bulan, 'tahun' => $riwayat->tahun]) }}"
                                     class="block transition-all hover:shadow-md">
                                     <div
                                         class="flex items-center justify-between p-4 border rounded-lg {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' : 'bg-gray-50 border-gray-200 hover:border-blue-300' }}">
@@ -539,12 +583,12 @@
                                             </p>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <div class="text-right">
+                                            {{-- <div class="text-right">
                                                 <p
                                                     class="font-bold {{ ($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun == $gajihPokok->tahun) ? 'text-blue-600' : 'text-gray-700' }}">
                                                     Rp {{ number_format($riwayat->total_gaji_kotor, 0, ',', '.') }}
                                                 </p>
-                                            </div>
+                                            </div> --}}
                                             @if($riwayat->bulan == $gajihPokok->bulan && $riwayat->tahun ==
                                             $gajihPokok->tahun)
                                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
@@ -573,14 +617,23 @@
                             <h3 class="text-lg font-semibold text-gray-900">Aksi</h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            <button
+                            {{-- <button
                                 class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-green-500 rounded-lg hover:bg-green-600">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                 </svg>
                                 Export PDF
-                            </button>
+                            </button> --}}
+
+                            <a href="{{ route('gaji-pokok.export-pdf', ['gajihPokok' => $initialGajihPokok->id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
+                                class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-green-500 rounded-lg hover:bg-green-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                Export PDF
+                            </a>
 
                             <button
                                 class="flex items-center justify-center w-full gap-2 px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200">

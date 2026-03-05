@@ -12,7 +12,7 @@ class Potongan extends Model
     protected $table = 'potongans';
 
     protected $fillable = [
-        'branch_user_id',
+        'user_id',
         'bulan',
         'tahun',
         'tanggal',
@@ -33,44 +33,35 @@ class Potongan extends Model
      | RELATIONS
      ===================== */
 
-    public function branchUser()
+     public function branchUser()
     {
-        return $this->belongsTo(
-            BranchUser::class,
-            'branch_user_id',
-            'id'
-        );
+
+
+        return $this->belongsTo(BranchUser::class, 'user_id', 'user_id')
+            ->whereHas('user', function ($query) {
+                $query->where('is_active', true);
+            });
     }
 
     /**
-     * Akses user langsung
+     * Get user via branch_user
      */
     public function user()
     {
         return $this->hasOneThrough(
             User::class,
             BranchUser::class,
-            'id',        // FK di branch_users
-            'id',        // FK di users
-            'branch_user_id',
-            'user_id'
+            'id', // Foreign key on branch_user table
+            'id', // Foreign key on users table
+            'branch_user_id', // Local key on gaji_pokok table
+            'user_id' // Local key on branch_user table
         );
     }
 
     /**
      * Akses branch langsung
      */
-    public function branch()
-    {
-        return $this->hasOneThrough(
-            Branch::class,
-            BranchUser::class,
-            'id',
-            'id',
-            'branch_user_id',
-            'branch_id'
-        );
-    }
+
 
     /* =====================
      | SCOPES
@@ -83,19 +74,7 @@ class Potongan extends Model
             ->where('tahun', $tahun);
     }
 
-    public function scopeForUser($query, int $userId)
-    {
-        return $query->whereHas('branchUser', function ($q) use ($userId) {
-            $q->where('user_id', $userId);
-        });
-    }
-
-    public function scopeForBranch($query, int $branchId)
-    {
-        return $query->whereHas('branchUser', function ($q) use ($branchId) {
-            $q->where('branch_id', $branchId);
-        });
-    }
+  
 
     public function scopePotongan($query)
     {
@@ -131,5 +110,41 @@ class Potongan extends Model
     public function getPeriodeAttribute()
     {
         return "{$this->nama_bulan} {$this->tahun}";
+    }
+/**
+     * Accessor total tambahan (per record)
+     */
+    public function getTotalTambahanAttribute()
+    {
+        return $this->jenis === 'tambahan' ? $this->amount : 0;
+    }
+
+    /**
+     * Accessor total potongan (per record)
+     */
+    public function getTotalPotonganAttribute()
+    {
+        return $this->jenis === 'potongan' ? $this->amount : 0;
+    }
+    /**
+     * Total tambahan per user per bulan
+     */
+    public static function totalTambahan($userId, $bulan, $tahun)
+    {
+        return self::where('user_id', $userId)
+            ->forMonth($bulan, $tahun)
+            ->tambahan()
+            ->sum('amount');
+    }
+
+    /**
+     * Total potongan per user per bulan
+     */
+    public static function totalPotongan($userId, $bulan, $tahun)
+    {
+        return self::where('user_id', $userId)
+            ->forMonth($bulan, $tahun)
+            ->potongan()
+            ->sum('amount');
     }
 }

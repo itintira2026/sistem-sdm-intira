@@ -91,7 +91,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user->load(['roles', 'branch']);
+        $user->load(['roles', 'branches']);
+
 
         return view('management_data.user.show', compact('user'));
     }

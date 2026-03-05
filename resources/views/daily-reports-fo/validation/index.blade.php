@@ -254,7 +254,7 @@
                     </div>
                 @else
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
                             <thead class="border-b border-gray-200 bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">FO

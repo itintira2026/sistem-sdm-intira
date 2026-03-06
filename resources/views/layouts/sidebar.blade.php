@@ -65,6 +65,16 @@
                 <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Karyawan</p>
             </div>
 
+            <a href="{{ route('gaji-saya.show') }}"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('gaji-saya.show') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-show="desktopOpen || isMobile">Gaji Saya</span>
+            </a>
+
             <a href="{{ route('presensi-karyawan.index') }}"
                 class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi-karyawan.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                 <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -137,7 +147,7 @@
             {{-- ============================================================ --}}
             {{-- Marketing                                                       --}}
             {{-- ============================================================ --}}
-            @role('marketing|superadmin')
+            @role('fo|marketing|superadmin')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
                     <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Marketing</p>
                 </div>
@@ -156,7 +166,7 @@
             {{-- ============================================================ --}}
             {{-- Contact 90                                                      --}}
             {{-- ============================================================ --}}
-            @role('fo|manager|superadmin')
+            @role('marketing|superadmin')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
                     <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Contact 90</p>
                 </div>
@@ -171,7 +181,7 @@
                     <span x-show="desktopOpen || isMobile">My Contacts</span>
                 </a>
 
-                @role('manager|superadmin')
+                @role('superadmin')
                     <a href="{{ route('contact90.manager.dashboard') }}"
                         class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('contact90.manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -193,7 +203,7 @@
                 </div>
 
                 <a href="{{ route('daily-reports.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports.index|daily-reports.create|daily-reports.edit') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -237,7 +247,7 @@
                 @endrole
 
                 {{-- Manager: FO Reports + Validasi --}}
-                @role('manager|superadmin')
+                @role('manager|superadmin|marketing')
                     {{-- <a href="{{ route('daily-reports-fo.manager.dashboard') }}"
                         class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"

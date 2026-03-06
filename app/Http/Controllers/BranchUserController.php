@@ -139,21 +139,54 @@ class BranchUserController extends Controller
         // 2. Role FO
         // 3. TIDAK punya branch_users yang aktif (belum ditempatkan di cabang manapun)
         // ATAU sudah pernah di cabang ini tapi sekarang inactive
-        $users = User::where('is_active', true)
-            ->role('fo') // ← Spatie whereHas('roles')
+        // $users = User::where('is_active', true)
+        //     ->role('fo') // ← Spatie whereHas('roles')
+        //     ->where(function ($q) use ($branch) {
+        //         // TIDAK punya assignment aktif di cabang manapun
+        //         $q->whereDoesntHave('branchAssignments', function ($q2) {
+        //             $q2->where('is_active', true);
+        //         })
+        //             // ATAU pernah di cabang ini tapi sekarang inactive (bisa di-reactivate)
+        //             ->orWhereHas('branchAssignments', function ($q2) use ($branch) {
+        //                 $q2->where('branch_id', $branch->id)
+        //                     ->where('is_active', false);
+        //             });
+        //     })
+        //     ->orderBy('name')
+        //     ->get();
+
+        // // Get assigned users yang AKTIF di cabang ini
+        // $assignedUsers = $branch->users()
+        //     ->wherePivot('is_active', true)
+        //     ->with('roles')
+        //     ->get();
+
+        // return view('management_data.branch_user.create', compact('branch', 'users', 'assignedUsers'));
+        // FO — belum punya assignment aktif di manapun, atau reaktivasi di cabang ini
+        $foUsers = User::where('is_active', true)
+            ->role('fo')
             ->where(function ($q) use ($branch) {
-                // TIDAK punya assignment aktif di cabang manapun
                 $q->whereDoesntHave('branchAssignments', function ($q2) {
                     $q2->where('is_active', true);
                 })
-                    // ATAU pernah di cabang ini tapi sekarang inactive (bisa di-reactivate)
                     ->orWhereHas('branchAssignments', function ($q2) use ($branch) {
                         $q2->where('branch_id', $branch->id)
                             ->where('is_active', false);
                     });
             })
-            ->orderBy('name')
             ->get();
+
+        // Manager — aktif, tapi belum terdaftar di cabang INI
+        $managerUsers = User::where('is_active', true)
+            ->role('manager')
+            ->whereDoesntHave('branchAssignments', function ($q) use ($branch) {
+                $q->where('branch_id', $branch->id)
+                    ->where('is_active', true);
+            })
+            ->get();
+
+        // Merge & sort by name
+        $users = $foUsers->merge($managerUsers)->sortBy('name');
 
         // Get assigned users yang AKTIF di cabang ini
         $assignedUsers = $branch->users()

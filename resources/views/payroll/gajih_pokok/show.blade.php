@@ -134,17 +134,27 @@
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">Bonus Revenue</span>
                                         <span class="text-sm font-semibold text-gray-900">Rp {{
-                                            number_format($gajihPokok->total_revenue, 0, ',', '.') }}</span>
+                                            number_format($gajihPokok->bonus_revenue, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm text-gray-600">persentasi Revenue</span>
                                         <span class="text-sm font-semibold text-gray-900">{{
-                                            $gajihPokok->persentase_revenue}}%</span>
+                                            $gajihPokok->persentase_revenue}}
+
+                                            @if($gajihPokok->branchUser && $gajihPokok->branchUser->is_manager)
+                                            Cabang
+                                            @else
+                                            %
+                                            @endif
+
+
+
+                                        </span>
                                     </div>
                                     <div class="flex items-center justify-between pt-3 border-t border-gray-200">
                                         <span class="text-sm font-semibold text-gray-700">Total Revenue</span>
                                         <span class="text-sm font-bold text-blue-600">Rp {{
-                                            number_format($gajihPokok->bonus_revenue, 0, ',', '.') }}</span>
+                                            number_format($gajihPokok->total_revenue, 0, ',', '.') }}</span>
                                     </div>
                                 </div>
 
@@ -152,17 +162,17 @@
                                     <p class="mb-2 text-sm font-semibold text-gray-700">KPI:</p>
 
                                     <div class="flex items-center justify-between">
-                                        <span class="text-sm text-gray-600">Bonus KPI</span>
+                                        <span class="text-sm text-gray-600">Total KPI</span>
                                         <span class="text-sm font-semibold text-gray-900">Rp {{
                                             number_format($gajihPokok->total_kpi, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-sm text-gray-600">persentasi KPI</span>
+                                        <span class="text-sm text-gray-600">Persentasi KPI</span>
                                         <span class="text-sm font-semibold text-gray-900">{{
                                             $gajihPokok->persentase_kpi}}%</span>
                                     </div>
                                     <div class="flex items-center justify-between pt-3 border-t border-gray-200">
-                                        <span class="text-sm font-semibold text-gray-700">Total KPI</span>
+                                        <span class="text-sm font-semibold text-gray-700">Bonus KPI</span>
                                         <span class="text-sm font-bold text-red-600">Rp {{
                                             number_format($gajihPokok->bonus_kpi, 0, ',', '.') }}</span>
                                     </div>

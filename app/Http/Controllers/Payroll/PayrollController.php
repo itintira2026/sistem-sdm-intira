@@ -47,120 +47,240 @@ class PayrollController extends Controller
     }
 
 
-    public function show()
-    {
-        // Ambil user yang sedang login
-        $currentUser = auth()->user();
+    // public function show()
+    // {
+    //     // Ambil user yang sedang login
+    //     $currentUser = auth()->user();
 
-        // Cek apakah ada parameter bulan dan tahun dari request
-        $requestedBulan = request('bulan');
-        $requestedTahun = request('tahun');
+    //     // Cek apakah ada parameter bulan dan tahun dari request
+    //     $requestedBulan = request('bulan');
+    //     $requestedTahun = request('tahun');
 
-        // Jika ada parameter bulan dan tahun, ambil data untuk periode tersebut
-        if ($requestedBulan && $requestedTahun) {
-            $gajihPokok = GajihPokok::with([
-                'branchUser' => function ($query) {
-                    $query->with(['user.roles', 'branch']);
-                }
-            ])
-                ->where('user_id', $currentUser->id)
-                ->where('bulan', $requestedBulan)
-                ->where('tahun', $requestedTahun)
-                ->first();
+    //     // Jika ada parameter bulan dan tahun, ambil data untuk periode tersebut
+    //     if ($requestedBulan && $requestedTahun) {
+    //         $gajihPokok = GajihPokok::with([
+    //             'branchUser' => function ($query) {
+    //                 $query->with(['user.roles', 'branch']);
+    //             }
+    //         ])
+    //             ->where('user_id', $currentUser->id)
+    //             ->where('bulan', $requestedBulan)
+    //             ->where('tahun', $requestedTahun)
+    //             ->first();
 
-            // Jika tidak ditemukan untuk periode tersebut
-            if (!$gajihPokok) {
-                return redirect()->back()->with('error', 'Data gaji untuk periode tersebut tidak ditemukan!');
-            }
-        } else {
-            // Jika tidak ada parameter, ambil data gaji terbaru
-            $gajihPokok = GajihPokok::with([
-                'branchUser' => function ($query) {
-                    $query->with(['user.roles', 'branch']);
-                }
-            ])
-                ->where('user_id', $currentUser->id)
-                ->orderBy('tahun', 'desc')
-                ->orderBy('bulan', 'desc')
-                ->first();
+    //         // Jika tidak ditemukan untuk periode tersebut
+    //         if (!$gajihPokok) {
+    //             return redirect()->back()->with('error', 'Data gaji untuk periode tersebut tidak ditemukan!');
+    //         }
+    //     } else {
+    //         // Jika tidak ada parameter, ambil data gaji terbaru
+    //         $gajihPokok = GajihPokok::with([
+    //             'branchUser' => function ($query) {
+    //                 $query->with(['user.roles', 'branch']);
+    //             }
+    //         ])
+    //             ->where('user_id', $currentUser->id)
+    //             ->orderBy('tahun', 'desc')
+    //             ->orderBy('bulan', 'desc')
+    //             ->first();
 
-            // Jika tidak ada data gaji sama sekali
-            if (!$gajihPokok) {
-                return redirect()->back()->with('error', 'Data gaji Anda belum tersedia!');
-            }
+    //         // Jika tidak ada data gaji sama sekali
+    //         // ✅ Jika tidak ada data gaji sama sekali → tampilkan halaman empty
+    //         if (!$gajihPokok) {
+    //             return view('payroll.empty');
+
+    //             // return redirect()->back()->with('error', 'Data gaji Anda belum tersedia!');
+    //         }
+    //     }
+
+    //     // Pastikan branchUser ada
+    //     if (!$gajihPokok->branchUser) {
+    //         return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
+    //     }
+
+    //     // Ambil data presensi
+    //     $presensis = Presensi::forUser($gajihPokok->user_id)
+    //         ->forMonth($gajihPokok->bulan, $gajihPokok->tahun)
+    //         ->checkIn()
+    //         ->orderBy('tanggal', 'asc')
+    //         ->get();
+
+    //     // Hitung potongan keterlambatan
+    //     $potonganFlat = 15000;
+    //     $dataPotonganTerlambat = [];
+    //     $totalPotonganTerlambat = 0;
+
+    //     foreach ($presensis as $presensi) {
+    //         $hitungan = $presensi->hitungPotonganTerlambat($potonganFlat);
+
+    //         if ($hitungan['potongan'] > 0) {
+    //             $dataPotonganTerlambat[] = [
+    //                 'tanggal' => $presensi->tanggal,
+    //                 'jam_check_in' => $hitungan['jam_check_in'],
+    //                 'menit_terlambat' => $hitungan['menit_terlambat'],
+    //                 'potongan' => $hitungan['potongan'],
+    //                 'keterangan' => $presensi->keterangan
+    //                     ?? 'Terlambat ' . $hitungan['menit_terlambat'] . ' menit (Potongan Flat)',
+    //             ];
+
+    //             $totalPotonganTerlambat += $hitungan['potongan'];
+    //         }
+    //     }
+
+    //     // Ambil data potongan & tambahan dari model Potongan
+    //     // $potongans = Potongan::where('branch_user_id', $gajihPokok->branchUser->id)
+    //     //     ->where('bulan', $gajihPokok->bulan)
+    //     //     ->where('tahun', $gajihPokok->tahun)
+    //     //     ->orderBy('tanggal', 'asc')
+    //     //     ->get();
+    //     $potongans = Potongan::where('user_id', $gajihPokok->branchUser->user_id)
+    //     ->where('bulan', $gajihPokok->bulan)
+    //     ->where('tahun', $gajihPokok->tahun)
+    //     ->orderBy('tanggal', 'asc')
+    //     ->get();
+
+    //     // Hitung total potongan & tambahan
+    //     $totalPotonganLain = $potongans->where('jenis', 'potongan')->sum('amount');
+    //     $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
+    //     $totalPotongan = $totalPotonganTerlambat + $totalPotonganLain;
+
+    //     // Hitung gaji
+    //     $gajiKotor = $gajihPokok->total_gaji_kotor;
+    //     $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
+
+    //     // Get riwayat gaji pokok (6 bulan terakhir) user yang login
+    //     $riwayatGaji = GajihPokok::where('user_id', $currentUser->id)
+    //         ->orderBy('tahun', 'desc')
+    //         ->orderBy('bulan', 'desc')
+    //         ->take(6)
+    //         ->get();
+
+    //     return view('payroll.show', compact(
+    //         'gajihPokok',
+    //         'dataPotonganTerlambat',
+    //         'totalPotonganTerlambat',
+    //         'potongans',
+    //         'totalPotonganLain',
+    //         'totalPotongan',
+    //         'totalTambahan',
+    //         'gajiKotor',
+    //         'gajiBersih',
+    //         'riwayatGaji'
+    //     ));
+    // }
+
+   
+   public function show()
+{
+    $currentUser = auth()->user();
+
+    $requestedBulan = request('bulan');
+    $requestedTahun = request('tahun');
+
+    // ===== INITIAL — selalu ambil data terbaru sebagai referensi =====
+    $initialGajihPokok = GajihPokok::with([
+        'branchUser' => function ($query) {
+            $query->with(['user.roles', 'branch']);
         }
+    ])
+        ->where('user_id', $currentUser->id)
+        ->orderBy('tahun', 'desc')
+        ->orderBy('bulan', 'desc')
+        ->first();
 
-        // Pastikan branchUser ada
-        if (!$gajihPokok->branchUser) {
-            return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
-        }
-
-        // Ambil data presensi
-        $presensis = Presensi::forUser($gajihPokok->user_id)
-            ->forMonth($gajihPokok->bulan, $gajihPokok->tahun)
-            ->checkIn()
-            ->orderBy('tanggal', 'asc')
-            ->get();
-
-        // Hitung potongan keterlambatan
-        $potonganFlat = 15000;
-        $dataPotonganTerlambat = [];
-        $totalPotonganTerlambat = 0;
-
-        foreach ($presensis as $presensi) {
-            $hitungan = $presensi->hitungPotonganTerlambat($potonganFlat);
-
-            if ($hitungan['potongan'] > 0) {
-                $dataPotonganTerlambat[] = [
-                    'tanggal' => $presensi->tanggal,
-                    'jam_check_in' => $hitungan['jam_check_in'],
-                    'menit_terlambat' => $hitungan['menit_terlambat'],
-                    'potongan' => $hitungan['potongan'],
-                    'keterangan' => $presensi->keterangan
-                        ?? 'Terlambat ' . $hitungan['menit_terlambat'] . ' menit (Potongan Flat)',
-                ];
-
-                $totalPotonganTerlambat += $hitungan['potongan'];
-            }
-        }
-
-        // Ambil data potongan & tambahan dari model Potongan
-        $potongans = Potongan::where('branch_user_id', $gajihPokok->branchUser->id)
-            ->where('bulan', $gajihPokok->bulan)
-            ->where('tahun', $gajihPokok->tahun)
-            ->orderBy('tanggal', 'asc')
-            ->get();
-
-        // Hitung total potongan & tambahan
-        $totalPotonganLain = $potongans->where('jenis', 'potongan')->sum('amount');
-        $totalTambahan = $potongans->where('jenis', 'tambahan')->sum('amount');
-        $totalPotongan = $totalPotonganTerlambat + $totalPotonganLain;
-
-        // Hitung gaji
-        $gajiKotor = $gajihPokok->total_gaji_kotor;
-        $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
-
-        // Get riwayat gaji pokok (6 bulan terakhir) user yang login
-        $riwayatGaji = GajihPokok::where('user_id', $currentUser->id)
-            ->orderBy('tahun', 'desc')
-            ->orderBy('bulan', 'desc')
-            ->take(6)
-            ->get();
-
-        return view('payroll.show', compact(
-            'gajihPokok',
-            'dataPotonganTerlambat',
-            'totalPotonganTerlambat',
-            'potongans',
-            'totalPotonganLain',
-            'totalPotongan',
-            'totalTambahan',
-            'gajiKotor',
-            'gajiBersih',
-            'riwayatGaji'
-        ));
+    // Jika tidak ada data gaji sama sekali
+    if (!$initialGajihPokok) {
+        return view('payroll.empty');
     }
 
+    // Pastikan branchUser ada
+    if (!$initialGajihPokok->branchUser) {
+        return redirect()->back()->with('error', 'Data branch user tidak ditemukan!');
+    }
+
+    // ===== AMBIL GAJI SESUAI PERIODE =====
+    if ($requestedBulan && $requestedTahun) {
+        $gajihPokok = GajihPokok::with([
+            'branchUser' => function ($query) {
+                $query->with(['user.roles', 'branch']);
+            }
+        ])
+            ->where('user_id', $currentUser->id)
+            ->where('bulan', $requestedBulan)
+            ->where('tahun', $requestedTahun)
+            ->first();
+
+        if (!$gajihPokok) {
+            return redirect()->back()->with('error', 'Data gaji untuk periode tersebut tidak ditemukan!');
+        }
+    } else {
+        $gajihPokok = $initialGajihPokok;
+    }
+
+    // ===== HITUNG POTONGAN TERLAMBAT =====
+    $presensis = Presensi::forUser($gajihPokok->user_id)
+        ->forMonth($gajihPokok->bulan, $gajihPokok->tahun)
+        ->checkIn()
+        ->orderBy('tanggal', 'asc')
+        ->get();
+
+    $potonganFlat           = 15000;
+    $dataPotonganTerlambat  = [];
+    $totalPotonganTerlambat = 0;
+
+    foreach ($presensis as $presensi) {
+        $hitungan = $presensi->hitungPotonganTerlambat($potonganFlat);
+
+        if ($hitungan['potongan'] > 0) {
+            $dataPotonganTerlambat[] = [
+                'tanggal'         => $presensi->tanggal,
+                'jam_check_in'    => $hitungan['jam_check_in'],
+                'menit_terlambat' => $hitungan['menit_terlambat'],
+                'potongan'        => $hitungan['potongan'],
+                'keterangan'      => $presensi->keterangan
+                                        ?? 'Terlambat ' . $hitungan['menit_terlambat'] . ' menit (Potongan Flat)',
+            ];
+
+            $totalPotonganTerlambat += $hitungan['potongan'];
+        }
+    }
+
+    // ===== AMBIL POTONGAN & TAMBAHAN =====
+    $potongans = Potongan::where('user_id', $gajihPokok->user_id)
+        ->where('bulan', $gajihPokok->bulan)
+        ->where('tahun', $gajihPokok->tahun)
+        ->orderBy('tanggal', 'asc')
+        ->get();
+
+    $totalPotonganLain = $potongans->where('jenis', 'potongan')->sum('amount');
+    $totalTambahan     = $potongans->where('jenis', 'tambahan')->sum('amount');
+    $totalPotongan     = $totalPotonganTerlambat + $totalPotonganLain;
+
+    // ===== HITUNG GAJI =====
+    $gajiKotor  = $gajihPokok->total_gaji_kotor;
+    $gajiBersih = $gajiKotor + $totalTambahan - $totalPotongan;
+
+    // ===== RIWAYAT GAJI =====
+    $riwayatGaji = GajihPokok::where('user_id', $currentUser->id)
+        ->orderBy('tahun', 'desc')
+        ->orderBy('bulan', 'desc')
+        ->take(6)
+        ->get();
+
+    return view('payroll.show', compact(
+        'gajihPokok',
+        'initialGajihPokok',        // ← ditambahkan
+        'dataPotonganTerlambat',
+        'totalPotonganTerlambat',
+        'potongans',
+        'totalPotonganLain',
+        'totalPotongan',
+        'totalTambahan',
+        'gajiKotor',
+        'gajiBersih',
+        'riwayatGaji'
+    ));
+}
     public function payrollsFo()
     {
         $user = Auth::user();

@@ -54,7 +54,7 @@ class GajihPokokImport implements
         }
 
         //
-        $bonus_revenue = $data['total_revenue'] * $data['persentase_revenue'] / 100;
+        //$bonus_revenue = $data['total_revenue'] * $data['persentase_revenue'] / 100;
 
         
 
@@ -76,7 +76,7 @@ class GajihPokokImport implements
             'ptg_bpjs_kesehatan'   => (int) ($data['potongan_bpjs_kesehatan'] ?? 0),
             'total_revenue'   => (int) ($data['total_revenue'] ?? 0),
             'persentase_revenue'     => (int) $data['persentase_revenue'],
-            'bonus_revenue'   => (int) $bonus_revenue,
+             'bonus_revenue'   => (int) ($data['bonuse_revenue'] ?? 0),
             'total_kpi'   => (int) ($data['total_kpi'] ?? 0),
             'persentase_kpi'     => (int) $data['persentase_kpi'],
             'bonus_kpi'   => (int) ($data['bonus_kpi'] ?? 0),

@@ -7,9 +7,9 @@ use App\Helpers\ImageHelper;
 use App\Helpers\ShiftHelper;
 use App\Helpers\TimeHelper;
 use App\Models\Branch;
-use App\Models\DailyReportFO;
+use App\Models\DailyReportFo;
 use App\Models\DailyReportFODetail;
-use App\Models\DailyReportFOPhoto;
+use App\Models\DailyReportFoPhoto;
 use App\Models\ReportCategory;
 use App\Models\ReportField;
 use App\Models\User;
@@ -71,14 +71,14 @@ class DailyReportFoController extends Controller
         //     ->keyBy('slot');
 
         // Ganti seluruh bagian $existingReports dan $stats di method index() dengan ini:
-        $existingReports = DailyReportFO::where('user_id', $user->id)
+        $existingReports = DailyReportFo::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
             ->with([
                 'details' => function ($q) {
                     $q->with(['field', 'photos']);
                 },
-                'validation.action', // ⬅️ TAMBAH: load validasi + nama tindakan
+                'validation.actions', // ⬅️ TAMBAH: load validasi + nama tindakan
             ])
             ->get()
             ->each(function ($report) {
@@ -198,7 +198,7 @@ class DailyReportFoController extends Controller
         }
 
         // Load existing report beserta details dan photos
-        $existingReport = DailyReportFO::where('user_id', $user->id)
+        $existingReport = DailyReportFo::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
             ->where('slot', $slotNumber)
@@ -276,7 +276,7 @@ class DailyReportFoController extends Controller
             return back()->with('error', 'Window upload untuk slot ini sudah ditutup.');
         }
 
-        $existing = DailyReportFO::where('user_id', $user->id)
+        $existing = DailyReportFo::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
             ->where('slot', $slotNumber)
@@ -351,7 +351,7 @@ class DailyReportFoController extends Controller
         DB::transaction(function () use ($request, $fields, $user, $branch, $today, $selectedShift, $slotNumber, $slotTime) {
 
             // 1. Buat header report
-            $report = DailyReportFO::create([
+            $report = DailyReportFo::create([
                 'user_id' => $user->id,
                 'branch_id' => $branch->id,
                 'tanggal' => $today,
@@ -411,7 +411,7 @@ class DailyReportFoController extends Controller
                             config('daily_report_fo.image_compression.quality', 80)
                         );
 
-                        DailyReportFOPhoto::create([
+                        DailyReportFoPhoto::create([
                             'daily_report_fo_detail_id' => $detail->id,
                             'file_path' => $filePath,
                             'file_name' => $photo->getClientOriginalName(),
@@ -468,7 +468,7 @@ class DailyReportFoController extends Controller
             return back()->with('error', 'Window upload untuk slot ini sudah ditutup. Tidak bisa edit.');
         }
 
-        $report = DailyReportFO::where('user_id', $user->id)
+        $report = DailyReportFo::where('user_id', $user->id)
             ->whereDate('tanggal', $today)
             ->where('shift', $selectedShift)
             ->where('slot', $slotNumber)
@@ -606,7 +606,7 @@ class DailyReportFoController extends Controller
 
                     if (! empty($photoIdsToDelete)) {
                         // Pastikan foto ini memang milik detail ini (security check)
-                        $photosToDelete = DailyReportFOPhoto::whereIn('id', $photoIdsToDelete)
+                        $photosToDelete = DailyReportFoPhoto::whereIn('id', $photoIdsToDelete)
                             ->where('daily_report_fo_detail_id', $detail->id)
                             ->get();
 
@@ -628,7 +628,7 @@ class DailyReportFoController extends Controller
                             config('daily_report_fo.image_compression.quality', 80)
                         );
 
-                        DailyReportFOPhoto::create([
+                        DailyReportFoPhoto::create([
                             'daily_report_fo_detail_id' => $detail->id,
                             'file_path' => $filePath,
                             'file_name' => $photo->getClientOriginalName(),
@@ -678,7 +678,7 @@ class DailyReportFoController extends Controller
         //         'validation.action', // ← TAMBAH
         //     ]);
 
-        $query = DailyReportFO::where('user_id', $user->id)
+        $query = DailyReportFo::where('user_id', $user->id)
             ->where('branch_id', $branch->id)
             ->where('tanggal', '>=', $branchTime->copy()->subDays($historyDays)->toDateString())
             ->with([
@@ -686,7 +686,7 @@ class DailyReportFoController extends Controller
                 'details' => function ($q) {
                     $q->with(['field.category', 'photos']);
                 },
-                'validation.action',
+                'validation.actions',
             ]);
 
 
@@ -763,7 +763,7 @@ class DailyReportFoController extends Controller
             ->with(['branches'])
             ->get();
 
-        $todayReports = DailyReportFO::where('branch_id', $selectedBranchId)
+        $todayReports = DailyReportFo::where('branch_id', $selectedBranchId)
             ->whereDate('tanggal', $tanggal)
             ->with([
                 'details' => function ($q) {
@@ -805,7 +805,7 @@ class DailyReportFoController extends Controller
 
         $stats = [
             'total_fo' => $foUsers->count(),
-            'total_reports_today' => DailyReportFO::where('branch_id', $selectedBranchId)
+            'total_reports_today' => DailyReportFo::where('branch_id', $selectedBranchId)
                 ->whereDate('tanggal', $tanggal)
                 ->count(),
             'target_reports' => $foUsers->count() * 4,
@@ -877,7 +877,7 @@ class DailyReportFoController extends Controller
             }
         }
 
-        $reports = DailyReportFO::where('user_id', $userId)
+        $reports = DailyReportFo::where('user_id', $userId)
             ->whereBetween('tanggal', [$dateFrom, $dateTo])
             ->with([
                 'branch',
@@ -892,17 +892,17 @@ class DailyReportFoController extends Controller
             ->withQueryString();
 
         // Hitung total foto dari semua detail
-        $totalPhotos = DailyReportFOPhoto::whereHas('detail.report', function ($q) use ($userId, $dateFrom, $dateTo) {
+        $totalPhotos = DailyReportFoPhoto::whereHas('detail.report', function ($q) use ($userId, $dateFrom, $dateTo) {
             $q->where('user_id', $userId)
                 ->whereBetween('tanggal', [$dateFrom, $dateTo]);
         })->count();
 
         $stats = [
-            'total_reports' => DailyReportFO::where('user_id', $userId)
+            'total_reports' => DailyReportFo::where('user_id', $userId)
                 ->whereBetween('tanggal', [$dateFrom, $dateTo])
                 ->count(),
             'total_photos' => $totalPhotos,
-            'total_days' => DailyReportFO::where('user_id', $userId)
+            'total_days' => DailyReportFo::where('user_id', $userId)
                 ->whereBetween('tanggal', [$dateFrom, $dateTo])
                 ->select('tanggal')
                 ->distinct()
@@ -942,7 +942,7 @@ class DailyReportFoController extends Controller
         $shiftFilter = $request->input('shift');
         $perPage = (int) $request->input('per_page', 25);
 
-        $query = DailyReportFO::where('branch_id', $selectedBranchId)
+        $query = DailyReportFo::where('branch_id', $selectedBranchId)
             ->whereDate('tanggal', $tanggal)
             ->with([
                 'user',
@@ -962,13 +962,13 @@ class DailyReportFoController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $totalPhotos = DailyReportFOPhoto::whereHas('detail.report', function ($q) use ($selectedBranchId, $tanggal) {
+        $totalPhotos = DailyReportFoPhoto::whereHas('detail.report', function ($q) use ($selectedBranchId, $tanggal) {
             $q->where('branch_id', $selectedBranchId)
                 ->whereDate('tanggal', $tanggal);
         })->count();
 
         $stats = [
-            'total_reports' => DailyReportFO::where('branch_id', $selectedBranchId)
+            'total_reports' => DailyReportFo::where('branch_id', $selectedBranchId)
                 ->whereDate('tanggal', $tanggal)
                 ->count(),
             'total_photos' => $totalPhotos,
@@ -989,7 +989,7 @@ class DailyReportFoController extends Controller
     public function managerReportDetail($reportId)
     {
         $user = Auth::user();
-        $report = DailyReportFO::with([
+        $report = DailyReportFo::with([
             'user',
             'branch',
             'details' => function ($q) {
@@ -1040,7 +1040,7 @@ class DailyReportFoController extends Controller
         $dateTo = $request->input('date_to', now()->toDateString());
         $shiftFilter = $request->input('shift');
 
-        $query = DailyReportFO::where('branch_id', $selectedBranchId)
+        $query = DailyReportFo::where('branch_id', $selectedBranchId)
             ->whereBetween('tanggal', [$dateFrom, $dateTo]);
 
         if ($shiftFilter) {
@@ -1071,12 +1071,12 @@ class DailyReportFoController extends Controller
 
         $branches = Branch::orderBy('name')->get();
 
-        $totalPhotos = DailyReportFOPhoto::whereHas('detail.report', function ($q) use ($dateFrom, $dateTo) {
+        $totalPhotos = DailyReportFoPhoto::whereHas('detail.report', function ($q) use ($dateFrom, $dateTo) {
             $q->whereBetween('tanggal', [$dateFrom, $dateTo]);
         })->count();
 
         $stats = [
-            'total_reports' => DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])->count(),
+            'total_reports' => DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo])->count(),
             'total_photos' => $totalPhotos,
             'total_fo' => User::whereHas('roles', function ($q) {
                 $q->where('name', 'fo');
@@ -1084,7 +1084,7 @@ class DailyReportFoController extends Controller
             'total_branches' => $branches->count(),
         ];
 
-        $reportsPerDay = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
+        $reportsPerDay = DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->selectRaw('DATE(tanggal) as date, COUNT(*) as total')
             ->groupBy('date')
             ->orderBy('date', 'asc')
@@ -1092,7 +1092,7 @@ class DailyReportFoController extends Controller
             ->pluck('total', 'date')
             ->toArray();
 
-        $topFO = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
+        $topFO = DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->selectRaw('user_id, COUNT(*) as total_reports')
             ->groupBy('user_id')
             ->orderBy('total_reports', 'desc')
@@ -1119,7 +1119,7 @@ class DailyReportFoController extends Controller
         $dateTo = $request->input('date_to', now()->toDateString());
         $branchId = $request->input('branch_id');
 
-        $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo]);
+        $query = DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo]);
         if ($branchId) {
             $query->where('branch_id', $branchId);
         }
@@ -1130,7 +1130,7 @@ class DailyReportFoController extends Controller
             ->pluck('total', 'shift')
             ->toArray();
 
-        $reportsByBranch = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
+        $reportsByBranch = DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->selectRaw('branch_id, COUNT(*) as total')
             ->groupBy('branch_id')
             ->with('branch')
@@ -1184,7 +1184,7 @@ class DailyReportFoController extends Controller
         $shiftFilter = $request->input('shift');
         $perPage = (int) $request->input('per_page', 25);
 
-        $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo])
+        $query = DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo])
             ->with([
                 'user',
                 'branch',
@@ -1222,7 +1222,7 @@ class DailyReportFoController extends Controller
      */
     public function marketingReportDetail($reportId)
     {
-        $report = DailyReportFO::with([
+        $report = DailyReportFo::with([
             'user',
             'branch',
             'details' => function ($q) {
@@ -1251,7 +1251,7 @@ class DailyReportFoController extends Controller
         $branchId = $request->input('branch_id');
         $shiftFilter = $request->input('shift');
 
-        $query = DailyReportFO::whereBetween('tanggal', [$dateFrom, $dateTo]);
+        $query = DailyReportFo::whereBetween('tanggal', [$dateFrom, $dateTo]);
 
         if ($branchId) {
             $query->where('branch_id', $branchId);

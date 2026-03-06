@@ -58,10 +58,10 @@ return [
 
     // Durasi window FO untuk upload laporan (menit)
     // DIUBAH dari 60 → 15 menit
-    'upload_window_minutes' => 40,
+    'upload_window_minutes' => 30,
 
     // Durasi window manager untuk validasi (menit, dihitung setelah window FO tutup)
-    'validation_window_minutes' => 20,
+    'validation_window_minutes' => 30,
 
     /*
     |--------------------------------------------------------------------------

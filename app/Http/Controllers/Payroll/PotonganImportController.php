@@ -99,25 +99,19 @@ class PotonganImportController extends Controller
                     return [
                         [
                             'email karyawan' => 'isyevira02@gmail.com',
-                            'cabang'         => 'BKL-002',
-                            'bulan'          => 1,
-                            'tahun'          => 2026,
                             'tanggal'        => '2026-01-01',
-                            'divisi'         => 'sdm',
-                            'keterangan'     => 'terlambat',
+                            'divisi'         => 'SDM',
+                            'keterangan'     => 'Terlambat',
                             'jenis'          => 'potongan',
                             'nominal'        => 15000,
                         ],
                         [
                             'email karyawan' => 'rekhasyavira1@gmail.com',
-                            'cabang'         => 'ACH-003',
-                            'bulan'          => 1,
-                            'tahun'          => 2026,
                             'tanggal'        => '2026-01-02',
-                            'divisi'         => 'sdm',
-                            'keterangan'     => 'terlambat',
-                            'jenis'          => 'potongan',
-                            'nominal'        => 15000,
+                            'divisi'         => 'SDM',
+                            'keterangan'     => 'Bonus kinerja',
+                            'jenis'          => 'tambahan',
+                            'nominal'        => 50000,
                         ],
                     ];
                 }
@@ -126,10 +120,7 @@ class PotonganImportController extends Controller
                 {
                     return [
                         'email karyawan',
-                        'cabang',
-                        'bulan',
-                        'tahun',
-                        'tanggal',
+                        'tanggal',       // ← bulan & tahun dihapus
                         'divisi',
                         'keterangan',
                         'jenis',

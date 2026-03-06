@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Models\DailyReportFO;
+use App\Models\DailyReportFo;
 use Illuminate\Support\Facades\Auth;
 
 class ShiftHelper
@@ -101,7 +101,7 @@ class ShiftHelper
     {
         $targetDate = $date ?? now()->toDateString();
 
-        $report = DailyReportFO::where('user_id', $userId)
+        $report = DailyReportFo::where('user_id', $userId)
             ->whereDate('tanggal', $targetDate)
             ->first();
 

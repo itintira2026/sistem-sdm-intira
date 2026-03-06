@@ -42,9 +42,18 @@ class DailyReportFoValidation extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-    public function action()
+    // public function action()
+    // {
+    //     return $this->belongsTo(ValidationAction::class, 'validation_action_id');
+    // }
+    public function actions()
     {
-        return $this->belongsTo(ValidationAction::class, 'validation_action_id');
+        return $this->belongsToMany(
+            ValidationAction::class,
+            'pivot_validation_actions',
+            'daily_report_fo_validation_id',
+            'validation_action_id'
+        )->withTimestamps();
     }
 
     // =========================================================

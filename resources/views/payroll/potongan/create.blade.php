@@ -40,26 +40,65 @@
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <!-- Bulan (auto dari tanggal, readonly) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Bulan <span class="text-red-500">*</span>
+                                </label>
+                                <select name="bulan" id="bulan" required disabled
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500 cursor-not-allowed @error('bulan') border-red-500 @enderror">
+                                    @for($i = 1; $i <= 12; $i++) <option value="{{ $i }}" {{ old('bulan', $bulan)==$i
+                                        ? 'selected' : '' }}>
+                                        {{ Carbon\Carbon::create()->month($i)->format('F') }}
+                                        </option>
+                                        @endfor
+                                </select>
+                                {{-- Hidden input karena disabled tidak terkirim --}}
+                                <input type="hidden" name="bulan" id="bulan_hidden" value="{{ old('bulan', $bulan) }}">
+                                @error('bulan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Tahun (auto dari tanggal, readonly) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tahun <span class="text-red-500">*</span>
+                                </label>
+                                <select name="tahun" id="tahun" required disabled
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500 cursor-not-allowed @error('tahun') border-red-500 @enderror">
+                                    @for($i = 2020; $i <= 2030; $i++) <option value="{{ $i }}" {{ old('tahun',
+                                        $tahun)==$i ? 'selected' : '' }}>
+                                        {{ $i }}
+                                        </option>
+                                        @endfor
+                                </select>
+                                {{-- Hidden input karena disabled tidak terkirim --}}
+                                <input type="hidden" name="tahun" id="tahun_hidden" value="{{ old('tahun', $tahun) }}">
+                                @error('tahun')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                             <!-- Pilih User -->
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Pilih Karyawan <span class="text-red-500">*</span>
                                 </label>
-                                <select name="branch_user_id" required
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 @error('branch_user_id') border-red-500 @enderror">
+                                <select name="user_id" required {{-- ← dari branch_user_id → user_id --}}
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 @error('user_id') border-red-500 @enderror">
                                     <option value="">-- Pilih Karyawan --</option>
                                     @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('branch_user_id', $branchUserId)==$user->id ?
-                                        'selected' : '' }}>
+                                    <option value="{{ $user->user_id }}" {{-- ← dari $user->id → $user->user_id --}}
+                                        {{ old('user_id', $branchUserId) == $user->user_id ? 'selected' : '' }}>
                                         {{ $user->user->name }} - {{ $user->user->email }}
                                     </option>
                                     @endforeach
                                 </select>
-                                @error('branch_user_id')
+                                @error('user_id')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-
+                            {{--
                             <!-- Bulan -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -117,8 +156,34 @@
                                 @error('divisi')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
+                            </div> --}}
+                            <!-- Tanggal -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tanggal <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" name="tanggal" id="tanggal"
+                                    value="{{ old('tanggal', date('Y-m-d')) }}" required
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 @error('tanggal') border-red-500 @enderror">
+                                @error('tanggal')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
+                            <!-- Divisi -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Divisi <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="divisi" value="{{ old('divisi') }}" required
+                                    placeholder="Contoh: Finance, Marketing, IT"
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 @error('divisi') border-red-500 @enderror">
+                                @error('divisi')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                          
                             <!-- Jenis -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -190,4 +255,37 @@
             </div>
         </div>
     </div>
+
+
+    <script>
+    const tanggalInput  = document.getElementById('tanggal');
+    const bulanSelect   = document.getElementById('bulan');
+    const tahunSelect   = document.getElementById('tahun');
+    const bulanHidden   = document.getElementById('bulan_hidden');
+    const tahunHidden   = document.getElementById('tahun_hidden');
+
+    function updateBulanTahun(dateValue) {
+        if (!dateValue) return;
+
+        const date  = new Date(dateValue);
+        const bulan = date.getMonth() + 1; // getMonth() = 0-indexed
+        const tahun = date.getFullYear();
+
+        // Update select display
+        bulanSelect.value = bulan;
+        tahunSelect.value = tahun;
+
+        // Update hidden input agar terkirim ke server
+        bulanHidden.value = bulan;
+        tahunHidden.value = tahun;
+    }
+
+    // Jalankan saat halaman load
+    updateBulanTahun(tanggalInput.value);
+
+    // Jalankan setiap kali tanggal berubah
+    tanggalInput.addEventListener('change', function () {
+        updateBulanTahun(this.value);
+    });
+</script>
 </x-app-layout>

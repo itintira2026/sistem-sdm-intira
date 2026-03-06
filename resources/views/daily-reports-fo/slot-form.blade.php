@@ -151,6 +151,8 @@
                                         <input type="number" name="{{ $inputName }}" id="{{ $inputName }}"
                                             value="{{ old($inputName, $existingDetail?->value_number ?? '') }}"
                                             min="0" step="1"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                            onkeydown="if(event.key==='.' || event.key===',') event.preventDefault();"
                                             placeholder="{{ $field->placeholder ?? 'Masukkan angka...' }}"
                                             {{ $field->is_required ? 'required' : '' }}
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 @error($inputName) border-red-500 @else border-gray-300 @enderror">

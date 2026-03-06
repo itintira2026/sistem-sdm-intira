@@ -21,9 +21,18 @@ class ValidationAction extends Model
         'is_active' => 'boolean',
     ];
 
+    // public function validations()
+    // {
+    //     return $this->hasMany(DailyReportFoValidation::class, 'validation_action_id');
+    // }
     public function validations()
     {
-        return $this->hasMany(DailyReportFoValidation::class, 'validation_action_id');
+        return $this->belongsToMany(
+            DailyReportFoValidation::class,
+            'pivot_validation_actions',
+            'validation_action_id',
+            'daily_report_fo_validation_id'
+        )->withTimestamps();
     }
 
     public function scopeActive($query)

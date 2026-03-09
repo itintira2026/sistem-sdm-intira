@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 class="text-xl font-semibold text-gray-800">
                     Detail Presensi
@@ -31,9 +31,45 @@
                     {{ session('success') }}
                 </div>
             @endif
-
             {{-- Info Card --}}
             <div class="p-6 mb-6 bg-white rounded-lg shadow-sm">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Karyawan</p>
+                        <p class="mt-1 text-lg font-semibold text-gray-800">{{ $user->name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Tanggal</p>
+                        <p class="mt-1 text-lg font-semibold text-gray-800">
+                            {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}
+                        </p>
+                    </div>
+
+                    {{-- INFO CABANG --}}
+                    <div>
+                        <p class="text-sm text-gray-500">Cabang</p>
+                        @if ($branch)
+                            <p class="mt-1 font-semibold text-gray-800">{{ $branch->name }}</p>
+                            <p class="text-xs text-gray-500">{{ $branch->address ?? '-' }} ·
+                                {{ $branch->timezone ?? '-' }}</p>
+                        @else
+                            <p class="mt-1 text-gray-400">Tidak ada cabang</p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <form method="GET" class="flex gap-2">
+                            <input type="date" name="tanggal" value="{{ $tanggal }}"
+                                class="flex-1 px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-teal-500">
+                            <button type="submit"
+                                class="px-4 py-2 text-sm text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                                Ganti
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {{-- <div class="p-6 mb-6 bg-white rounded-lg shadow-sm">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
                         <p class="text-sm text-gray-500">Karyawan</p>
@@ -56,7 +92,7 @@
                         </form>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             {{-- Table Card --}}
             <div class="bg-white rounded-lg shadow-sm">
@@ -109,11 +145,26 @@
                                             {{ $row['keterangan'] ?? '-' }}
                                         </td>
                                         <td class="px-4 py-3">
-                                            <button
-                                                onclick="openEditModal('{{ $row['status'] }}', '{{ $row['jam'] }}', '{{ $row['wilayah'] }}', '{{ $row['keterangan'] }}')"
-                                                class="text-sm font-medium text-teal-600 hover:text-teal-800">
-                                                Edit
-                                            </button>
+                                            <div class="flex items-center gap-3">
+                                                <button
+                                                    onclick="openEditModal('{{ $row['status'] }}', '{{ $row['jam'] }}', '{{ $row['wilayah'] }}', '{{ $row['keterangan'] }}')"
+                                                    class="text-sm font-medium text-teal-600 hover:text-teal-800">
+                                                    Edit
+                                                </button>
+
+                                                @if ($row['id'])
+                                                    <form action="{{ route('presensi.destroy', $row['id']) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Yakin hapus data {{ str_replace('_', ' ', $row['status']) }}?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="text-sm font-medium text-red-500 hover:text-red-700">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -129,11 +180,25 @@
                                     <h4 class="font-semibold text-gray-800">
                                         {{ str_replace('_', ' ', $row['status']) }}
                                     </h4>
-                                    <button
-                                        onclick="openEditModal('{{ $row['status'] }}', '{{ $row['jam'] }}', '{{ $row['wilayah'] }}', '{{ $row['keterangan'] }}')"
-                                        class="px-3 py-1 text-xs text-white bg-teal-600 rounded-lg hover:bg-teal-700">
-                                        Edit
-                                    </button>
+                                    <div class="flex gap-2">
+                                        <button
+                                            onclick="openEditModal('{{ $row['status'] }}', '{{ $row['jam'] }}', '{{ $row['wilayah'] }}', '{{ $row['keterangan'] }}')"
+                                            class="px-3 py-1 text-xs text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                                            Edit
+                                        </button>
+
+                                        @if ($row['id'])
+                                            <form action="{{ route('presensi.destroy', $row['id']) }}" method="POST"
+                                                onsubmit="return confirm('Yakin hapus?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="px-3 py-1 text-xs text-white bg-red-500 rounded-lg hover:bg-red-600">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
@@ -213,7 +278,7 @@
                     </div>
 
                     {{-- WILAYAH --}}
-                    <div>
+                    {{-- <div>
                         <label class="block mb-2 text-sm font-medium text-gray-700">
                             Wilayah Waktu <span class="text-red-500">*</span>
                         </label>
@@ -223,7 +288,7 @@
                             <option value="WITA">WITA (Waktu Indonesia Tengah)</option>
                             <option value="WIT">WIT (Waktu Indonesia Timur)</option>
                         </select>
-                    </div>
+                    </div> --}}
 
                     {{-- KETERANGAN --}}
                     <div>
@@ -253,7 +318,7 @@
             document.getElementById('editStatus').value = status;
             document.getElementById('editStatusDisplay').textContent = status.replace(/_/g, ' ');
             document.getElementById('editJam').value = jam || '';
-            document.getElementById('editWilayah').value = wilayah || 'WIB';
+            // document.getElementById('editWilayah').value = wilayah || 'WIB';
             document.getElementById('editKeterangan').value = keterangan || '';
             document.getElementById('editModal').classList.remove('hidden');
         }

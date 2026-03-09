@@ -168,54 +168,44 @@ class PresensiController extends Controller
     // {
     //     //
     // }
-
     public function show(Request $request, $userId)
     {
-        // ==========================
-        // TANGGAL (DEFAULT HARI INI)
-        // ==========================
         $tanggal = $request->input('tanggal', now()->toDateString());
 
-        // ==========================
-        // USER
-        // ==========================
-        $user = User::where('is_active', true)->findOrFail($userId);
+        $user = User::where('is_active', true)
+            ->with('branches') // ← tambah ini
+            ->findOrFail($userId);
 
-        // ==========================
-        // PRESENSI TANGGAL TERPILIH
-        // ==========================
+        $branch = $user->branches->first(); // ← ambil cabang
+
         $presensis = Presensi::where('user_id', $user->id)
             ->whereDate('tanggal', $tanggal)
             ->get()
             ->keyBy('status');
 
-        // ==========================
-        // TEMPLATE STATUS WAJIB
-        // ==========================
-        $statuses = [
-            'CHECK_IN',
-            'ISTIRAHAT_OUT',
-            'ISTIRAHAT_IN',
-            'CHECK_OUT',
-        ];
+        $statuses = ['CHECK_IN', 'ISTIRAHAT_OUT', 'ISTIRAHAT_IN', 'CHECK_OUT'];
 
-        // ==========================
-        // SUSUN DATA KE VIEW
-        // ==========================
         $rows = collect($statuses)->map(function ($status) use ($presensis) {
             return [
                 'status'     => $status,
-                'jam'        => $presensis[$status]->jam ?? null,
-                'wilayah'    => $presensis[$status]->wilayah ?? null,
-                'keterangan' => $presensis[$status]->keterangan ?? null,
+                'id'         => $presensis->get($status)?->id, // ← tambah id untuk delete
+                'jam'        => $presensis->get($status)?->jam
+                    ? \Carbon\Carbon::parse($presensis->get($status)->jam)->format('H:i:s')
+                    : null,
+                'wilayah'    => $presensis->get($status)?->wilayah ?? null,
+                'keterangan' => $presensis->get($status)?->keterangan ?? null,
             ];
         });
 
-        return view('presensi.show', compact(
-            'user',
-            'tanggal',
-            'rows'
-        ));
+        return view('presensi.show', compact('user', 'tanggal', 'rows', 'branch'));
+    }
+
+    public function destroy($id)
+    {
+        $presensi = Presensi::findOrFail($id);
+        $presensi->delete();
+
+        return back()->with('success', 'Data presensi berhasil dihapus');
     }
 
 
@@ -237,7 +227,6 @@ class PresensiController extends Controller
             'tanggal'    => 'required|date',
             'status'     => 'required|string',
             'jam'        => 'nullable',
-            'wilayah'    => 'required|in:WIB,WITA,WIT',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -248,10 +237,10 @@ class PresensiController extends Controller
                 'user_id' => $userId,
                 'tanggal' => $request->tanggal,
                 'status'  => $request->status,
+                'wilayah'  => 'none', // Wilayah default, bisa diubah sesuai kebutuhan
             ],
             [
                 'jam'        => $request->jam,
-                'wilayah'    => $request->wilayah,
                 'keterangan' => $request->keterangan,
             ]
         );
@@ -263,10 +252,6 @@ class PresensiController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Presensi $presensi)
-    {
-        //
-    }
 
     // 🔥 METHOD IZIN/CUTI - OTOMATIS
     public function storeIzin(Request $request, $userId)
@@ -311,7 +296,7 @@ class PresensiController extends Controller
                 ],
                 [
                     'jam'        => '00:00:00',
-                    'wilayah'    => 'WIB/WITA/WIT',
+                    'wilayah'    => 'none',
                     'keterangan' => 'Sakit',
                 ]
             );

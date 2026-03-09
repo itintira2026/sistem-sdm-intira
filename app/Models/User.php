@@ -272,4 +272,23 @@ class User extends Authenticatable
 
         return $branches->first()->name;
     }
+
+
+    /**
+     * Get active branch for the user
+     * Mengembalikan branch tempat user aktif bekerja
+     */
+    public function getActiveBranch()
+    {
+        // Ambil branch pertama dari relasi branches() yang sudah terfilter aktif
+        return $this->branches()->first();
+    }
+
+    /**
+     * Alternative: langsung akses seperti property
+     */
+    public function getBranchAttribute()
+    {
+        return $this->branches()->first();
+    }
 }

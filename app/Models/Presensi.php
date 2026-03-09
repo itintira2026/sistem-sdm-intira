@@ -11,11 +11,14 @@ class Presensi extends Model
 
     protected $fillable = [
         'user_id',
+        'branch_id', // tambahkan
         'tanggal',
         'status',
         'jam',
         'wilayah',
         'keterangan',
+        'photo',
+        'jarak', // tambahkan
     ];
 
     protected $casts = [
@@ -27,7 +30,10 @@ class Presensi extends Model
     {
         return $this->belongsTo(User::class);
     }
-
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
     /**
      * Hitung potongan keterlambatan
      *
@@ -35,6 +41,92 @@ class Presensi extends Model
      * @return array ['menit_terlambat' => int, 'potongan' => int]
      */
 
+    // public function hitungPotonganTerlambat($potonganPerMenit = 5000)
+    // {
+    //     // Guard: kalau bukan check-in atau jam kosong
+    //     if ($this->status !== 'CHECK_IN' || !$this->jam) {
+    //         return [
+    //             'menit_terlambat' => 0,
+    //             'potongan' => 0,
+    //             'jam_check_in' => '-',
+    //         ];
+    //     }
+
+    //     $jamCheckIn = Carbon::parse($this->jam);
+    //     $hour = $jamCheckIn->hour;
+
+    //     $menitTerlambat = 0;
+
+    //     // Shift 1: 08:00 - 12:59
+    //     if ($hour >= 8 && $hour < 13) {
+    //         $jamMasuk = Carbon::parse($this->tanggal->format('Y-m-d') . ' 08:00:00');
+
+    //         if ($jamCheckIn->gt($jamMasuk)) {
+    //             // HITUNG DARI JAM MASUK KE JAM CHECK-IN (arah yang benar)
+    //             $menitTerlambat = $jamMasuk->diffInMinutes($jamCheckIn);
+    //         }
+    //     }
+    //     // Shift 2: 13:00 - 21:00
+    //     elseif ($hour >= 13 && $hour <= 21) {
+    //         $jamMasuk = Carbon::parse($this->tanggal->format('Y-m-d') . ' 13:00:00');
+
+    //         if ($jamCheckIn->gt($jamMasuk)) {
+    //             // HITUNG DARI JAM MASUK KE JAM CHECK-IN (arah yang benar)
+    //             $menitTerlambat = $jamMasuk->diffInMinutes($jamCheckIn);
+    //         }
+    //     }
+
+    //     $potongan = $menitTerlambat > 0 ? $menitTerlambat * $potonganPerMenit : 0;
+
+    //     return [
+    //         'menit_terlambat' => $menitTerlambat,
+    //         'potongan' => $potongan,
+    //         'jam_check_in' => $jamCheckIn->format('H:i'),
+    //     ];
+    // }
+
+    // public function hitungPotonganTerlambat($potonganFlat = 15000)
+    // {
+    //     // Guard: kalau bukan check-in atau jam kosong
+    //     if ($this->status !== 'CHECK_IN' || !$this->jam) {
+    //         return [
+    //             'menit_terlambat' => 0,
+    //             'potongan' => 0,
+    //             'jam_check_in' => '-',
+    //         ];
+    //     }
+
+    //     $jamCheckIn = Carbon::parse($this->jam);
+    //     $hour = $jamCheckIn->hour;
+
+    //     $menitTerlambat = 0;
+
+    //     // Shift 1: 08:00 - 12:59
+    //     if ($hour >= 8 && $hour < 13) {
+    //         $jamMasuk = Carbon::parse($this->tanggal->format('Y-m-d') . ' 08:00:00');
+
+    //         if ($jamCheckIn->gt($jamMasuk)) {
+    //             $menitTerlambat = $jamMasuk->diffInMinutes($jamCheckIn);
+    //         }
+    //     }
+    //     // Shift 2: 13:00 - 21:00
+    //     elseif ($hour >= 13 && $hour <= 21) {
+    //         $jamMasuk = Carbon::parse($this->tanggal->format('Y-m-d') . ' 13:00:00');
+
+    //         if ($jamCheckIn->gt($jamMasuk)) {
+    //             $menitTerlambat = $jamMasuk->diffInMinutes($jamCheckIn);
+    //         }
+    //     }
+
+    //     // ✅ POTONGAN FLAT: kalau telat minimal 1 menit → potong 15.000
+    //     $potongan = $menitTerlambat > 0 ? $potonganFlat : 0;
+
+    //     return [
+    //         'menit_terlambat' => $menitTerlambat,
+    //         'potongan' => $potongan,
+    //         'jam_check_in' => $jamCheckIn->format('H:i'),
+    //     ];
+    // }
 
     public function hitungPotonganTerlambat($potonganTerlambat = 15000, $potonganIzinSakit = 30000)
     {
@@ -128,5 +220,25 @@ class Presensi extends Model
     public function scopeForUser($query, $userId)
     {
         return $query->where('user_id', $userId);
+    }
+
+    // Accessor untuk format jarak
+    public function getJarakFormattedAttribute()
+    {
+        if (!$this->jarak) {
+            return '-';
+        }
+
+        if ($this->jarak < 1000) {
+            return $this->jarak . ' m';
+        }
+
+        return number_format($this->jarak / 1000, 2) . ' km';
+    }
+
+    // Scope untuk filter berdasarkan branch
+    public function scopeForBranch($query, $branchId)
+    {
+        return $query->where('branch_id', $branchId);
     }
 }

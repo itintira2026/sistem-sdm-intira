@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchUserController;
 use App\Http\Controllers\Contact90Controller;
@@ -32,6 +33,18 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::middleware('auth')->group(function () {
+
+    Route::prefix('absensi')->name('absensi.')->group(function () {
+
+        // Halaman utama absensi
+        Route::get('/', [AttendanceController::class, 'index'])->name('index');
+
+        // Proses store absensi
+        Route::post('/', [AttendanceController::class, 'store'])->name('store');
+    });
+    Route::get('/branch/switch/{branch}', [App\Http\Controllers\AttendanceController::class, 'switchBranch'])->name('branch.switch');
+    Route::get('/absensi/riwayat',  [App\Http\Controllers\AttendanceController::class, 'riwayat'])->name('absensi.riwayat');
+
     Route::get('/gaji-saya', [PayrollController::class, 'show'])
         ->name('gaji-saya.show')
         ->middleware('auth');
@@ -264,7 +277,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/export', [DailyReportFOController::class, 'marketingExport'])
                 ->name('export');
         });
-        
+
         Route::prefix('master')->name('master.')->group(function () {
             // Kategori Laporan
             Route::get('/categories',                    [MasterDataController::class, 'categoriesIndex'])->name('categories.index');
@@ -357,7 +370,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/potongan/{branch}/detail', [PotonganController::class, 'index'])->name('potongan.index');
         Route::get('/potongan/{branch}/create', [PotonganController::class, 'create'])->name('potongan.create');
         Route::post('/potongan/{branch}/create', [PotonganController::class, 'store'])->name('potongan.store');
-      Route::delete('/potongan/{branch}/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy'); 
+        Route::delete('/potongan/{branch}/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
         // Route::delete('/potongan/{potongan}', [PotonganController::class, 'destroy'])->name('potongan.destroy');
 
         Route::post('/potongan-import', [PotonganImportController::class, 'store'])->name('potongan.import');

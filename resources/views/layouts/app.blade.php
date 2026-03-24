@@ -13,7 +13,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('assets/icon-intira.png') }}">
-
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 

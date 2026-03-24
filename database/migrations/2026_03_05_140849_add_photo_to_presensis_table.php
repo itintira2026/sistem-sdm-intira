@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('presensis', function (Blueprint $table) {
             $table->string('photo')->nullable()->after('keterangan');
+              $table->string('photo_outfit')->nullable()->after('photo');
+           
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('jarak')->nullable()->comment('Jarak dari kantor dalam meter');
         });
@@ -25,7 +27,7 @@ return new class extends Migration
     {
         Schema::table('presensis', function (Blueprint $table) {
             $table->dropForeign(['branch_id']);
-            $table->dropColumn(['photo', 'branch_id', 'jarak']);
+        $table->dropColumn(['photo', 'photo_outfit', 'branch_id', 'jarak']);
         });
     }
 };

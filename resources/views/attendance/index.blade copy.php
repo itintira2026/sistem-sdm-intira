@@ -1,4 +1,24 @@
 {{-- resources/views/absensi/index.blade.php --}}
+
+  <!-- async function loadFaceModels() {
+    let attempts = 0;
+    while (typeof faceapi === 'undefined') {
+        await new Promise(r => setTimeout(r, 300));
+        attempts++;
+        if (attempts > 30) throw new Error('face-api.js gagal dimuat.');
+    }
+
+    console.log('face-api tersedia, mulai load model...');
+
+    await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+    console.log('tiny face detector loaded');
+
+    await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+    console.log('face landmark loaded');
+
+    modelsLoaded = true;
+    console.log('Semua model berhasil dimuat!');
+} -->
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -322,57 +342,6 @@
 
                     <form method="POST" action="{{ route('absensi.store') }}" id="attendanceForm">
                         @csrf
-                        {{-- Upload Foto Outfit --}}
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <span class="flex items-center gap-2">
-                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M7 16V4m0 0L3 8m4-4l4 4m6 4v8m0 0l-4-4m4 4l4-4" />
-                                    </svg>
-                                    Upload Foto Outfit
-                                </span>
-                            </label>
-
-                            <p class="text-xs text-gray-500 mb-3">
-                                Opsional – untuk keperluan internal perusahaan. Upload cukup 1x sehari.
-                            </p>
-
-                            <div
-                                class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition text-center relative">
-
-                                <input type="file" name="photo_outfit" id="photo_outfit" accept="image/*"
-                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    onchange="previewOutfit(event)">
-
-                                <div id="uploadPlaceholder" class="flex flex-col items-center gap-2">
-                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                            d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
-                                    </svg>
-
-                                    <p class="text-sm text-gray-600 font-medium">
-                                        Klik untuk upload foto
-                                    </p>
-
-                                    <p class="text-xs text-gray-400">
-                                        JPG / PNG • Maks 2MB
-                                    </p>
-                                </div>
-
-                                {{-- Preview Image --}}
-                                <div id="outfitPreviewContainer" class="hidden">
-                                    <img id="outfitPreview" class="mx-auto rounded-lg shadow-md max-h-48 object-cover">
-                                    <p class="text-xs text-green-600 mt-2 font-medium">
-                                        Foto berhasil dipilih
-                                    </p>
-                                </div>
-
-                            </div>
-                        </div>
-
                         <input type="hidden" name="latitude" id="latitude">
                         <input type="hidden" name="longitude" id="longitude">
                         <input type="hidden" name="photo" id="photo">
@@ -495,8 +464,7 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- Status Verifikasi Wajah --}}
-                        <div id="faceVerifyStatus" class="mb-6 hidden"></div>
+
                         {{-- Tombol Absensi --}}
                         <div class="grid grid-cols-2 gap-4">
                             <button type="button" onclick="prepareSubmit(this, 'CHECK_IN')"
@@ -560,217 +528,48 @@
             <p class="text-sm text-gray-500 mt-2">Mohon tunggu sebentar</p>
         </div>
     </div>
+
     <script>
-        const video              = document.getElementById('video');
-    const canvas             = document.getElementById('canvas');
-    const photoInput         = document.getElementById('photo');
-    const locationStatus     = document.getElementById('locationStatus');
-    const faceVerifyStatus   = document.getElementById('faceVerifyStatus');
-    const nearestBranchInfo  = document.getElementById('nearestBranchInfo');
-    const loadingOverlay     = document.getElementById('loadingOverlay');
-    const cameraPlaceholder  = document.getElementById('cameraPlaceholder');
-    const cameraError        = document.getElementById('cameraError');
-    const cameraActive       = document.getElementById('cameraActive');
-    const cameraErrorTitle   = document.getElementById('cameraErrorTitle');
-    const cameraErrorMsg     = document.getElementById('cameraErrorMsg');
+        const video             = document.getElementById('video');
+    const canvas            = document.getElementById('canvas');
+    const photoInput        = document.getElementById('photo');
+    const locationStatus    = document.getElementById('locationStatus');
+    const nearestBranchInfo = document.getElementById('nearestBranchInfo');
+    const loadingOverlay    = document.getElementById('loadingOverlay');
+
+    const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+    const cameraError       = document.getElementById('cameraError');
+    const cameraActive      = document.getElementById('cameraActive');
+    const cameraErrorTitle  = document.getElementById('cameraErrorTitle');
+    const cameraErrorMsg    = document.getElementById('cameraErrorMsg');
 
     const activeBranch = @json($activeBranch);
     const allBranches  = @json($userBranches);
 
-    let cameraReady       = false;
-    let smileDetected     = false;
-    let modelsLoaded      = false;
-    let detectingSmile    = false;
-    let naturalConfirmed  = false;
-    let naturalFrameCount = 0;
-    const NATURAL_FRAMES_NEEDED = 5;
-
-    
-function previewOutfit(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const preview = document.getElementById('outfitPreview');
-    const container = document.getElementById('outfitPreviewContainer');
-    const placeholder = document.getElementById('uploadPlaceholder');
-
-    preview.src = URL.createObjectURL(file);
-
-    placeholder.classList.add('hidden');
-    container.classList.remove('hidden');
-}
+    let cameraReady = false;
 
     // =====================
-    // LOAD MODEL FACE-API
-    // =====================
-    async function loadFaceModels() {
-        let attempts = 0;
-        while (typeof faceapi === 'undefined') {
-            await new Promise(r => setTimeout(r, 300));
-            attempts++;
-            if (attempts > 30) throw new Error('face-api.js gagal dimuat.');
-        }
-        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-        await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-        modelsLoaded = true;
-    }
-
-    // =====================
-    // HELPER UPDATE STATUS WAJAH
-    // =====================
-    function setFaceStatus(type, html) {
-        faceVerifyStatus.classList.remove('hidden');
-        const colors = {
-            blue:   'bg-blue-50 border-blue-200',
-            green:  'bg-green-50 border-green-200',
-            yellow: 'bg-yellow-50 border-yellow-200',
-            red:    'bg-red-50 border-red-200',
-        };
-        faceVerifyStatus.innerHTML = `
-            <div class="p-3 rounded-lg border ${colors[type] || colors.blue}">
-                ${html}
-            </div>`;
-    }
-
-    // =====================
-    // DETEKSI SENYUM
-    // =====================
-    async function detectSmile() {
-        if (!modelsLoaded || !cameraReady || smileDetected || !detectingSmile) return;
-
-        try {
-            const result = await faceapi
-                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceExpressions();
-
-            if (result) {
-                const happy = result.expressions.happy;
-                const pct   = Math.round(happy * 100);
-
-                // ── FASE 1: Tunggu ekspresi natural ──
-                if (!naturalConfirmed) {
-                    if (happy < 0.3) {
-                        naturalFrameCount++;
-                        // Tidak tampilkan apa-apa, cukup loading dots kecil
-                        setFaceStatus('blue', `
-                            <div class="flex items-center gap-2">
-                                <div class="flex gap-1">
-                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
-                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
-                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
-                                </div>
-                                <p class="text-xs text-blue-500">Memverifikasi...</p>
-                            </div>`);
-
-                        if (naturalFrameCount >= NATURAL_FRAMES_NEEDED) {
-                            naturalConfirmed = true;
-                            // Baru tampilkan instruksi senyum
-                            setFaceStatus('blue', `
-                                <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <p class="text-sm text-blue-700 font-medium">😊 <strong>Sekarang senyum</strong> ke kamera...</p>
-                                </div>
-                                <div class="w-full bg-blue-100 rounded-full h-2.5">
-                                    <div class="bg-blue-200 h-2.5 rounded-full" style="width:0%"></div>
-                                </div>
-                                <p class="text-xs text-blue-500 mt-1 text-right">0% senyum terdeteksi</p>`);
-                        }
-                    } else {
-                        // Senyum duluan → reset
-                        // <p class="text-xs text-yellow-700">Ekspresi normal dulu ya, jangan senyum dulu...</p>
-                        naturalFrameCount = 0;
-                        setFaceStatus('yellow', `
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <p class="text-xs text-yellow-700">Kedip dulu ya, hehe...</p>
-                                
-                            </div>`);
-                    }
-
-                // ── FASE 2: Deteksi senyum ──
-                } else {
-                    setFaceStatus('blue', `
-                        <div class="flex items-center gap-2 mb-2">
-                            <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <p class="text-sm text-blue-700 font-medium">😊 <strong>Sekarang senyum</strong> ke kamera...</p>
-                        </div>
-                        <div class="w-full bg-blue-100 rounded-full h-2.5">
-                            <div class="bg-blue-500 h-2.5 rounded-full transition-all duration-200" style="width:${pct}%"></div>
-                        </div>
-                        <p class="text-xs text-blue-500 mt-1 text-right">${pct}% senyum terdeteksi</p>`);
-
-                    if (happy > 0.7) {
-                        smileDetected  = true;
-                        detectingSmile = false;
-                        setFaceStatus('green', `
-                            <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <p class="text-sm text-green-700 font-medium">😊 Verifikasi berhasil! Silakan lakukan absensi.</p>
-                            </div>`);
-                        return;
-                    }
-                }
-
-            } else {
-                // Wajah tidak terdeteksi
-                naturalFrameCount = 0;
-                setFaceStatus('yellow', `
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-yellow-600 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p class="text-sm text-yellow-700">😐 Posisikan wajah di depan kamera...</p>
-                    </div>`);
-            }
-
-        } catch (e) {
-            // abaikan error individual
-        }
-
-        setTimeout(() => {
-            if (detectingSmile && !smileDetected) {
-                requestAnimationFrame(detectSmile);
-            }
-        }, 150);
-    }
-
-    // =====================
-    // INISIALISASI KAMERA
+    // INISIALISASI KAMERA (dipanggil manual oleh user)
     // =====================
     async function initCamera() {
-        cameraReady       = false;
-        smileDetected     = false;
-        modelsLoaded      = false;
-        detectingSmile    = false;
-        naturalConfirmed  = false;
-        naturalFrameCount = 0;
-
-        faceVerifyStatus.classList.add('hidden');
+        // Tampilkan loading sementara
+        cameraPlaceholder.classList.add('hidden');
         cameraError.classList.add('hidden');
         cameraActive.classList.add('hidden');
-        cameraPlaceholder.classList.remove('hidden');
+
+        // Tampilkan placeholder dengan spinner
         cameraPlaceholder.innerHTML = `
             <div class="flex flex-col items-center gap-3 py-10">
                 <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
                 <p class="text-sm text-blue-700 font-medium">Menghubungkan kamera...</p>
                 <p class="text-xs text-gray-400">Izinkan akses kamera jika browser meminta</p>
             </div>`;
+        cameraPlaceholder.classList.remove('hidden');
 
         try {
+            // Cek apakah browser support
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw { name: 'NOT_SUPPORTED' };
+                throw { code: 'NOT_SUPPORTED' };
             }
 
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -778,153 +577,118 @@ function previewOutfit(event) {
             });
 
             video.srcObject = stream;
-            await new Promise(resolve => { video.onloadedmetadata = () => resolve(); });
+
+            // Tunggu video benar-benar siap
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => resolve();
+            });
 
             cameraPlaceholder.classList.add('hidden');
             cameraActive.classList.remove('hidden');
             cameraReady = true;
-
-            // Tampilkan loading model di locationStatus (tidak ditimpa detectSmile)
-            locationStatus.innerHTML = `
-                <div class="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600 flex-shrink-0"></div>
-                    <p class="text-sm text-yellow-700 font-medium">⏳ Memuat model deteksi wajah...</p>
-                </div>`;
-
-            try {
-                await loadFaceModels();
-
-                // Setelah model load, locationStatus kembali ke status GPS biasa
-                locationStatus.innerHTML = `
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="animate-pulse">
-                            <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                        </div>
-                        <p class="text-sm text-gray-500">Mengambil lokasi...</p>
-                    </div>`;
-
-                // Mulai ambil GPS bersamaan dengan deteksi wajah
-                getLocationSilent();
-
-                // Tampilkan area verifikasi wajah
-                setFaceStatus('blue', `
-                    <div class="flex items-center gap-2">
-                        <div class="flex gap-1">
-                            <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
-                            <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
-                            <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
-                        </div>
-                        <p class="text-xs text-blue-500">Memverifikasi...</p>
-                    </div>`);
-
-                detectingSmile = true;
-                detectSmile();
-
-            } catch (modelErr) {
-                console.warn('Model gagal load:', modelErr);
-                smileDetected = true;
-                setFaceStatus('yellow', `
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p class="text-sm text-yellow-700">⚠️ Deteksi wajah tidak tersedia. Silakan absen.</p>
-                    </div>`);
-                getLocationSilent();
-            }
 
         } catch (err) {
             cameraPlaceholder.classList.add('hidden');
             cameraError.classList.remove('hidden');
             cameraReady = false;
 
-            const errMap = {
-                'NotAllowedError':     ['Izin Kamera Ditolak',      'Anda menolak akses kamera. Ubah izin di browser lalu klik "Coba Lagi".'],
-                'PermissionDeniedError':['Izin Kamera Ditolak',     'Anda menolak akses kamera. Ubah izin di browser lalu klik "Coba Lagi".'],
-                'NotFoundError':       ['Kamera Tidak Ditemukan',   'Tidak ada perangkat kamera yang terdeteksi.'],
-                'DevicesNotFoundError':['Kamera Tidak Ditemukan',   'Tidak ada perangkat kamera yang terdeteksi.'],
-                'NotReadableError':    ['Kamera Sedang Digunakan',  'Tutup aplikasi lain yang menggunakan kamera lalu coba lagi.'],
-                'TrackStartError':     ['Kamera Sedang Digunakan',  'Tutup aplikasi lain yang menggunakan kamera lalu coba lagi.'],
-                'OverconstrainedError':['Kamera Tidak Kompatibel',  'Kamera tidak mendukung resolusi yang diminta.'],
-                'NOT_SUPPORTED':       ['Browser Tidak Didukung',   'Gunakan Chrome, Firefox, atau Safari terbaru.'],
-            };
-            const [title, msg] = errMap[err.name] || ['Gagal Mengakses Kamera', `Error: ${err.message || err.name}`];
-            cameraErrorTitle.textContent = title;
-            cameraErrorMsg.textContent   = msg;
+            // Pesan error yang spesifik
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                cameraErrorTitle.textContent = 'Izin Kamera Ditolak';
+                cameraErrorMsg.textContent = 'Anda menolak akses kamera. Ubah izin di browser lalu klik "Coba Lagi".';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                cameraErrorTitle.textContent = 'Kamera Tidak Ditemukan';
+                cameraErrorMsg.textContent = 'Tidak ada perangkat kamera yang terdeteksi di perangkat Anda.';
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                cameraErrorTitle.textContent = 'Kamera Sedang Digunakan';
+                cameraErrorMsg.textContent = 'Kamera sedang digunakan oleh aplikasi lain. Tutup aplikasi tersebut lalu coba lagi.';
+            } else if (err.name === 'OverconstrainedError') {
+                cameraErrorTitle.textContent = 'Kamera Tidak Kompatibel';
+                cameraErrorMsg.textContent = 'Kamera Anda tidak mendukung resolusi yang diminta.';
+            } else if (err.code === 'NOT_SUPPORTED') {
+                cameraErrorTitle.textContent = 'Browser Tidak Didukung';
+                cameraErrorMsg.textContent = 'Browser Anda tidak mendukung akses kamera. Gunakan Chrome, Firefox, atau Safari terbaru.';
+            } else {
+                cameraErrorTitle.textContent = 'Gagal Mengakses Kamera';
+                cameraErrorMsg.textContent = `Error: ${err.message || err.name || 'Tidak diketahui'}`;
+            }
         }
     }
 
     // =====================
-    // AMBIL LOKASI (silent, tidak timpa face status)
+    // AMBIL FOTO
     // =====================
-    function getLocationSilent() {
-        if (!navigator.geolocation) {
-            locationStatus.innerHTML = `
-                <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                    <p class="text-sm text-red-700">Browser tidak mendukung GPS.</p>
-                </div>`;
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                document.getElementById('latitude').value  = lat;
-                document.getElementById('longitude').value = lng;
-                locationStatus.innerHTML = `
-                    <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                        <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        <div>
-                            <p class="text-sm font-medium text-green-700">Lokasi aktif</p>
-                            <p class="text-xs text-green-600 mt-1">Lat: ${lat.toFixed(6)} | Long: ${lng.toFixed(6)}</p>
-                        </div>
-                    </div>`;
-                checkNearestBranch(lat, lng);
-            },
-            (error) => {
-                const messages = {
-                    1: 'Akses lokasi ditolak. Izinkan akses lokasi di pengaturan browser.',
-                    2: 'Informasi lokasi tidak tersedia. Pastikan GPS aktif.',
-                    3: 'Waktu pengambilan lokasi habis. Coba lagi.',
-                };
-                locationStatus.innerHTML = `
-                    <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                        <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                        <p class="text-sm text-red-700">${messages[error.code] || 'Gagal mengambil lokasi.'}</p>
-                    </div>`;
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
+    function capturePhoto() {
+        return new Promise((resolve, reject) => {
+            if (!cameraReady || !video.srcObject) {
+                reject(new Error('Kamera belum aktif. Klik tombol "Aktifkan Kamera" terlebih dahulu.'));
+                return;
+            }
+            if (video.videoWidth === 0) {
+                reject(new Error('Kamera belum siap, tunggu sebentar lalu coba lagi.'));
+                return;
+            }
+
+            canvas.width  = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            photoInput.value = canvas.toDataURL('image/jpeg', 0.8);
+            resolve();
+        });
     }
 
     // =====================
-    // AMBIL LOKASI (dipanggil saat submit)
+    // AMBIL LOKASI
     // =====================
     function getLocation() {
         return new Promise((resolve, reject) => {
-            const lat = document.getElementById('latitude').value;
-            const lng = document.getElementById('longitude').value;
-            if (lat && lng) {
-                resolve({ lat, lng });
-                return;
-            }
             if (!navigator.geolocation) {
+                showError(locationStatus, 'Browser tidak mendukung GPS.');
                 reject(new Error('Browser tidak mendukung GPS.'));
                 return;
             }
+
+            locationStatus.innerHTML = `
+                <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <p class="text-sm text-blue-700">Mengambil lokasi GPS...</p>
+                </div>`;
+
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    document.getElementById('latitude').value  = position.coords.latitude;
-                    document.getElementById('longitude').value = position.coords.longitude;
-                    resolve({ lat: position.coords.latitude, lng: position.coords.longitude });
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    document.getElementById('latitude').value  = lat;
+                    document.getElementById('longitude').value = lng;
+
+                    locationStatus.innerHTML = `
+                        <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div>
+                                <p class="text-sm font-medium text-green-700">Lokasi aktif</p>
+                                <p class="text-xs text-green-600 mt-1">Lat: ${lat.toFixed(6)} | Long: ${lng.toFixed(6)}</p>
+                            </div>
+                        </div>`;
+
+                    checkNearestBranch(lat, lng);
+                    resolve({ lat, lng });
                 },
-                (error) => reject(new Error('Gagal mengambil lokasi.')),
+                (error) => {
+                    const messages = {
+                        1: 'Akses lokasi ditolak. Izinkan akses lokasi di pengaturan browser.',
+                        2: 'Informasi lokasi tidak tersedia. Pastikan GPS aktif.',
+                        3: 'Waktu pengambilan lokasi habis. Coba lagi.',
+                    };
+                    const msg = messages[error.code] || 'Gagal mengambil lokasi.';
+                    showError(locationStatus, msg);
+                    reject(new Error(msg));
+                },
                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
             );
         });
@@ -935,6 +699,7 @@ function previewOutfit(event) {
     // =====================
     function checkNearestBranch(lat, lng) {
         if (!allBranches || allBranches.length === 0) return;
+
         let nearest = null, minDist = Infinity;
         allBranches.forEach(branch => {
             if (!branch.latitude || !branch.longitude) return;
@@ -942,30 +707,42 @@ function previewOutfit(event) {
             if (d < minDist) { minDist = d; nearest = branch; }
         });
         if (!nearest) return;
+
         const dist = Math.round(minDist);
-        const ok   = minDist <= 150;
+        const ok = minDist <= 150;
+        nearestBranchInfo.className = 'mt-2';
         nearestBranchInfo.classList.remove('hidden');
         nearestBranchInfo.innerHTML = ok
             ? `<div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
                 <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <p class="text-xs text-green-700">Dalam radius <strong>${dist} meter</strong> dari ${nearest.name} ✅</p>
+                <p class="text-xs text-green-700">Anda berada dalam radius <strong>${dist} meter</strong> dari ${nearest.name} ✅</p>
                </div>`
             : `<div class="flex items-center gap-2 p-2 bg-red-50 rounded-lg border border-red-200">
                 <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p class="text-xs text-red-700"><strong>${dist} meter</strong> dari ${nearest.name}. Melebihi batas 150m ❌</p>
+                <p class="text-xs text-red-700">Anda berada <strong>${dist} meter</strong> dari cabang terdekat (${nearest.name}). Melebihi batas 50m ❌</p>
                </div>`;
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R  = 6371e3;
-        const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180, Δλ = (lon2 - lon1) * Math.PI / 180;
-        const a  = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+        const R = 6371e3, φ1 = lat1*Math.PI/180, φ2 = lat2*Math.PI/180;
+        const Δφ = (lat2-lat1)*Math.PI/180, Δλ = (lon2-lon1)*Math.PI/180;
+        const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function showError(el, msg) {
+        el.innerHTML = `
+            <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p class="text-sm text-red-700">${msg}</p>
+            </div>`;
     }
 
     // =====================
@@ -974,10 +751,6 @@ function previewOutfit(event) {
     async function prepareSubmit(button, statusValue) {
         if (!cameraReady) {
             alert('❌ Kamera belum aktif. Klik tombol "Aktifkan Kamera" terlebih dahulu.');
-            return;
-        }
-        if (!smileDetected) {
-            alert('❌ Silakan senyum ke kamera terlebih dahulu sebelum absen.');
             return;
         }
 
@@ -990,7 +763,7 @@ function previewOutfit(event) {
             await getLocation();
 
             if (!document.getElementById('latitude').value) {
-                throw new Error('Lokasi belum berhasil diambil. Pastikan GPS aktif.');
+                throw new Error('Lokasi belum berhasil diambil. Pastikan GPS aktif dan izin lokasi diberikan.');
             }
             if (!photoInput.value) {
                 throw new Error('Foto belum berhasil diambil.');
@@ -1003,32 +776,10 @@ function previewOutfit(event) {
             loadingOverlay.classList.add('hidden');
             loadingOverlay.classList.remove('flex');
             document.querySelectorAll('.absen-btn').forEach(b => b.disabled = false);
+            // Re-disable tombol yang memang seharusnya disabled
+            document.querySelectorAll('.absen-btn[data-disabled]').forEach(b => b.disabled = true);
             alert('❌ ' + (error.message || 'Terjadi kesalahan. Silakan coba lagi.'));
         }
-    }
-
-    // =====================
-    // AMBIL FOTO
-    // =====================
-    function capturePhoto() {
-        return new Promise((resolve, reject) => {
-            if (!cameraReady || !video.srcObject) {
-                reject(new Error('Kamera belum aktif.'));
-                return;
-            }
-            if (video.videoWidth === 0) {
-                reject(new Error('Kamera belum siap, tunggu sebentar lalu coba lagi.'));
-                return;
-            }
-            canvas.width  = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            photoInput.value = canvas.toDataURL('image/jpeg', 0.8);
-            resolve();
-        });
     }
 
     // Auto refresh lokasi setiap 30 detik
@@ -1041,6 +792,7 @@ function previewOutfit(event) {
         }
     }, 30000);
     </script>
+
     <style>
         .absen-btn:disabled {
             opacity: 0.5;

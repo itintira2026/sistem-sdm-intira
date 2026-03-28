@@ -307,21 +307,33 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     @php
+                    // $hasCheckIn = $todayPresensis->where('status', 'CHECK_IN')->isNotEmpty();
+                    // $hasCheckOut = $todayPresensis->where('status', 'CHECK_OUT')->isNotEmpty();
+                    // $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
+                    // $istirahatOut = $todayPresensis->where('status', 'ISTIRAHAT_OUT')->count();
+                    // $sedangIstirahat = $istirahatIn > $istirahatOut;
+
+                    // // Disabled logic per tombol
+                    // $disableCheckIn = $hasCheckIn;
+                    // $disableCheckOut = !$hasCheckIn || $hasCheckOut;
+                    // $disableIstirahatIn = !$hasCheckIn || $sedangIstirahat || $hasCheckOut;
+                    // $disableIstirahatOut= $istirahatIn === 0 || !$sedangIstirahat;
                     $hasCheckIn = $todayPresensis->where('status', 'CHECK_IN')->isNotEmpty();
                     $hasCheckOut = $todayPresensis->where('status', 'CHECK_OUT')->isNotEmpty();
-                    $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
                     $istirahatOut = $todayPresensis->where('status', 'ISTIRAHAT_OUT')->count();
-                    $sedangIstirahat = $istirahatIn > $istirahatOut;
+                    $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
+                    $sedangIstirahat = $istirahatOut > $istirahatIn; // Sedang di luar (istirahat)
 
-                    // Disabled logic per tombol
                     $disableCheckIn = $hasCheckIn;
-                    $disableCheckOut = !$hasCheckIn || $hasCheckOut;
-                    $disableIstirahatIn = !$hasCheckIn || $sedangIstirahat || $hasCheckOut;
-                    $disableIstirahatOut= $istirahatIn === 0 || !$sedangIstirahat;
+                    $disableCheckOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
+                    $disableIstirahatOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat; 
+                    $disableIstirahatIn = !$hasCheckIn || $hasCheckOut || !$sedangIstirahat; 
                     @endphp
 
-                    <form method="POST" action="{{ route('absensi.store') }}" id="attendanceForm">
+                    <form method="POST" action="{{ route('absensi.store') }}" id="attendanceForm"
+                        enctype="multipart/form-data">
                         @csrf
+                        {{-- Upload Foto Outfit --}}
                         {{-- Upload Foto Outfit --}}
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -335,13 +347,39 @@
                                 </span>
                             </label>
 
+                            @if($disableCheckIn)
+                            {{-- Sudah Check In: tampilkan pesan disabled --}}
+                            <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
+                                <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                                <p class="text-sm text-gray-400 font-medium">Upload foto outfit tidak tersedia</p>
+                                <p class="text-xs text-gray-300 mt-1">Foto outfit hanya dapat diupload saat Check In</p>
+
+                                {{-- Tampilkan foto outfit yang sudah diupload jika ada --}}
+                                @php
+                                $outfitPhoto = $todayPresensis->where('status', 'CHECK_IN')->first()?->photo_outfit;
+                                @endphp
+                                @if($outfitPhoto)
+                                <div class="mt-3">
+                                    <img src="{{ Storage::url($outfitPhoto) }}"
+                                        class="mx-auto rounded-lg shadow-md max-h-32 object-cover opacity-60">
+                                    <p class="text-xs text-gray-400 mt-1">Foto outfit hari ini</p>
+                                </div>
+                                @endif
+                            </div>
+                            <input type="hidden" name="photo_outfit" value="">
+
+                            @else
+                            {{-- Belum Check In: tampilkan upload --}}
                             <p class="text-xs text-gray-500 mb-3">
-                                Opsional – untuk keperluan internal perusahaan. Upload cukup 1x sehari.
+                                Upload foto outfit sebelum Check In. Hanya bisa diupload 1x per hari.
                             </p>
 
                             <div
                                 class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition text-center relative">
-
                                 <input type="file" name="photo_outfit" id="photo_outfit" accept="image/*"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     onchange="previewOutfit(event)">
@@ -352,25 +390,16 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                             d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
                                     </svg>
-
-                                    <p class="text-sm text-gray-600 font-medium">
-                                        Klik untuk upload foto
-                                    </p>
-
-                                    <p class="text-xs text-gray-400">
-                                        JPG / PNG • Maks 2MB
-                                    </p>
+                                    <p class="text-sm text-gray-600 font-medium">Klik untuk upload foto</p>
+                                    <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
                                 </div>
 
-                                {{-- Preview Image --}}
                                 <div id="outfitPreviewContainer" class="hidden">
                                     <img id="outfitPreview" class="mx-auto rounded-lg shadow-md max-h-48 object-cover">
-                                    <p class="text-xs text-green-600 mt-2 font-medium">
-                                        Foto berhasil dipilih
-                                    </p>
+                                    <p class="text-xs text-green-600 mt-2 font-medium">Foto berhasil dipilih</p>
                                 </div>
-
                             </div>
+                            @endif
                         </div>
 
                         <input type="hidden" name="latitude" id="latitude">
@@ -497,6 +526,7 @@
                         </div>
                         {{-- Status Verifikasi Wajah --}}
                         <div id="faceVerifyStatus" class="mb-6 hidden"></div>
+
                         {{-- Tombol Absensi --}}
                         <div class="grid grid-cols-2 gap-4">
                             <button type="button" onclick="prepareSubmit(this, 'CHECK_IN')"
@@ -519,27 +549,27 @@
                                 Check Out
                             </button>
 
-                            <button type="button" onclick="prepareSubmit(this, 'ISTIRAHAT_IN')"
+                            {{-- DIBALIK: Out dulu baru In --}}
+                            <button type="button" onclick="prepareSubmit(this, 'ISTIRAHAT_OUT')"
                                 class="absen-btn flex items-center justify-center gap-2 bg-yellow-600 text-white py-4 rounded-lg hover:bg-yellow-700 transition font-medium"
-                                @if($disableIstirahatIn) disabled @endif>
+                                @if($disableIstirahatOut) disabled @endif>
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Istirahat In
+                                Istirahat Out
                             </button>
 
-                            <button type="button" onclick="prepareSubmit(this, 'ISTIRAHAT_OUT')"
+                            <button type="button" onclick="prepareSubmit(this, 'ISTIRAHAT_IN')"
                                 class="absen-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition font-medium"
-                                @if($disableIstirahatOut) disabled @endif>
+                                @if($disableIstirahatIn) disabled @endif>
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Istirahat Out
+                                Istirahat In
                             </button>
                         </div>
-
                         <div class="mt-4 text-center">
                             <p class="text-xs text-gray-500">
                                 Dengan melakukan absensi, Anda menyetujui bahwa data lokasi dan foto Anda akan direkam
@@ -1010,26 +1040,86 @@ function previewOutfit(event) {
     // =====================
     // AMBIL FOTO
     // =====================
+    // function capturePhoto() {
+    //     return new Promise((resolve, reject) => {
+    //         if (!cameraReady || !video.srcObject) {
+    //             reject(new Error('Kamera belum aktif.'));
+    //             return;
+    //         }
+    //         if (video.videoWidth === 0) {
+    //             reject(new Error('Kamera belum siap, tunggu sebentar lalu coba lagi.'));
+    //             return;
+    //         }
+    //         canvas.width  = video.videoWidth;
+    //         canvas.height = video.videoHeight;
+    //         const ctx = canvas.getContext('2d');
+    //         ctx.translate(canvas.width, 0);
+    //         ctx.scale(-1, 1);
+    //         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    //         photoInput.value = canvas.toDataURL('image/jpeg', 0.8);
+    //         resolve();
+    //     });
+    // }
     function capturePhoto() {
-        return new Promise((resolve, reject) => {
-            if (!cameraReady || !video.srcObject) {
-                reject(new Error('Kamera belum aktif.'));
-                return;
-            }
-            if (video.videoWidth === 0) {
-                reject(new Error('Kamera belum siap, tunggu sebentar lalu coba lagi.'));
-                return;
-            }
-            canvas.width  = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            photoInput.value = canvas.toDataURL('image/jpeg', 0.8);
-            resolve();
+    return new Promise((resolve, reject) => {
+        if (!cameraReady || !video.srcObject) {
+            reject(new Error('Kamera belum aktif.'));
+            return;
+        }
+        if (video.videoWidth === 0) {
+            reject(new Error('Kamera belum siap, tunggu sebentar lalu coba lagi.'));
+            return;
+        }
+
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Mirror (flip horizontal)
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Reset transform sebelum gambar watermark
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        // ── Ambil data watermark ──
+        const lat = document.getElementById('latitude').value || '-';
+        const lng = document.getElementById('longitude').value || '-';
+        const now = new Date();
+        const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const tgl = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+
+        const lines = [
+            `📍 ${parseFloat(lat).toFixed(6)}, ${parseFloat(lng).toFixed(6)}`,
+            `🕐 ${jam}  |  ${tgl}`,
+        ];
+
+        // ── Konfigurasi watermark ──
+        const padding  = 10;
+        const fontSize = Math.max(14, canvas.width * 0.022); // responsif
+        ctx.font       = `bold ${fontSize}px sans-serif`;
+
+        const lineH    = fontSize * 1.5;
+        const boxH     = lines.length * lineH + padding * 2;
+        const boxY     = canvas.height - boxH;
+
+        // Background semi-transparan hitam
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillRect(0, boxY, canvas.width, boxH);
+
+        // Teks putih
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textBaseline = 'top';
+
+        lines.forEach((line, i) => {
+            ctx.fillText(line, padding, boxY + padding + i * lineH);
         });
-    }
+
+        photoInput.value = canvas.toDataURL('image/jpeg', 0.8);
+        resolve();
+    });
+}
 
     // Auto refresh lokasi setiap 30 detik
     setInterval(() => {

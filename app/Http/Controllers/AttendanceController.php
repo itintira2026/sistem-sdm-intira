@@ -72,6 +72,7 @@ class AttendanceController extends Controller
             'latitude'  => 'required|numeric',
             'longitude' => 'required|numeric',
             'photo'     => 'required|string',
+            'photo_outfit'  => 'nullable|image|max:2048'
         ]);
 
         $user = auth()->user();
@@ -166,24 +167,36 @@ class AttendanceController extends Controller
                 if ($hasCheckOut) {
                     return back()->with('error', 'Anda sudah CHECK OUT hari ini.');
                 }
+                // Tidak boleh checkout kalau sedang istirahat
+                if ($istirahatOutCount > $istirahatInCount) {
+                    return back()->with('error', 'Anda sedang ISTIRAHAT. Silakan ISTIRAHAT IN terlebih dahulu.');
+                }
+                break;
+
+            case 'ISTIRAHAT_OUT':
+                if (!$hasCheckIn) {
+                    return back()->with('error', 'Anda belum melakukan CHECK IN.');
+                }
+                if ($hasCheckOut) {
+                    return back()->with('error', 'Anda sudah melakukan CHECK OUT.');
+                }
+                // Tidak boleh istirahat out kalau sedang istirahat (sudah out tapi belum in)
+                if ($istirahatOutCount > $istirahatInCount) {
+                    return back()->with('error', 'Anda sedang dalam ISTIRAHAT. Silakan ISTIRAHAT IN terlebih dahulu.');
+                }
                 break;
 
             case 'ISTIRAHAT_IN':
                 if (!$hasCheckIn) {
                     return back()->with('error', 'Anda belum melakukan CHECK IN.');
                 }
-                // Tidak boleh istirahat in kalau sudah istirahat in tapi belum out
-                if ($istirahatInCount > $istirahatOutCount) {
-                    return back()->with('error', 'Anda sedang dalam ISTIRAHAT. Silakan ISTIRAHAT OUT terlebih dahulu.');
+                // Harus sudah ada ISTIRAHAT_OUT lebih dulu
+                if ($istirahatOutCount === 0) {
+                    return back()->with('error', 'Anda belum melakukan ISTIRAHAT OUT.');
                 }
-                break;
-
-            case 'ISTIRAHAT_OUT':
-                if ($istirahatInCount === 0) {
-                    return back()->with('error', 'Anda belum melakukan ISTIRAHAT IN.');
-                }
-                if ($istirahatOutCount >= $istirahatInCount) {
-                    return back()->with('error', 'Anda sudah melakukan ISTIRAHAT OUT.');
+                // Tidak boleh istirahat in kalau sudah seimbang (sudah balik)
+                if ($istirahatInCount >= $istirahatOutCount) {
+                    return back()->with('error', 'Anda sudah melakukan ISTIRAHAT IN.');
                 }
                 break;
         }
@@ -191,25 +204,64 @@ class AttendanceController extends Controller
         // ==========================
         // SIMPAN FOTO
         // ==========================
-        $photoData = $request->photo;
 
-        // Handle berbagai prefix base64
+        // Definisikan path dulu
+        $dateFolder      = now()->format('Y/m/d');
+        $imageName       = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.jpg';
+        $imagePath       = 'absensi/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+        $imagePathOutfit = null;
+
+        // Simpan photo selfie (base64)
+        $photoData = $request->photo;
         if (str_contains($photoData, ';base64,')) {
             $photoData = substr($photoData, strpos($photoData, ',') + 1);
         }
         $photoData = str_replace(' ', '+', $photoData);
+        $decoded   = base64_decode($photoData, true);
 
-        $decoded = base64_decode($photoData, true);
         if ($decoded === false) {
             return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
         }
 
-        $dateFolder = now()->format('Y/m/d');
-        $imageName  = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.jpg';
-        $imagePath  = 'absensi/' . $dateFolder . '/' .  $user->name.'/'. $imageName;
-
-        Storage::disk('public')->makeDirectory('absensi/' . $dateFolder);
+        Storage::disk('public')->makeDirectory('absensi/' . $dateFolder . '/' . $user->name);
         Storage::disk('public')->put($imagePath, $decoded);
+
+        // Simpan photo outfit (file upload)
+        if ($request->hasFile('photo_outfit')) {
+            $imagePathOutfit = 'absensi-outfit/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+            Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder . '/' . $user->name);
+            Storage::disk('public')->putFileAs(
+                'absensi-outfit/' . $dateFolder . '/' . $user->name,
+                $request->file('photo_outfit'),
+                $imageName
+            );
+        }
+
+        // ==========================
+        // SIMPAN FOTO
+        // ==========================
+        // $photoData = $request->photo;
+
+        // // Handle berbagai prefix base64
+        // if (str_contains($photoData, ';base64,')) {
+        //     $photoData = substr($photoData, strpos($photoData, ',') + 1);
+        // }
+        // $photoData = str_replace(' ', '+', $photoData);
+
+        // $decoded = base64_decode($photoData, true);
+        // if ($decoded === false) {
+        //     return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
+        // }
+
+        // $dateFolder = now()->format('Y/m/d');
+        // $imageName  = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.jpg';
+        // $imagePath  = 'absensi/' . $dateFolder . '/' .  $user->name.'/'. $imageName;
+        // $imagePathOutfit  = 'absensi-outfit/' . $dateFolder . '/' .  $user->name.'/'. $imageName;
+
+        // Storage::disk('public')->makeDirectory('absensi/' . $dateFolder);
+        // Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder);
+        // Storage::disk('public')->put($imagePath, $decoded);
+        // Storage::disk('public')->put($imagePathOutfit, $decoded);
 
         // ==========================
         // SIMPAN DATA PRESENSI
@@ -224,22 +276,11 @@ class AttendanceController extends Controller
             'longitude'  => $request->longitude,
             'wilayah'    => $branch->name,
             'photo'      => $imagePath,
+            'photo_outfit'      => $imagePathOutfit,
             'jarak'      => round($minDistance),
             'keterangan' => 'Absensi via mobile di ' . $branch->name,
         ]);
 
-        // ==========================
-        // LOG ACTIVITY
-        // ==========================
-        // activity()
-        //     ->performedOn($presensi)
-        //     ->causedBy($user)
-        //     ->withProperties([
-        //         'status' => $request->status,
-        //         'branch' => $branch->name,
-        //         'jarak'  => round($minDistance) . 'm',
-        //     ])
-        //     ->log('Melakukan absensi ' . $request->status);
 
         // ==========================
         // RESPONSE SUKSES
@@ -248,7 +289,7 @@ class AttendanceController extends Controller
             'CHECK_IN'     => 'Selamat bekerja! Check In berhasil.',
             'CHECK_OUT'    => 'Hati-hati di jalan! Check Out berhasil.',
             'ISTIRAHAT_IN' => 'Selamat beristirahat!',
-            'ISTIRAHAT_OUT'=> 'Selamat bekerja kembali!',
+            'ISTIRAHAT_OUT' => 'Selamat bekerja kembali!',
         ];
 
         $message = $statusMessages[$request->status] ?? 'Absensi berhasil.';
@@ -279,87 +320,66 @@ class AttendanceController extends Controller
         return $earthRadius * $c;
     }
 
-    // ==========================
-    // HELPER: STATUS ABSENSI HARI INI
-    // ==========================
-
-    // private function getTodayAttendanceStatus($userId): array
-    // {
-    //     $presensis = Presensi::where('user_id', $userId)
-    //         ->whereDate('tanggal', now()->toDateString())
-    //         ->get();
-
-    //     return [
-    //         'has_check_in'      => $presensis->where('status', 'CHECK_IN')->isNotEmpty(),
-    //         'has_check_out'     => $presensis->where('status', 'CHECK_OUT')->isNotEmpty(),
-    //         'has_istirahat_in'  => $presensis->where('status', 'ISTIRAHAT_IN')->isNotEmpty(),
-    //         'has_istirahat_out' => $presensis->where('status', 'ISTIRAHAT_OUT')->isNotEmpty(),
-    //         'last_status'       => $presensis->last()?->status,
-    //         'last_time'         => $presensis->last()?->jam,
-    //         'branch_name'       => $presensis->first()?->branch?->name,
-    //     ];
-    // }
     public function riwayat(Request $request)
-{
-    $user  = auth()->user();
-    $bulan = $request->get('bulan', now()->format('Y-m')); // format: 2025-03
+    {
+        $user  = auth()->user();
+        $bulan = $request->get('bulan', now()->format('Y-m')); // format: 2025-03
 
-    [$tahun, $bln] = explode('-', $bulan);
+        [$tahun, $bln] = explode('-', $bulan);
 
-    // Ambil semua presensi bulan tersebut dengan relasi branch
-    $presensis = Presensi::with('branch')
-        ->where('user_id', $user->id)
-        ->whereYear('tanggal', $tahun)
-        ->whereMonth('tanggal', $bln)
-        ->orderBy('tanggal', 'asc')
-        ->orderBy('jam', 'asc')
-        ->get();
+        // Ambil semua presensi bulan tersebut dengan relasi branch
+        $presensis = Presensi::with('branch')
+            ->where('user_id', $user->id)
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bln)
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('jam', 'asc')
+            ->get();
 
-    // Group per tanggal
-    $grouped = $presensis->groupBy(fn($p) => $p->tanggal->format('Y-m-d'));
+        // Group per tanggal
+        $grouped = $presensis->groupBy(fn($p) => $p->tanggal->format('Y-m-d'));
 
-    // Hitung summary
-    $totalHadir     = 0;
-    $totalTerlambat = 0;
-    $totalIzin      = 0;
+        // Hitung summary
+        $totalHadir     = 0;
+        $totalTerlambat = 0;
+        $totalIzin      = 0;
 
-    foreach ($grouped as $tanggal => $entries) {
-        $checkIn = $entries->where('status', 'CHECK_IN')->first();
-        if (!$checkIn) continue;
+        foreach ($grouped as $tanggal => $entries) {
+            $checkIn = $entries->where('status', 'CHECK_IN')->first();
+            if (!$checkIn) continue;
 
-        $totalHadir++;
+            $totalHadir++;
 
-        // Cek izin/sakit
-        if ($checkIn->keterangan && (
-            str_contains(strtolower($checkIn->keterangan), 'izin') ||
-            str_contains(strtolower($checkIn->keterangan), 'sakit')
-        )) {
-            $totalIzin++;
-            continue;
+            // Cek izin/sakit
+            if ($checkIn->keterangan && (
+                str_contains(strtolower($checkIn->keterangan), 'izin') ||
+                str_contains(strtolower($checkIn->keterangan), 'sakit')
+            )) {
+                $totalIzin++;
+                continue;
+            }
+
+            // Cek terlambat
+            $jamCI = \Carbon\Carbon::parse($checkIn->jam);
+            $hour  = $jamCI->hour;
+            $late  = false;
+
+            if ($hour >= 8 && $hour < 12) {
+                $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 08:00:00'));
+            } elseif ($hour > 13 && $hour <= 21) {
+                $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 13:00:00'));
+            }
+
+            if ($late) $totalTerlambat++;
         }
 
-        // Cek terlambat
-        $jamCI = \Carbon\Carbon::parse($checkIn->jam);
-        $hour  = $jamCI->hour;
-        $late  = false;
+        $summary = [
+            'total_hadir'     => $totalHadir,
+            'total_terlambat' => $totalTerlambat,
+            'total_izin'      => $totalIzin,
+            'total_alpha'     => 0, // bisa dikembangkan dengan data jadwal kerja
+        ];
 
-        if ($hour >= 8 && $hour < 12) {
-            $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 08:00:00'));
-        } elseif ($hour > 13 && $hour <= 21) {
-            $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 13:00:00'));
-        }
-
-        if ($late) $totalTerlambat++;
+        return view('attendance.riwayat', compact('user', 'bulan', 'grouped', 'summary'));
     }
-
-    $summary = [
-        'total_hadir'     => $totalHadir,
-        'total_terlambat' => $totalTerlambat,
-        'total_izin'      => $totalIzin,
-        'total_alpha'     => 0, // bisa dikembangkan dengan data jadwal kerja
-    ];
-
-    return view('attendance.riwayat', compact('user', 'bulan', 'grouped', 'summary'));
-}
-
 }

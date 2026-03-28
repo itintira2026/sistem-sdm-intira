@@ -18,6 +18,7 @@ class Presensi extends Model
         'wilayah',
         'keterangan',
         'photo',
+        'photo_outfit',
         'jarak', // tambahkan
     ];
 

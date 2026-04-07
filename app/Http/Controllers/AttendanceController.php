@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Presensi;
 use App\Models\Branch;
 use Illuminate\Http\Request;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Storage;
 
 class AttendanceController extends Controller
@@ -201,68 +203,106 @@ class AttendanceController extends Controller
                 break;
         }
 
+
+        // ==========================
+// SIMPAN FOTO
+// ==========================
+
+// Definisikan path dulu
+$manager = new ImageManager(new Driver());
+
+$dateFolder = now()->format('Y/m/d');
+
+// ubah ekstensi ke webp
+$imageName = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.webp';
+
+$imagePath       = 'absensi/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+$imagePathOutfit = null;
+
+// ==========================
+// FOTO SELFIE (BASE64)
+// ==========================
+$photoData = $request->photo;
+
+if (str_contains($photoData, ';base64,')) {
+    $photoData = substr($photoData, strpos($photoData, ',') + 1);
+}
+
+$photoData = str_replace(' ', '+', $photoData);
+$decoded   = base64_decode($photoData, true);
+
+if ($decoded === false) {
+    return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
+}
+
+// buat folder
+Storage::disk('public')->makeDirectory('absensi/' . $dateFolder . '/' . $user->name);
+
+// proses ke webp
+$image = $manager->read($decoded)
+    ->toWebp(75); // kualitas 75 (balance bagus)
+
+// simpan
+Storage::disk('public')->put($imagePath, (string) $image);
+
+
+// ==========================
+// FOTO OUTFIT (UPLOAD FILE)
+// ==========================
+if ($request->hasFile('photo_outfit')) {
+
+    $imagePathOutfit = 'absensi-outfit/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+
+    Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder . '/' . $user->name);
+
+    $file = $request->file('photo_outfit');
+
+    // proses ke webp
+    $imageOutfit = $manager->read($file->getPathname())
+        ->toWebp(75);
+
+    // simpan
+    Storage::disk('public')->put($imagePathOutfit, (string) $imageOutfit);
+}
         // ==========================
         // SIMPAN FOTO
         // ==========================
 
         // Definisikan path dulu
-        $dateFolder      = now()->format('Y/m/d');
-        $imageName       = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.jpg';
-        $imagePath       = 'absensi/' . $dateFolder . '/' . $user->name . '/' . $imageName;
-        $imagePathOutfit = null;
 
-        // Simpan photo selfie (base64)
-        $photoData = $request->photo;
-        if (str_contains($photoData, ';base64,')) {
-            $photoData = substr($photoData, strpos($photoData, ',') + 1);
-        }
-        $photoData = str_replace(' ', '+', $photoData);
-        $decoded   = base64_decode($photoData, true);
+      
+        // $dateFolder      = now()->format('Y/m/d');
+        // $imageName       = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.jpg';
+        // $imagePath       = 'absensi/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+        // $imagePathOutfit = null;
 
-        if ($decoded === false) {
-            return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
-        }
-
-        Storage::disk('public')->makeDirectory('absensi/' . $dateFolder . '/' . $user->name);
-        Storage::disk('public')->put($imagePath, $decoded);
-
-        // Simpan photo outfit (file upload)
-        if ($request->hasFile('photo_outfit')) {
-            $imagePathOutfit = 'absensi-outfit/' . $dateFolder . '/' . $user->name . '/' . $imageName;
-            Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder . '/' . $user->name);
-            Storage::disk('public')->putFileAs(
-                'absensi-outfit/' . $dateFolder . '/' . $user->name,
-                $request->file('photo_outfit'),
-                $imageName
-            );
-        }
-
-        // ==========================
-        // SIMPAN FOTO
-        // ==========================
+        // // Simpan photo selfie (base64)
         // $photoData = $request->photo;
-
-        // // Handle berbagai prefix base64
         // if (str_contains($photoData, ';base64,')) {
         //     $photoData = substr($photoData, strpos($photoData, ',') + 1);
         // }
         // $photoData = str_replace(' ', '+', $photoData);
+        // $decoded   = base64_decode($photoData, true);
 
-        // $decoded = base64_decode($photoData, true);
         // if ($decoded === false) {
         //     return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
         // }
 
-        // $dateFolder = now()->format('Y/m/d');
-        // $imageName  = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.jpg';
-        // $imagePath  = 'absensi/' . $dateFolder . '/' .  $user->name.'/'. $imageName;
-        // $imagePathOutfit  = 'absensi-outfit/' . $dateFolder . '/' .  $user->name.'/'. $imageName;
-
-        // Storage::disk('public')->makeDirectory('absensi/' . $dateFolder);
-        // Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder);
+        // Storage::disk('public')->makeDirectory('absensi/' . $dateFolder . '/' . $user->name);
         // Storage::disk('public')->put($imagePath, $decoded);
-        // Storage::disk('public')->put($imagePathOutfit, $decoded);
 
+        // // Simpan photo outfit (file upload)
+        // if ($request->hasFile('photo_outfit')) {
+        //     $imagePathOutfit = 'absensi-outfit/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+        //     Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder . '/' . $user->name);
+        //     Storage::disk('public')->putFileAs(
+        //         'absensi-outfit/' . $dateFolder . '/' . $user->name,
+        //         $request->file('photo_outfit'),
+        //         $imageName
+        //     );
+        // }
+
+       
         // ==========================
         // SIMPAN DATA PRESENSI
         // ==========================

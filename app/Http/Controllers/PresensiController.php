@@ -166,44 +166,97 @@ class PresensiController extends Controller
     /**
      * Display the specified resource.
      */
-    // public function show(Presensi $presensi)
-    // {
-    //     //
-    // }
-    public function show(Request $request, $userId)
-    {
-        $tanggal = $request->input('tanggal', now()->toDateString());
+   public function show(Request $request, $userId)
+{
+    $bulan = $request->input('bulan', now()->format('Y-m'));
 
-        $user = User::where('is_active', true)
-            ->with('branches') // ← tambah ini
-            ->findOrFail($userId);
+    $user = User::where('is_active', true)
+        ->with('branches')
+        ->findOrFail($userId);
 
-        $branch = $user->branches->first(); // ← ambil cabang
+    $branch = $user->branches->first();
 
-        $presensis = Presensi::where('user_id', $user->id)
-            ->whereDate('tanggal', $tanggal)
-            ->get()
-            ->keyBy('status');
-        // dd($presensis);
+    $presensis = Presensi::where('user_id', $user->id)
+        ->whereYear('tanggal', substr($bulan, 0, 4))
+        ->whereMonth('tanggal', substr($bulan, 5, 2))
+        ->orderBy('tanggal')
+        ->orderBy('jam')
+        ->get();
 
-        $statuses = ['CHECK_IN', 'ISTIRAHAT_OUT', 'ISTIRAHAT_IN', 'CHECK_OUT'];
+    // Group per tanggal
+    $grouped = $presensis->groupBy(fn($p) => \Carbon\Carbon::parse($p->tanggal)->format('Y-m-d'));
 
-        $rows = collect($statuses)->map(function ($status) use ($presensis) {
-            return [
-                'status'     => $status,
-                'id'         => $presensis->get($status)?->id, // ← tambah id untuk delete
-                'jam'        => $presensis->get($status)?->jam
-                    ? \Carbon\Carbon::parse($presensis->get($status)->jam)->format('H:i:s')
-                    : null,
-                'wilayah'    => $presensis->get($status)?->wilayah ?? null,
-                'keterangan' => $presensis->get($status)?->keterangan ?? null,
-                'photo'      => $presensis->get($status)?->photo ?? null,
-            ];
-        });
-        // dd($rows);
+    // Summary
+    $summary = [
+        'total_hadir'     => 0,
+        'total_terlambat' => 0,
+        'total_izin'      => 0,
+        'total_alpha'     => 0,
+    ];
 
-        return view('presensi.show', compact('user', 'tanggal', 'rows', 'branch'));
+    foreach ($grouped as $tanggal => $entries) {
+        $checkIn = $entries->where('status', 'CHECK_IN')->first();
+
+        if (!$checkIn) {
+            $summary['total_alpha']++;
+        } elseif ($checkIn->keterangan && (
+            str_contains(strtolower($checkIn->keterangan), 'izin') ||
+            str_contains(strtolower($checkIn->keterangan), 'sakit')
+        )) {
+            $summary['total_izin']++;
+        } else {
+            $jamCI = \Carbon\Carbon::parse($checkIn->jam);
+            $hour  = $jamCI->hour;
+            $late  = false;
+            if ($hour >= 8 && $hour < 12) {
+                $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 08:00:00'));
+            } elseif ($hour > 13 && $hour <= 21) {
+                $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 13:00:00'));
+            }
+            $late ? $summary['total_terlambat']++ : $summary['total_hadir']++;
+        }
     }
+
+    return view('presensi.show', compact('user', 'bulan', 'branch', 'grouped', 'summary'));
+}
+    // public function show(Request $request, $userId)
+    // {
+    //     $tanggal = $request->input('tanggal', now()->toDateString());
+
+    //     $user = User::where('is_active', true)
+    //         ->with('branches') // ← tambah ini
+    //         ->findOrFail($userId);
+
+    //     $branch = $user->branches->first(); // ← ambil cabang
+
+    //     $presensis = Presensi::where('user_id', $user->id)
+    //         ->whereDate('tanggal', $tanggal)
+    //         ->get()
+    //         ->keyBy('status');
+    //     // dd($presensis);
+
+    //     $statuses = ['CHECK_IN', 'ISTIRAHAT_OUT', 'ISTIRAHAT_IN', 'CHECK_OUT'];
+
+    //     $rows = collect($statuses)->map(function ($status) use ($presensis) {
+    //         return [
+    //             'status'     => $status,
+    //             'id'         => $presensis->get($status)?->id, // ← tambah id untuk delete
+    //             'jam'        => $presensis->get($status)?->jam
+    //                 ? \Carbon\Carbon::parse($presensis->get($status)->jam)->format('H:i:s')
+    //                 : null,
+    //             'wilayah'    => $presensis->get($status)?->wilayah ?? null,
+    //             'keterangan' => $presensis->get($status)?->keterangan ?? null,
+    //             'photo'      => $presensis->get($status)?->photo ?? null,
+    //         ];
+    //     });
+    //     // dd($rows);
+    //     // ← Ambil outfit photo dari CHECK_IN
+    // $checkIn     = $presensis->get('CHECK_IN');
+    // $outfitPhoto = $checkIn?->photo_outfit;
+
+
+    //     return view('presensi.show', compact('user', 'tanggal', 'rows', 'branch', 'outfitPhoto', 'checkIn'));
+    // }
 
     // public function destroy($id)
     // {

@@ -125,12 +125,54 @@ class ValidationController extends Controller
             $reportQuery->where('shift', $shiftFilter);
         }
 
+        // terdahulu
+        // $reports = $reportQuery
+        //     ->orderBy('shift', 'asc')
+        //     ->orderBy('slot', 'asc')
+        //     ->orderBy('uploaded_at', 'asc')
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        // baru 1
+        // $reports = $reportQuery
+        //     ->orderBy('uploaded_at', 'desc')
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        // terberbaru 2 — group by user_id, lalu order by latest uploaded_at per user
+        // $reports = $reportQuery
+        //     ->orderBy('user_id', 'asc')        // kelompokkan per FO dulu
+        //     ->orderBy('uploaded_at', 'desc')   // dalam 1 FO, terbaru di atas
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        // Ambil dulu max uploaded_at per user dari baseQuery
+        $latestPerUser = (clone $baseQuery)
+            ->selectRaw('user_id, MAX(uploaded_at) as latest_upload')
+            ->groupBy('user_id');
+
         $reports = $reportQuery
-            ->orderBy('shift', 'asc')
-            ->orderBy('slot', 'asc')
-            ->orderBy('uploaded_at', 'asc')
+            ->joinSub($latestPerUser, 'latest', function ($join) {
+                $join->on('daily_report_fo.user_id', '=', 'latest.user_id');
+            })
+            ->orderBy('latest.latest_upload', 'desc')
+            ->orderBy('daily_report_fo.user_id')
+            ->orderBy('daily_report_fo.uploaded_at', 'desc')
             ->paginate($perPage)
             ->withQueryString();
+
+        // return view('daily-reports-fo.validation.index', [
+        //     'accessibleBranches' => $accessibleBranches,
+        //     'selectedBranch'     => $selectedBranch,
+        //     'isAllBranches'      => $isAllBranches,
+        //     'branchIdParam'      => $branchIdParam,
+        //     'tanggal'            => $tanggal,
+        //     'reports'            => $reports,
+        //     'stats'              => $stats,
+        //     'canValidate'        => ! $user->hasRole('marketing'),
+        //     'isSuperadmin'       => $user->hasRole('superadmin'),
+        // ]);
+        $groupedUserIds = $reports->pluck('user_id')->unique()->values();
 
         return view('daily-reports-fo.validation.index', [
             'accessibleBranches' => $accessibleBranches,
@@ -139,6 +181,7 @@ class ValidationController extends Controller
             'branchIdParam'      => $branchIdParam,
             'tanggal'            => $tanggal,
             'reports'            => $reports,
+            'groupedUserIds'     => $groupedUserIds, // ← BARU: untuk border grouping di blade
             'stats'              => $stats,
             'canValidate'        => ! $user->hasRole('marketing'),
             'isSuperadmin'       => $user->hasRole('superadmin'),

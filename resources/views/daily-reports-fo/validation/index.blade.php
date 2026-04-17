@@ -10,9 +10,9 @@
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
                     @if ($isAllBranches)
-                    Semua Cabang ({{ $accessibleBranches->count() }} cabang)
+                        Semua Cabang ({{ $accessibleBranches->count() }} cabang)
                     @else
-                    {{ $selectedBranch->name }}
+                        {{ $selectedBranch->name }}
                     @endif
                     | {{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}
                 </p>
@@ -33,14 +33,14 @@
             {{-- ALERTS                                                         --}}
             {{-- ============================================================ --}}
             @if (session('success'))
-            <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
-                {{ session('success') }}
-            </div>
+                <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
+                    {{ session('success') }}
+                </div>
             @endif
             @if (session('error'))
-            <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
-                {{ session('error') }}
-            </div>
+                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
+                    {{ session('error') }}
+                </div>
             @endif
 
             {{-- ============================================================ --}}
@@ -59,10 +59,10 @@
                                     🌐 Semua Cabang
                                 </option>
                                 @foreach ($accessibleBranches as $branch)
-                                <option value="{{ $branch->id }}"
-                                    {{ $branchIdParam == $branch->id ? 'selected' : '' }}>
-                                    {{ $branch->name }}
-                                </option>
+                                    <option value="{{ $branch->id }}"
+                                        {{ $branchIdParam == $branch->id ? 'selected' : '' }}>
+                                        {{ $branch->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -70,8 +70,7 @@
                         {{-- Tanggal --}}
                         <div>
                             <label class="block mb-1 text-xs font-medium text-gray-500">Tanggal</label>
-                            <input type="date" name="tanggal" value="{{ $tanggal }}"
-                                onchange="submitFilter()"
+                            <input type="date" name="tanggal" value="{{ $tanggal }}" onchange="submitFilter()"
                                 class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                         </div>
 
@@ -114,10 +113,9 @@
                         {{-- Loading indicator --}}
                         <div id="filterLoading" class="items-center hidden gap-2 pb-1 text-sm text-gray-400">
                             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10"
-                                    stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v8z"></path>
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                             </svg>
                             Memuat...
                         </div>
@@ -132,54 +130,162 @@
 
             {{-- Baris 1: Status Validasi --}}
             <div class="mx-4 mb-3 md:mx-0">
-                <p class="mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                <p class="mb-2 text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                     Status Validasi
                 </p>
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div class="p-4 text-center bg-white rounded-lg shadow-sm">
-                        <p class="text-xs text-gray-400">Total</p>
-                        <p class="text-2xl font-bold text-gray-800">{{ $stats['total'] }}</p>
-                        <p class="text-xs text-gray-400">laporan</p>
+
+                    {{-- Total --}}
+                    <div
+                        class="relative overflow-hidden p-4 bg-gray-50 border border-gray-200 rounded-xl
+                    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+                    before:bg-gray-300 before:rounded-full">
+                        <p class="mb-1 text-[15px]">📋</p>
+                        <p class="text-[10px] font-semibold tracking-wider text-gray-500 uppercase">Total</p>
+                        <p
+                            class="font-medium text-gray-800 @if ($stats['total'] >= 1000) text-base @elseif($stats['total'] >= 100) text-xl @else text-2xl @endif">
+                            {{ number_format($stats['total'], 0, ',', '.') }}
+                        </p>
+                        <p class="mt-1 text-[11px] text-gray-400">laporan hari ini</p>
                     </div>
-                    <div class="p-4 text-center rounded-lg shadow-sm bg-yellow-50">
-                        <p class="text-xs text-yellow-600">⏳ Pending</p>
-                        <p class="text-2xl font-bold text-yellow-700">{{ $stats['pending'] }}</p>
+
+                    {{-- Pending --}}
+                    <div
+                        class="relative overflow-hidden p-4 bg-[#FAEEDA] border border-[#FAC775] rounded-xl
+                    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+                    before:bg-[#EF9F27] before:rounded-full">
+                        <p class="mb-1 text-[15px]">⏳</p>
+                        <p class="text-[10px] font-semibold tracking-wider text-[#854F0B] uppercase">Pending</p>
+                        <p
+                            class="font-medium text-[#854F0B] @if ($stats['pending'] >= 1000) text-base @elseif($stats['pending'] >= 100) text-xl @else text-2xl @endif">
+                            {{ number_format($stats['pending'], 0, ',', '.') }}
+                        </p>
+                        <p class="mt-1 text-[11px] text-[#BA7517]">menunggu validasi</p>
                     </div>
-                    <div class="p-4 text-center rounded-lg shadow-sm bg-green-50">
-                        <p class="text-xs text-green-600">✅ Disetujui</p>
-                        <p class="text-2xl font-bold text-green-700">{{ $stats['approved'] }}</p>
+
+                    {{-- Disetujui --}}
+                    <div
+                        class="relative overflow-hidden p-4 bg-[#EAF3DE] border border-[#C0DD97] rounded-xl
+                    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+                    before:bg-[#639922] before:rounded-full">
+                        <p class="mb-1 text-[15px]">✅</p>
+                        <p class="text-[10px] font-semibold tracking-wider text-[#27500A] uppercase">Disetujui</p>
+                        <p
+                            class="font-medium text-[#27500A] @if ($stats['approved'] >= 1000) text-base @elseif($stats['approved'] >= 100) text-xl @else text-2xl @endif">
+                            {{ number_format($stats['approved'], 0, ',', '.') }}
+                        </p>
+                        <p class="mt-1 text-[11px] text-[#3B6D11]">laporan valid</p>
                     </div>
-                    <div class="p-4 text-center rounded-lg shadow-sm bg-red-50">
-                        <p class="text-xs text-red-600">❌ Ditolak</p>
-                        <p class="text-2xl font-bold text-red-700">{{ $stats['rejected'] }}</p>
+
+                    {{-- Ditolak --}}
+                    <div
+                        class="relative overflow-hidden p-4 bg-[#FCEBEB] border border-[#F7C1C1] rounded-xl
+                    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+                    before:bg-[#E24B4A] before:rounded-full">
+                        <p class="mb-1 text-[15px]">✕</p>
+                        <p class="text-[10px] font-semibold tracking-wider text-[#791F1F] uppercase">Ditolak</p>
+                        <p
+                            class="font-medium text-[#791F1F] @if ($stats['rejected'] >= 1000) text-base @elseif($stats['rejected'] >= 100) text-xl @else text-2xl @endif">
+                            {{ number_format($stats['rejected'], 0, ',', '.') }}
+                        </p>
+                        <p class="mt-1 text-[11px] text-[#A32D2D]">perlu perbaikan</p>
                     </div>
+
                 </div>
             </div>
 
             {{-- Baris 2: Metrik Bisnis --}}
             <div class="mx-4 mb-6 md:mx-0">
-                <p class="mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                <p class="mb-2 text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                     Metrik Bisnis
                 </p>
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-                    <div class="p-4 text-center rounded-lg shadow-sm bg-blue-50">
-                        <p class="text-xs text-blue-600">💰 Total Omset</p>
-                        <p class="text-lg font-bold leading-tight text-blue-800">
-                            Rp {{ number_format($stats['total_omset'], 0, ',', '.') }}
-                        </p>
+
+                    {{-- Total Omset --}}
+                    <div x-data="{ open: false }" @click="open = !open"
+                        class="relative overflow-hidden border rounded-xl
+        bg-[#E6F1FB] border-[#B5D4F4]
+        before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+        before:bg-[#378ADD] before:rounded-full
+        flex flex-row items-center gap-0 p-3
+        md:flex-col md:items-start md:p-4
+        md:cursor-pointer md:hover:ring-1 md:hover:ring-[#378ADD]/40 md:transition-shadow">
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <p class="mb-1 text-[15px]">💰</p>
+                            <p class="text-[10px] font-semibold tracking-wider text-[#0C447C] uppercase">Total Omset</p>
+                            <p class="mt-1 text-[11px] text-[#185FA5] md:hidden">dari laporan disetujui</p>
+                        </div>
+                        <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
+                            <p class="font-medium leading-tight text-[#0C447C] text-lg md:text-lg">
+                                {{ \App\Helpers\FormatHelper::rupiah($stats['total_omset']) }}
+                                <span class="hidden md:inline text-[11px] font-normal opacity-50 ml-0.5"
+                                    x-text="open ? 'Hide' : 'Detail'"></span>
+                            </p>
+                            <p class="text-[11px] text-[#185FA5] md:hidden">
+                                {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_omset']) }}
+                            </p>
+                            <p x-show="!open" class="hidden mt-1 text-[11px] text-[#185FA5] md:block">dari laporan
+                                disetujui</p>
+                            <p x-show="open" class="hidden mt-1 text-[11px] text-[#185FA5] md:block break-all">
+                                {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_omset']) }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="p-4 text-center rounded-lg shadow-sm bg-indigo-50">
-                        <p class="text-xs text-indigo-600">📈 Total Revenue</p>
-                        <p class="text-lg font-bold leading-tight text-indigo-800">
-                            Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}
-                        </p>
+
+                    {{-- Total Revenue --}}
+                    <div x-data="{ open: false }" @click="open = !open"
+                        class="relative overflow-hidden border rounded-xl
+        bg-[#EEEDFE] border-[#CECBF6]
+        before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+        before:bg-[#7F77DD] before:rounded-full
+        flex flex-row items-center gap-0 p-3
+        md:flex-col md:items-start md:p-4
+        md:cursor-pointer md:hover:ring-1 md:hover:ring-[#7F77DD]/40 md:transition-shadow">
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <p class="mb-1 text-[15px]">📈</p>
+                            <p class="text-[10px] font-semibold tracking-wider text-[#3C3489] uppercase">Total Revenue
+                            </p>
+                            <p class="mt-1 text-[11px] text-[#534AB7] md:hidden">dari laporan disetujui</p>
+                        </div>
+                        <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
+                            <p class="font-medium leading-tight text-[#3C3489] text-lg md:text-lg">
+                                {{ \App\Helpers\FormatHelper::rupiah($stats['total_revenue']) }}
+                                <span class="hidden md:inline text-[11px] font-normal opacity-50 ml-0.5"
+                                    x-text="open ? 'Hide' : 'Detail'"></span>
+                            </p>
+                            <p class="text-[11px] text-[#534AB7] md:hidden">
+                                {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_revenue']) }}
+                            </p>
+                            <p x-show="!open" class="hidden mt-1 text-[11px] text-[#534AB7] md:block">dari laporan
+                                disetujui</p>
+                            <p x-show="open" class="hidden mt-1 text-[11px] text-[#534AB7] md:block break-all">
+                                {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_revenue']) }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="p-4 text-center rounded-lg shadow-sm bg-purple-50">
-                        <p class="text-xs text-purple-600">🤝 Total Akad</p>
-                        <p class="text-2xl font-bold text-purple-700">
-                            {{ number_format($stats['total_akad'], 0, ',', '.') }}
-                        </p>
+
+                    {{-- Total Akad — tidak ada toggle, angka sudah integer biasa --}}
+                    <div
+                        class="relative overflow-hidden border rounded-xl
+        bg-[#EEEDFE] border-[#AFA9EC]
+        before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+        before:bg-[#534AB7] before:rounded-full
+        flex flex-row items-center gap-0 p-3 md:flex-col md:items-start md:p-4">
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <p class="mb-1 text-[15px]">🤝</p>
+                            <p class="text-[10px] font-semibold tracking-wider text-[#3C3489] uppercase">Total Akad</p>
+                            <p class="mt-1 text-[11px] text-[#534AB7] md:hidden">transaksi disetujui</p>
+                        </div>
+                        <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
+                            <p
+                                class="font-medium text-[#3C3489]
+                @if ($stats['total_akad'] >= 1000) text-base @elseif($stats['total_akad'] >= 100) text-xl @else text-2xl @endif">
+                                {{ number_format($stats['total_akad'], 0, ',', '.') }}
+                            </p>
+                            <p class="hidden mt-1 text-[11px] text-[#534AB7] md:block">transaksi disetujui</p>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -188,218 +294,222 @@
             {{-- ============================================================ --}}
             <div class="bg-white rounded-lg shadow-sm">
                 @if ($reports->isEmpty())
-                <div class="p-12 text-center text-gray-400">
-                    <p class="mb-3 text-4xl">📋</p>
-                    <p>Tidak ada laporan untuk filter ini.</p>
-                </div>
+                    <div class="p-12 text-center text-gray-400">
+                        <p class="mb-3 text-4xl">📋</p>
+                        <p>Tidak ada laporan untuk filter ini.</p>
+                    </div>
                 @else
-                <div class="overflow-x-auto" id="tableWrapper">
-                    <table class="w-full text-sm min-w-max whitespace-nowrap">
-                        <thead class="border-b border-gray-200 bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                    FO
-                                </th>
-                                @if ($isAllBranches)
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                    Cabang
-                                </th>
-                                @endif
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                    Shift / Slot
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                    Upload
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
-                                    Omset
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
-                                    Revenue
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                    Akad
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                    Status
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                    Window
-                                </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                    Aksi
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $seenUserIds = []; @endphp
-
-                            @foreach ($reports as $index => $report)
-                            @php
-                            $metrikDetails = $report->details->keyBy(fn($d) => $d->field->code);
-                            $omset = $metrikDetails->get('mb_omset')?->value_number ?? 0;
-                            $revenue = $metrikDetails->get('mb_revenue')?->value_number ?? 0;
-                            $akad = $metrikDetails->get('mb_jumlah_akad')?->value_number ?? 0;
-                            $windowStatus = $report->manager_window_status;
-
-                            // Color coding per status validasi
-                            $rowBg = match($report->validation_status) {
-                            'approved' => $index % 2 === 0 ? 'bg-green-50' : 'bg-green-100/50',
-                            'rejected' => $index % 2 === 0 ? 'bg-red-50' : 'bg-red-100/50',
-                            default => $index % 2 === 0 ? 'bg-yellow-50/50' : 'bg-yellow-100/30',
-                            };
-
-                            // Grouping visual: border tebal jika ganti FO
-                            $isNewUser = ! in_array($report->user_id, $seenUserIds);
-                            $seenUserIds[] = $report->user_id;
-                            $groupBorder = $isNewUser && $index !== 0
-                            ? 'border-t-2 border-gray-400'
-                            : 'border-t border-gray-100';
-                            @endphp
-
-                            <tr class="{{ $rowBg }} {{ $groupBorder }} transition-colors hover:brightness-95">
-
-                                {{-- FO --}}
-                                <td class="px-4 py-3">
-                                    @if ($isNewUser)
-                                    <p class="font-semibold text-gray-800">
-                                        {{ $report->user->name }}
-                                    </p>
-                                    @else
-                                    <p class="pl-2 text-xs text-gray-400 border-l-2 border-gray-200">
-                                        {{ $report->user->name }}
-                                    </p>
+                    <div class="overflow-x-auto" id="tableWrapper">
+                        <table class="w-full text-sm min-w-max whitespace-nowrap">
+                            <thead class="border-b border-gray-200 bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
+                                        FO
+                                    </th>
+                                    @if ($isAllBranches)
+                                        <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
+                                            Cabang
+                                        </th>
                                     @endif
-                                </td>
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
+                                        Shift / Slot
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
+                                        Upload
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
+                                        Omset
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
+                                        Revenue
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                        Akad
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                        Status
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                        Window
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $seenUserIds = []; @endphp
 
-                                {{-- Cabang --}}
-                                @if ($isAllBranches)
-                                <td class="px-4 py-3 text-xs text-gray-500">
-                                    {{ $report->branch->name }}
-                                    <span class="text-gray-400">
-                                        ({{ $report->branch->timezone }})
-                                    </span>
-                                </td>
-                                @endif
+                                @foreach ($reports as $index => $report)
+                                    @php
+                                        $metrikDetails = $report->details->keyBy(fn($d) => $d->field->code);
+                                        $omset = $metrikDetails->get('mb_omset')?->value_number ?? 0;
+                                        $revenue = $metrikDetails->get('mb_revenue')?->value_number ?? 0;
+                                        $akad = $metrikDetails->get('mb_jumlah_akad')?->value_number ?? 0;
+                                        $windowStatus = $report->manager_window_status;
 
-                                {{-- Shift / Slot --}}
-                                <td class="px-4 py-3 text-gray-600">
-                                    {{ $report->shift_label }} / Slot {{ $report->slot }}
-                                    <span class="text-xs text-gray-400">
-                                        ({{ $report->slot_time }})
-                                    </span>
-                                </td>
+                                        // Color coding per status validasi
+                                        $rowBg = match ($report->validation_status) {
+                                            'approved' => $index % 2 === 0 ? 'bg-green-50' : 'bg-green-100/50',
+                                            'rejected' => $index % 2 === 0 ? 'bg-red-50' : 'bg-red-100/50',
+                                            default => $index % 2 === 0 ? 'bg-yellow-50/50' : 'bg-yellow-100/30',
+                                        };
 
-                                {{-- Upload --}}
-                                <td class="px-4 py-3 text-xs text-gray-500">
-                                    {{ $report->uploaded_at->format('H:i:s') }}
-                                </td>
+                                        // Grouping visual: border tebal jika ganti FO
+                                        $isNewUser = !in_array($report->user_id, $seenUserIds);
+                                        $seenUserIds[] = $report->user_id;
+                                        $groupBorder =
+                                            $isNewUser && $index !== 0
+                                                ? 'border-t-2 border-gray-400'
+                                                : 'border-t border-gray-100';
+                                    @endphp
 
-                                {{-- Metrik --}}
-                                <td class="px-4 py-3 font-medium text-right text-gray-800">
-                                    Rp {{ number_format($omset, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 font-medium text-right text-gray-800">
-                                    Rp {{ number_format($revenue, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 font-medium text-center text-gray-800">
-                                    {{ number_format($akad, 0, ',', '.') }}
-                                </td>
+                                    <tr
+                                        class="{{ $rowBg }} {{ $groupBorder }} transition-colors hover:brightness-95">
 
-                                {{-- Status Validasi --}}
-                                <td class="px-4 py-3 text-center">
-                                    @if ($report->validation_status === 'approved')
-                                    <span class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-200 rounded-full">
-                                        ✅ Disetujui
-                                    </span>
-                                    @elseif ($report->validation_status === 'rejected')
-                                    <span class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-200 rounded-full">
-                                        ❌ Ditolak
-                                    </span>
-                                    @else
-                                    <span class="px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-200 rounded-full">
-                                        ⏳ Pending
-                                    </span>
-                                    @endif
-                                </td>
+                                        {{-- FO --}}
+                                        <td class="px-4 py-3">
+                                            @if ($isNewUser)
+                                                <p class="font-semibold text-gray-800">
+                                                    {{ $report->user->name }}
+                                                </p>
+                                            @else
+                                                <p class="pl-2 text-xs text-gray-400 border-l-2 border-gray-200">
+                                                    {{ $report->user->name }}
+                                                </p>
+                                            @endif
+                                        </td>
 
-                                {{-- Window Status --}}
-                                <td class="px-4 py-3 text-xs text-center">
-                                    @if ($windowStatus === 'open')
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full animate-pulse">
-                                        🟠 Buka
-                                    </span>
-                                    <br>
-                                    <span class="text-gray-400">
-                                        s/d {{ $report->manager_window_end->format('H:i') }}
-                                        {{ $report->branch->timezone }}
-                                    </span>
-                                    @elseif ($windowStatus === 'waiting')
-                                    <span class="text-gray-400">⏳ Menunggu</span>
-                                    <br>
-                                    <span class="text-gray-400">
-                                        mulai {{ $report->manager_window_start->format('H:i') }}
-                                        {{ $report->branch->timezone }}
-                                    </span>
-                                    @else
-                                    <span class="text-gray-400">🔒 Expired</span>
-                                    @endif
-                                </td>
+                                        {{-- Cabang --}}
+                                        @if ($isAllBranches)
+                                            <td class="px-4 py-3 text-xs text-gray-500">
+                                                {{ $report->branch->name }}
+                                                <span class="text-gray-400">
+                                                    ({{ $report->branch->timezone }})
+                                                </span>
+                                            </td>
+                                        @endif
 
-                                {{-- Aksi --}}
-                                <td class="px-4 py-3 text-center">
-                                    <a href="{{ route('validation.show', $report->id) }}"
-                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition">
-                                        Detail
-                                    </a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                        {{-- Shift / Slot --}}
+                                        <td class="px-4 py-3 text-gray-600">
+                                            {{ $report->shift_label }} / Slot {{ $report->slot }}
+                                            <span class="text-xs text-gray-400">
+                                                ({{ $report->slot_time }})
+                                            </span>
+                                        </td>
 
-                {{-- Skeleton (hidden, ditampilkan saat filter berubah) --}}
-                <div id="tableSkeleton" class="hidden p-4 space-y-3">
-                    @for ($i = 0; $i < 8; $i++)
-                        <div class="flex gap-3 animate-pulse">
-                        <div class="h-8 bg-gray-200 rounded w-36"></div>
-                        <div class="w-24 h-8 bg-gray-200 rounded"></div>
-                        <div class="w-20 h-8 bg-gray-200 rounded"></div>
-                        <div class="h-8 bg-gray-200 rounded w-28"></div>
-                        <div class="h-8 bg-gray-200 rounded w-28"></div>
-                        <div class="w-20 h-8 bg-gray-200 rounded"></div>
-                        <div class="flex-1 h-8 bg-gray-200 rounded"></div>
-                </div>
-                @endfor
+                                        {{-- Upload --}}
+                                        <td class="px-4 py-3 text-xs text-gray-500">
+                                            {{ $report->uploaded_at->format('H:i:s') }}
+                                        </td>
+
+                                        {{-- Metrik --}}
+                                        <td class="px-4 py-3 font-medium text-right text-gray-800">
+                                            Rp {{ number_format($omset, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 font-medium text-right text-gray-800">
+                                            Rp {{ number_format($revenue, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 font-medium text-center text-gray-800">
+                                            {{ number_format($akad, 0, ',', '.') }}
+                                        </td>
+
+                                        {{-- Status Validasi --}}
+                                        <td class="px-4 py-3 text-center">
+                                            @if ($report->validation_status === 'approved')
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-green-700 bg-green-200 rounded-full">
+                                                    ✅ Disetujui
+                                                </span>
+                                            @elseif ($report->validation_status === 'rejected')
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-200 rounded-full">
+                                                    ❌ Ditolak
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-200 rounded-full">
+                                                    ⏳ Pending
+                                                </span>
+                                            @endif
+                                        </td>
+
+                                        {{-- Window Status --}}
+                                        <td class="px-4 py-3 text-xs text-center">
+                                            @if ($windowStatus === 'open')
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-100 rounded-full animate-pulse">
+                                                    🟠 Buka
+                                                </span>
+                                                <br>
+                                                <span class="text-gray-400">
+                                                    s/d {{ $report->manager_window_end->format('H:i') }}
+                                                    {{ $report->branch->timezone }}
+                                                </span>
+                                            @elseif ($windowStatus === 'waiting')
+                                                <span class="text-gray-400">⏳ Menunggu</span>
+                                                <br>
+                                                <span class="text-gray-400">
+                                                    mulai {{ $report->manager_window_start->format('H:i') }}
+                                                    {{ $report->branch->timezone }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400">🔒 Expired</span>
+                                            @endif
+                                        </td>
+
+                                        {{-- Aksi --}}
+                                        <td class="px-4 py-3 text-center">
+                                            <a href="{{ route('validation.show', $report->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1.5 text-xs text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition">
+                                                Detail
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- Skeleton (hidden, ditampilkan saat filter berubah) --}}
+                    <div id="tableSkeleton" class="hidden p-4 space-y-3">
+                        @for ($i = 0; $i < 8; $i++)
+                            <div class="flex gap-3 animate-pulse">
+                                <div class="h-8 bg-gray-200 rounded w-36"></div>
+                                <div class="w-24 h-8 bg-gray-200 rounded"></div>
+                                <div class="w-20 h-8 bg-gray-200 rounded"></div>
+                                <div class="h-8 bg-gray-200 rounded w-28"></div>
+                                <div class="h-8 bg-gray-200 rounded w-28"></div>
+                                <div class="w-20 h-8 bg-gray-200 rounded"></div>
+                                <div class="flex-1 h-8 bg-gray-200 rounded"></div>
+                            </div>
+                        @endfor
+                    </div>
+
+                    {{-- Pagination --}}
+                    <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                        <p class="text-xs text-gray-400">
+                            Menampilkan {{ $reports->firstItem() }}–{{ $reports->lastItem() }}
+                            dari {{ $reports->total() }} laporan
+                        </p>
+                        {{ $reports->links() }}
+                    </div>
+                @endif
             </div>
 
-            {{-- Pagination --}}
-            <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <p class="text-xs text-gray-400">
-                    Menampilkan {{ $reports->firstItem() }}–{{ $reports->lastItem() }}
-                    dari {{ $reports->total() }} laporan
-                </p>
-                {{ $reports->links() }}
-            </div>
-            @endif
         </div>
-
-    </div>
     </div>
 
     {{-- ============================================================ --}}
     {{-- MODAL EXPORT                                                   --}}
     {{-- ============================================================ --}}
-    <div id="exportModal"
-        class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
+    <div id="exportModal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
         <div class="w-full max-w-md mx-4 bg-white rounded-lg shadow-xl">
 
             {{-- Header --}}
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h3 class="font-semibold text-gray-800">📥 Export Laporan Validasi FO</h3>
-                <button onclick="closeExportModal()"
-                    class="text-gray-400 hover:text-gray-600">✕</button>
+                <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             {{-- Body --}}
@@ -410,9 +520,9 @@
                     <div class="p-3 text-xs text-blue-700 rounded-lg bg-blue-50">
                         ℹ️ Maksimal export
                         @if (auth()->user()->hasRole('manager'))
-                        <strong>7 hari</strong> (role Manager)
+                            <strong>7 hari</strong> (role Manager)
                         @else
-                        <strong>3 hari</strong> (role {{ ucfirst(auth()->user()->getRoleNames()->first()) }})
+                            <strong>3 hari</strong> (role {{ ucfirst(auth()->user()->getRoleNames()->first()) }})
                         @endif
                     </div>
 
@@ -421,8 +531,7 @@
                         <label class="block mb-1 text-sm font-medium text-gray-700">
                             Tanggal Dari <span class="text-red-500">*</span>
                         </label>
-                        <input type="date" name="date_from" id="exportDateFrom"
-                            value="{{ $tanggal }}"
+                        <input type="date" name="date_from" id="exportDateFrom" value="{{ $tanggal }}"
                             class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                     </div>
 
@@ -431,8 +540,7 @@
                         <label class="block mb-1 text-sm font-medium text-gray-700">
                             Tanggal Sampai <span class="text-red-500">*</span>
                         </label>
-                        <input type="date" name="date_to" id="exportDateTo"
-                            value="{{ $tanggal }}"
+                        <input type="date" name="date_to" id="exportDateTo" value="{{ $tanggal }}"
                             class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                     </div>
 
@@ -445,10 +553,10 @@
                             class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                             <option value="all">🌐 Semua Cabang</option>
                             @foreach ($accessibleBranches as $branch)
-                            <option value="{{ $branch->id }}"
-                                {{ $branchIdParam == $branch->id && $branchIdParam !== 'all' ? 'selected' : '' }}>
-                                {{ $branch->name }}
-                            </option>
+                                <option value="{{ $branch->id }}"
+                                    {{ $branchIdParam == $branch->id && $branchIdParam !== 'all' ? 'selected' : '' }}>
+                                    {{ $branch->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>

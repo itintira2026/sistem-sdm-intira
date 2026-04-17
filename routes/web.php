@@ -182,7 +182,7 @@ Route::middleware('auth')->group(function () {
             // Dashboard validasi (manager + marketing + superadmin)
             Route::get('/', [ValidationController::class, 'index'])->name('index');
 
-            Route::get('/export', [ValidationController::class, 'index'])
+            Route::get('/export', [ValidationController::class, 'export'])
                 ->name('export'); //sementara pakai index, nanti ganti ke method export di ValidationController
 
             // Detail laporan + form validasi

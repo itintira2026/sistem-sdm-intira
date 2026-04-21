@@ -17,12 +17,30 @@
                     | {{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}
                 </p>
             </div>
+            <div class="flex flex-wrap gap-2">
+                {{-- for superadmin route into superadmin.daily-report-fo.photo-cleanup.index --}}
+                @if (auth()->user()->hasRole('superadmin'))
+                    <a href="{{ route('superadmin.daily-report-fo.photo-cleanup.index') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-purple-600 rounded-lg hover:bg-purple-700">
+                        📸 Photo Cleanup
+                    </a>
+                @endif
 
-            {{-- Tombol Export --}}
-            <button onclick="openExportModal()"
-                class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
-                📥 Export Excel
-            </button>
+                {{-- show only for superadmin and marketing --}}
+                @if (auth()->user()->hasRole('superadmin') || auth()->user()->hasRole('marketing'))
+                    <a href="{{ route('ranking-fo.index') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
+                        🏆 Ranking FO
+                    </a>
+                @endif
+
+                {{-- Tombol Export --}}
+                <button onclick="openExportModal()"
+                    class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
+                    📥 Export Excel
+                </button>
+            </div>
+            {{-- tombol link ke ranking FO --}}
         </div>
     </x-slot>
 

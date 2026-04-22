@@ -20,6 +20,8 @@ use App\Http\Controllers\PresensiImportController;
 use App\Http\Controllers\PresensiKaryawanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\PresensiPhotoCleanupController;
+use App\Http\Controllers\RankingFoController;
+use App\Http\Controllers\ThreeHourReportDashboardController;
 // use App\Http\Controllers\Payroll\PotonganImportController;
 use App\Http\Controllers\ThreeHourReportManagerController;
 use App\Http\Controllers\UserController;
@@ -256,6 +258,9 @@ Route::middleware('auth')->group(function () {
             // Dashboard validasi (manager + marketing + superadmin)
             Route::get('/', [ValidationController::class, 'index'])->name('index');
 
+            Route::get('/export', [ValidationController::class, 'export'])
+                ->name('export'); //sementara pakai index, nanti ganti ke method export di ValidationController
+
             // Detail laporan + form validasi
             Route::get('/{reportId}', [ValidationController::class, 'show'])->name('show');
 
@@ -334,6 +339,15 @@ Route::middleware('auth')->group(function () {
     //     });
 
     Route::middleware('role:superadmin|marketing')->group(function () {
+        Route::get('/ranking-fo/export', [RankingFoController::class, 'export']) //sementara pakai index, nanti ganti ke method export di RankingFoController
+            ->name('ranking-fo.export');
+
+        Route::get('/ranking-fo', [RankingFoController::class, 'index'])
+            ->name('ranking-fo.index');
+
+        Route::post('/ranking-fo/refresh', [RankingFoController::class, 'refresh'])
+            ->name('ranking-fo.refresh');
+
 
         Route::prefix('daily-reports-fo/marketing')->name('daily-reports-fo.marketing.')->group(function () {
 

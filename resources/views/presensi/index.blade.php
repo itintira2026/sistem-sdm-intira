@@ -98,13 +98,16 @@
 
                         {{-- SEARCH --}}
                         <div class="relative flex-1 min-w-[250px]">
+                            {{-- <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Cari nama karyawan..." class="w-full px-4 py-2 border rounded-lg"> --}}
                             <input type="text" name="search" value="{{ request('search') }}"
-                                placeholder="Cari nama karyawan..." class="w-full px-4 py-2 border rounded-lg">
+                                placeholder="Cari nama karyawan..." oninput="debounceSearch(this)"
+                                class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-teal-500" />
                         </div>
 
-                        <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                        {{-- <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
                             Cari
-                        </button>
+                        </button> --}}
                     </form>
 
                     <div class="relative w-full overflow-x-auto custom-scrollbar">
@@ -450,6 +453,14 @@
     </div>
 
     <script>
+        let searchTimer;
+
+        function debounceSearch(input) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                input.closest('form').submit();
+            }, 400); // tunggu 400ms setelah user berhenti ketik
+        };
         // =====================================================
         // EXPORT ALL - LOGIC (tanpa polling, fake progress bar)
         // =====================================================

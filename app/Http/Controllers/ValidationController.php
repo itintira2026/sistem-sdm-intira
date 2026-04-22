@@ -9,6 +9,9 @@ use App\Models\ValidationAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Exports\DailyReportFoValidationExport;
+use Illuminate\Support\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ValidationController extends Controller
 {
@@ -125,12 +128,54 @@ class ValidationController extends Controller
             $reportQuery->where('shift', $shiftFilter);
         }
 
+        // terdahulu
+        // $reports = $reportQuery
+        //     ->orderBy('shift', 'asc')
+        //     ->orderBy('slot', 'asc')
+        //     ->orderBy('uploaded_at', 'asc')
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        // baru 1
+        // $reports = $reportQuery
+        //     ->orderBy('uploaded_at', 'desc')
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        // terberbaru 2 — group by user_id, lalu order by latest uploaded_at per user
+        // $reports = $reportQuery
+        //     ->orderBy('user_id', 'asc')        // kelompokkan per FO dulu
+        //     ->orderBy('uploaded_at', 'desc')   // dalam 1 FO, terbaru di atas
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        // Ambil dulu max uploaded_at per user dari baseQuery
+        $latestPerUser = (clone $baseQuery)
+            ->selectRaw('user_id, MAX(uploaded_at) as latest_upload')
+            ->groupBy('user_id');
+
         $reports = $reportQuery
-            ->orderBy('shift', 'asc')
-            ->orderBy('slot', 'asc')
-            ->orderBy('uploaded_at', 'asc')
+            ->joinSub($latestPerUser, 'latest', function ($join) {
+                $join->on('daily_report_fo.user_id', '=', 'latest.user_id');
+            })
+            ->orderBy('latest.latest_upload', 'desc')
+            ->orderBy('daily_report_fo.user_id')
+            ->orderBy('daily_report_fo.uploaded_at', 'desc')
             ->paginate($perPage)
             ->withQueryString();
+
+        // return view('daily-reports-fo.validation.index', [
+        //     'accessibleBranches' => $accessibleBranches,
+        //     'selectedBranch'     => $selectedBranch,
+        //     'isAllBranches'      => $isAllBranches,
+        //     'branchIdParam'      => $branchIdParam,
+        //     'tanggal'            => $tanggal,
+        //     'reports'            => $reports,
+        //     'stats'              => $stats,
+        //     'canValidate'        => ! $user->hasRole('marketing'),
+        //     'isSuperadmin'       => $user->hasRole('superadmin'),
+        // ]);
+        $groupedUserIds = $reports->pluck('user_id')->unique()->values();
 
         return view('daily-reports-fo.validation.index', [
             'accessibleBranches' => $accessibleBranches,
@@ -139,6 +184,7 @@ class ValidationController extends Controller
             'branchIdParam'      => $branchIdParam,
             'tanggal'            => $tanggal,
             'reports'            => $reports,
+            'groupedUserIds'     => $groupedUserIds, // ← BARU: untuk border grouping di blade
             'stats'              => $stats,
             'canValidate'        => ! $user->hasRole('marketing'),
             'isSuperadmin'       => $user->hasRole('superadmin'),
@@ -350,5 +396,111 @@ class ValidationController extends Controller
             'managerWindowStatus' => $report->manager_window_status,
             'branchTimezone' => $report->branch->timezone, // untuk ditampilkan di view
         ]);
+    }
+
+    /**
+     * Export laporan validasi ke Excel
+     * Input dari modal: date_from, date_to, branch_id
+     * Batasan hari per role:
+     * - Manager    → max 7 hari
+     * - Superadmin → max 3 hari
+     * - Marketing  → max 3 hari
+     */
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+
+        // -------------------------------------------------------
+        // Tentukan accessible branches (sama dengan index())
+        // -------------------------------------------------------
+        if ($user->hasRole('superadmin') || $user->hasRole('marketing')) {
+            $accessibleBranches = Branch::orderBy('name')->get();
+        } else {
+            $accessibleBranches = $user->managedBranches()->orderBy('name')->get();
+        }
+
+        if ($accessibleBranches->isEmpty()) {
+            return back()->with('error', 'Anda tidak memiliki akses ke cabang manapun.');
+        }
+
+        // -------------------------------------------------------
+        // Validasi input
+        // -------------------------------------------------------
+        $request->validate([
+            'date_from' => 'required|date',
+            'date_to'   => 'required|date|after_or_equal:date_from',
+            'branch_id' => 'required', // 'all' atau integer ID
+        ], [
+            'date_from.required'          => 'Tanggal Dari wajib diisi.',
+            'date_from.date'              => 'Tanggal Dari tidak valid.',
+            'date_to.required'            => 'Tanggal Sampai wajib diisi.',
+            'date_to.date'                => 'Tanggal Sampai tidak valid.',
+            'date_to.after_or_equal'      => 'Tanggal Sampai tidak boleh sebelum Tanggal Dari.',
+            'branch_id.required'          => 'Cabang wajib dipilih.',
+        ]);
+
+        $dateFrom = Carbon::parse($request->input('date_from'))->startOfDay();
+        $dateTo   = Carbon::parse($request->input('date_to'))->endOfDay();
+
+        // -------------------------------------------------------
+        // Validasi batasan hari per role
+        // -------------------------------------------------------
+        $maxDays     = $user->hasRole('manager') ? 7 : 3;
+        // $diffDays    = $dateFrom->diffInDays($dateTo) + 1;
+        // Hitung diff dari tanggal saja, bukan datetime
+        $diffDays  = Carbon::parse($request->input('date_from'))
+            ->diffInDays(Carbon::parse($request->input('date_to'))) + 1;
+
+        if ($diffDays > $maxDays) {
+            return back()->with(
+                'error',
+                "Maksimal export {$maxDays} hari untuk role Anda. "
+                    . "Range yang dipilih {$diffDays} hari."
+            );
+        }
+
+        // -------------------------------------------------------
+        // Validasi branch_id — security gate
+        // -------------------------------------------------------
+        $branchId = null; // null = semua cabang
+
+        if ($request->input('branch_id') !== 'all') {
+            $branchId       = (int) $request->input('branch_id');
+            $selectedBranch = $accessibleBranches->find($branchId);
+
+            if (! $selectedBranch) {
+                abort(403, 'Anda tidak memiliki akses ke cabang ini.');
+            }
+        }
+
+        // -------------------------------------------------------
+        // Buat nama file
+        // -------------------------------------------------------
+        $branchLabel = $branchId
+            ? $accessibleBranches->find($branchId)->name
+            : 'SemuaCabang';
+
+        // Bersihkan spasi di nama cabang
+        $branchLabel = str_replace(' ', '_', $branchLabel);
+
+        $filename = "Validasi_LaporanFO_{$branchLabel}_"
+            . $dateFrom->format('dmY')
+            . '_sd_'
+            . $dateTo->format('dmY')
+            . '.xlsx';
+
+        // -------------------------------------------------------
+        // Export
+        // -------------------------------------------------------
+        return Excel::download(
+            new DailyReportFoValidationExport(
+                dateFrom: $dateFrom->toDateString(),
+                dateTo: $dateTo->toDateString(),
+                branchId: $branchId,
+                accessibleBranchIds: $accessibleBranches->pluck('id')->toArray(),
+                exportedByName: $user->name,
+            ),
+            $filename
+        );
     }
 }

@@ -70,7 +70,7 @@
                     Kembali ke Dashboard
                 </a>
 
-                <a href="mailto:support@example.com"
+                <a href="https://wa.me/6289530203497"
                     class="inline-flex items-center justify-center w-full gap-2 px-6 py-3 text-sm font-medium text-gray-700 transition bg-white border border-gray-300 rounded-lg sm:w-auto hover:bg-gray-50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -628,14 +628,7 @@
                             <h3 class="text-lg font-semibold text-gray-900">Aksi</h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            {{-- <button
-                                class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-green-500 rounded-lg hover:bg-green-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                                Export PDF
-                            </button> --}}
+                            
 
                             <a href="{{ route('gaji-pokok.export-pdf', ['gajihPokok' => $initialGajihPokok->id, 'bulan' => $gajihPokok->bulan, 'tahun' => $gajihPokok->tahun]) }}"
                                 class="flex items-center justify-center w-full gap-2 px-4 py-2 text-white transition bg-green-500 rounded-lg hover:bg-green-600">
@@ -646,14 +639,14 @@
                                 Export PDF
                             </a>
 
-                            <button
+                            {{-- <button
                                 class="flex items-center justify-center w-full gap-2 px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                 </svg>
                                 Print
-                            </button>
+                            </button> --}}
                         </div>
                     </div>
 

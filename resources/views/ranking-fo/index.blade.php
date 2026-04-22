@@ -266,6 +266,17 @@
                     </div>
                 @endif
 
+                @if ($mode === 'all')
+                    <div
+                        class="mt-3 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700 flex items-start gap-2">
+                        <span class="shrink-0">ℹ️</span>
+                        <span>
+                            Podium berdasarkan laporan <strong>disetujui</strong> saja.
+                            Tabel ranking di bawah sudah termasuk laporan pending.
+                        </span>
+                    </div>
+                @endif
+
                 {{-- -------------------------------------------------------- --}}
                 {{-- PINNED TOP 3 (halaman 2+)                                 --}}
                 {{-- -------------------------------------------------------- --}}
@@ -345,6 +356,10 @@
                                         <th
                                             class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
                                             Laporan</th>
+                                        <th
+                                            class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                            Hari Aktif
+                                        </th>
                                         <th
                                             class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
                                             Pending</th>
@@ -434,6 +449,11 @@
                                             <td class="px-4 py-3 text-center text-gray-600">
                                                 {{ $row->total_laporan }}
                                                 <span class="text-[10px] text-gray-400 block">laporan</span>
+                                            </td>
+                                            {{-- Hari Aktif --}}
+                                            <td class="px-4 py-3 text-center text-gray-600">
+                                                {{ $row->hari_aktif }}
+                                                <span class="text-[10px] text-gray-400 block">hari</span>
                                             </td>
 
                                             {{-- Pending --}}

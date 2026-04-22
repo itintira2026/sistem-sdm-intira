@@ -62,21 +62,25 @@
                         </div>
 
                         {{-- SEARCH --}}
-                        <div class="relative flex-1">
+                        <div class="relative flex-1 min-w-[250px]">
                             <svg class="absolute w-5 h-5 text-gray-400 left-3 top-3" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
 
-                            <input type="text" name="search" value="{{ request('search') }}"
+                            {{-- <input type="text" name="search" value="{{ request('search') }}"
                                 placeholder="Cari nama, email, atau username..."
+                                class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-teal-500" /> --}}
+                            {{-- SESUDAH --}}
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Cari nama, email, atau username..." oninput="debounceSearch(this)"
                                 class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-teal-500" />
                         </div>
 
-                        <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                        {{-- <button type="submit" class="px-4 py-2 text-white bg-teal-600 rounded-lg hover:bg-teal-700">
                             Cari
-                        </button>
+                        </button> --}}
                     </form>
 
 
@@ -395,6 +399,14 @@
     </div>
 
     <script>
+        let searchTimer;
+
+        function debounceSearch(input) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                input.closest('form').submit();
+            }, 400); // tunggu 400ms setelah user berhenti ketik
+        };
         // Fungsi untuk membuka modal import
         function openImportModal() {
             console.log('Opening import modal');

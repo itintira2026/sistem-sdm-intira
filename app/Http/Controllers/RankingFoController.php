@@ -33,7 +33,7 @@ class RankingFoController extends Controller
         $branchId = $request->input('branch_id', 'all');
         $sortBy   = $request->input('sort_by',   'omset');   // omset | revenue | akad
         $mode     = $request->input('mode',      'validated'); // validated | all
-        $perPage  = (int) $request->input('per_page', 5);
+        $perPage  = (int) $request->input('per_page', 10);
         $page     = (int) $request->input('page', 1);
 
         // Validasi sortBy — hindari SQL injection

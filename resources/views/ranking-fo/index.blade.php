@@ -93,6 +93,8 @@
                                 <option value="revenue" {{ $sortBy === 'revenue' ? 'selected' : '' }}>📈 Revenue
                                 </option>
                                 <option value="akad" {{ $sortBy === 'akad' ? 'selected' : '' }}>🤝 Akad</option>
+                                <option value="nasabah_baru" {{ $sortBy === 'nasabah_baru' ? 'selected' : '' }}>🧑
+                                    Nasabah Baru</option>
                             </select>
                         </div>
 
@@ -174,7 +176,7 @@
                     <div>
                         <p class="mb-3 text-xs font-semibold tracking-wider text-gray-400 uppercase">
                             🏆 Top 3 —
-                            {{ $sortBy === 'omset' ? 'Omset' : ($sortBy === 'revenue' ? 'Revenue' : 'Akad') }}
+                            {{ $sortBy === 'omset' ? 'Omset' : ($sortBy === 'revenue' ? 'Revenue' : ($sortBy === 'akad' ? 'Akad' : 'Nasabah Baru')) }}
                             <span class="font-normal text-gray-300 normal-case">
                                 (berdasarkan laporan disetujui)
                             </span>
@@ -225,6 +227,7 @@
                                     $val = match ($sortBy) {
                                         'revenue' => $r?->total_revenue,
                                         'akad' => $r?->total_akad,
+                                        'nasabah_baru' => $r?->total_nasabah_baru,
                                         default => $r?->total_omset,
                                     };
                                 @endphp
@@ -252,7 +255,7 @@
                                         <span class="text-xl">{{ $cfg['emoji'] }}</span>
                                         @if ($r && $val !== null)
                                             <p class="mt-1 text-xs font-semibold text-center px-1 {{ $cfg['text'] }}">
-                                                @if ($sortBy === 'akad')
+                                                @if ($sortBy === 'akad' || $sortBy === 'nasabah_baru')
                                                     {{ number_format($val, 0, ',', '.') }}
                                                 @else
                                                     {{ \App\Helpers\FormatHelper::rupiah($val) }}
@@ -289,6 +292,7 @@
                                     $val = match ($sortBy) {
                                         'revenue' => $r->total_revenue,
                                         'akad' => $r->total_akad,
+                                        'nasabah_baru' => $r->total_nasabah_baru,
                                         default => $r->total_omset,
                                     };
                                     $medals = ['🥇', '🥈', '🥉'];
@@ -350,6 +354,13 @@
                                             class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
                                             Akad
                                             @if ($sortBy === 'akad')
+                                                <span class="text-teal-500">↓</span>
+                                            @endif
+                                        </th>
+                                        <th
+                                            class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                            Nasabah Baru
+                                            @if ($sortBy === 'nasabah_baru')
                                                 <span class="text-teal-500">↓</span>
                                             @endif
                                         </th>
@@ -443,6 +454,10 @@
                                             {{-- Akad --}}
                                             <td class="px-4 py-3 font-medium text-center text-gray-800">
                                                 {{ number_format($row->total_akad, 0, ',', '.') }}
+                                            </td>
+                                            {{-- Nasabah Baru --}}
+                                            <td class="px-4 py-3 font-medium text-center text-gray-800">
+                                                {{ number_format($row->total_nasabah_baru, 0, ',', '.') }}
                                             </td>
 
                                             {{-- Total Laporan --}}

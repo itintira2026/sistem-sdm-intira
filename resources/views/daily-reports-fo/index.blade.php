@@ -54,7 +54,8 @@
                                     <div class="ml-3">
                                         <p class="font-semibold text-gray-800">🌅 Shift Pagi</p>
                                         <p class="text-sm text-gray-600">08:00 - 16:00</p>
-                                        <p class="text-xs text-gray-500">Laporan: 10:00, 11:30, 14:00, 16:00</p>
+                                        <p class="text-xs text-gray-500">Laporan: 12:00, 16:00</p>
+                                        {{-- <p class="text-xs text-gray-500">Laporan: 10:00, 11:30, 14:00, 16:00</p> --}}
                                     </div>
                                 </label>
                                 <label
@@ -64,7 +65,8 @@
                                     <div class="ml-3">
                                         <p class="font-semibold text-gray-800">🌆 Shift Siang</p>
                                         <p class="text-sm text-gray-600">13:00 - 21:00</p>
-                                        <p class="text-xs text-gray-500">Laporan: 14:00, 16:00, 17:30, 20:00</p>
+                                        <p class="text-xs text-gray-500">Laporan: 16:00, 21:00</p>
+                                        {{-- <p class="text-xs text-gray-500">Laporan: 14:00, 16:00, 17:30, 20:00</p> --}}
                                     </div>
                                 </label>
                             </div>
@@ -151,6 +153,7 @@
                     @foreach ($slotData as $slot)
                         @php
                             $report = $slot['existing_report'];
+                            // dd($report);
                             $validationStatus = $report?->validation_status ?? null;
                             // Border color: prioritaskan validation status jika laporan ada
                             $borderColor = 'border-gray-300'; // default: belum ada laporan / waiting / closed
@@ -237,9 +240,13 @@
                                                 'mb_omset',
                                                 'mb_revenue',
                                                 'mb_jumlah_akad',
+                                                'mb_nasabah_baru',
+                                                'da_ysd',
+                                                'da_action_plan',
                                             ]);
                                         })
                                         ->keyBy(fn($d) => $d->field->code);
+                                    // dd($metrikDetails);
                                 @endphp
 
                                 {{-- Background sesuai status validasi --}}
@@ -267,7 +274,7 @@
                                             <p class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
                                                 📊 Metrik Bisnis
                                             </p>
-                                            <div class="grid grid-cols-3 gap-2">
+                                            <div class="grid grid-cols-2 gap-2">
                                                 @if ($metrikDetails->has('mb_omset'))
                                                     <div class="p-2 text-center bg-white rounded-lg shadow-sm">
                                                         <p class="text-xs text-gray-400">Omset</p>
@@ -291,6 +298,14 @@
                                                         <p class="text-xs text-gray-400">Akad</p>
                                                         <p class="text-sm font-bold text-gray-800">
                                                             {{ number_format($metrikDetails['mb_jumlah_akad']->value_number, 0, ',', '.') }}
+                                                        </p>
+                                                    </div>
+                                                @endif
+                                                @if ($metrikDetails->has('mb_nasabah_baru'))
+                                                    <div class="p-2 text-center bg-white rounded-lg shadow-sm">
+                                                        <p class="text-xs text-gray-400">Nasabah Baru</p>
+                                                        <p class="text-sm font-bold text-gray-800">
+                                                            {{ number_format($metrikDetails['mb_nasabah_baru']->value_number, 0, ',', '.') }}
                                                         </p>
                                                     </div>
                                                 @endif
@@ -335,6 +350,9 @@
                                             data-omset="{{ $metrikDetails->has('mb_omset') ? number_format($metrikDetails['mb_omset']->value_number, 0, ',', '.') : '' }}"
                                             data-revenue="{{ $metrikDetails->has('mb_revenue') ? number_format($metrikDetails['mb_revenue']->value_number, 0, ',', '.') : '' }}"
                                             data-akad="{{ $metrikDetails->has('mb_jumlah_akad') ? number_format($metrikDetails['mb_jumlah_akad']->value_number, 0, ',', '.') : '' }}"
+                                            data-nb="{{ $metrikDetails->has('mb_nasabah_baru') ? number_format($metrikDetails['mb_nasabah_baru']->value_number, 0, ',', '.') : '' }}"
+                                            data-ysd="{{ $metrikDetails->has('da_ysd') ? $metrikDetails['da_ysd']->value_text : '' }}"
+                                            data-action_plan="{{ $metrikDetails->has('da_action_plan') ? $metrikDetails['da_action_plan']->value_text : '' }}"
                                             data-catatan="{{ $report->validation?->catatan ?? '' }}"
                                             class="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50 w-fit">
                                             📋 <span class="label">Copy</span>
@@ -434,16 +452,20 @@
         };
 
         function copyLaporan(btn) {
-            const lines = ['📋 *Laporan Per 2 Jam*'];
+            const lines = ['📋 *Laporan Per 4 Jam*'];
 
             lines.push('👤 Nama: ' + btn.dataset.nama);
             lines.push('🏢 Cabang: ' + btn.dataset.cabang);
             // lines.push('📅 Upload: ' + btn.dataset.upload);
             // lines.push('📷 Foto: ' + btn.dataset.foto);
+            console.log(btn.dataset);
 
             if (btn.dataset.omset) lines.push('💰 Omset: Rp ' + btn.dataset.omset);
             if (btn.dataset.revenue) lines.push('📈 Revenue: Rp ' + btn.dataset.revenue);
             if (btn.dataset.akad) lines.push('🤝 Akad: ' + btn.dataset.akad);
+            if (btn.dataset.nb) lines.push('🧑 NB: ' + btn.dataset.nb);
+            if (btn.dataset.ysd) lines.push('✅ YSD: ' + btn.dataset.ysd);
+            if (btn.dataset.action_plan) lines.push('🎯 Action Plan: ' + btn.dataset.action_plan);
             if (btn.dataset.catatan) lines.push('📝 Catatan: ' + btn.dataset.catatan);
 
             const text = lines.join('\n');

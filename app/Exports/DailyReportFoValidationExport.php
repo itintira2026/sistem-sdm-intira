@@ -53,7 +53,7 @@ class DailyReportFoValidationExport implements
                 'validation.actions:id,name',
                 'details' => function ($q) {
                     $q->whereHas('field', function ($q) {
-                        $q->whereIn('code', ['mb_omset', 'mb_revenue', 'mb_jumlah_akad']);
+                        $q->whereIn('code', ['mb_omset', 'mb_revenue', 'mb_jumlah_akad', 'mb_nasabah_baru']);
                     })->with('field:id,code');
                 },
             ])
@@ -84,6 +84,7 @@ class DailyReportFoValidationExport implements
             'Omset (Rp)',
             'Revenue (Rp)',
             'Akad',
+            'Nasabah Baru',
             'Status Validasi',
             'Divalidasi Oleh',
             'Tindakan',
@@ -103,6 +104,7 @@ class DailyReportFoValidationExport implements
         $omset    = $details->get('mb_omset')?->value_number ?? 0;
         $revenue  = $details->get('mb_revenue')?->value_number ?? 0;
         $akad     = $details->get('mb_jumlah_akad')?->value_number ?? 0;
+        $nasabahBaru = $details->get('mb_nasabah_baru')?->value_number ?? 0;
 
         $statusLabel = match ($report->validation_status) {
             'approved' => 'Disetujui',
@@ -125,6 +127,7 @@ class DailyReportFoValidationExport implements
             $omset,
             $revenue,
             $akad,
+            $nasabahBaru,
             $statusLabel,
             $report->validation?->manager?->name ?? '-',
             $tindakan,

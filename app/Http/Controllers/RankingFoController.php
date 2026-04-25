@@ -37,7 +37,7 @@ class RankingFoController extends Controller
         $page     = (int) $request->input('page', 1);
 
         // Validasi sortBy — hindari SQL injection
-        if (! in_array($sortBy, ['omset', 'revenue', 'akad'])) {
+        if (! in_array($sortBy, ['omset', 'revenue', 'akad', 'nasabah_baru'])) {
             $sortBy = 'omset';
         }
 
@@ -56,6 +56,7 @@ class RankingFoController extends Controller
             $page,
             $perPage
         );
+        // dd($rows);
 
         $top3 = $this->rankingService->getTop3(
             $dateFrom,
@@ -64,6 +65,7 @@ class RankingFoController extends Controller
             $sortBy
         );
 
+        // dd($top3);
         // Load user info
         $allUserIds = $rows->pluck('user_id')
             ->merge($top3->pluck('user_id'))
@@ -121,7 +123,7 @@ class RankingFoController extends Controller
         $branchId = $request->input('branch_id', 'all');
         $sortBy   = $request->input('sort_by',   'omset');
 
-        if (! in_array($sortBy, ['omset', 'revenue', 'akad'])) {
+        if (! in_array($sortBy, ['omset', 'revenue', 'akad', 'nasabah_baru'])) {
             $sortBy = 'omset';
         }
 

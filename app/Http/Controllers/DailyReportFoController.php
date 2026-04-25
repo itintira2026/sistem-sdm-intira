@@ -118,13 +118,17 @@ class DailyReportFoController extends Controller
         // ];
         // Update $stats: tambah hitungan per validation_status
         $stats = [
-            'total_slots' => 4,
+            'total_slots' => 2,
+            // 'total_slots' => 4,
             'completed_slots' => $existingReports->count(),
-            'progress_percentage' => ($existingReports->count() / 4) * 100,
+            'progress_percentage' => ($existingReports->count() / 2) * 100,
+            // 'progress_percentage' => ($existingReports->count() / 4) * 100,
             'approved' => $existingReports->where('validation_status', 'approved')->count(),
             'rejected' => $existingReports->where('validation_status', 'rejected')->count(),
             'pending' => $existingReports->where('validation_status', 'pending')->count(),
         ];
+
+        // dd($slotData);
 
         return view('daily-reports-fo.index', [
             'branch' => $branch,

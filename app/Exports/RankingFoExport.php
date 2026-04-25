@@ -57,7 +57,7 @@ class RankingFoSheetExport implements
     WithStyles,
     WithColumnWidths
 {
-    const FIELD_CODES = ['mb_omset', 'mb_revenue', 'mb_jumlah_akad'];
+    const FIELD_CODES = ['mb_omset', 'mb_revenue', 'mb_jumlah_akad', 'mb_nasabah_baru'];
 
     private \Illuminate\Support\Collection $users;
 
@@ -131,6 +131,7 @@ class RankingFoSheetExport implements
             metrics.total_omset,
             metrics.total_revenue,
             metrics.total_akad,
+            metrics.total_nasabah_baru,
             COALESCE(counts.total_laporan,   0) as total_laporan,
             COALESCE(counts.hari_aktif,       0) as hari_aktif,
             COALESCE(counts.laporan_approved, 0) as laporan_approved,
@@ -141,7 +142,8 @@ class RankingFoSheetExport implements
                 drfo.user_id,
                 SUM(CASE WHEN rf.code = 'mb_omset'       THEN drfod.value_number ELSE 0 END) as total_omset,
                 SUM(CASE WHEN rf.code = 'mb_revenue'     THEN drfod.value_number ELSE 0 END) as total_revenue,
-                SUM(CASE WHEN rf.code = 'mb_jumlah_akad' THEN drfod.value_number ELSE 0 END) as total_akad
+                SUM(CASE WHEN rf.code = 'mb_jumlah_akad' THEN drfod.value_number ELSE 0 END) as total_akad,
+                SUM(CASE WHEN rf.code = 'mb_nasabah_baru' THEN drfod.value_number ELSE 0 END) as total_nasabah_baru
             FROM daily_report_fo_details drfod
             JOIN daily_report_fo drfo ON drfo.id = drfod.daily_report_fo_id
             JOIN report_fields rf     ON rf.id   = drfod.field_id
@@ -220,6 +222,7 @@ class RankingFoSheetExport implements
             'Total Omset',
             'Total Revenue',
             'Total Akad',
+            'Total Nasabah Baru',
             'Total Laporan',
             'Hari Aktif',       // ← tambah
             'Laporan Approved',
@@ -246,6 +249,7 @@ class RankingFoSheetExport implements
             (float) $row->total_omset,
             (float) $row->total_revenue,
             (int)   $row->total_akad,
+            (int)   $row->total_nasabah_baru,
             (int)   $row->total_laporan,
             (int)   $row->hari_aktif,      // ← tambah
             (int)   $row->laporan_approved,
@@ -270,12 +274,13 @@ class RankingFoSheetExport implements
             'D' => 20,  // Omset
             'E' => 20,  // Revenue
             'F' => 12,  // Akad
-            'G' => 14,  // Total Laporan
-            'H' => 12,  // Hari Aktif   ← tambah
-            'I' => 18,  // Approved
-            'J' => 16,  // Rejected
-            'K' => 16,  // Pending (mode all)
-            'L' => 40,  // Keterangan (mode all)
+            'G' => 14,  // Total Nasabah Baru
+            'H' => 14,  // Total Laporan
+            'I' => 12,  // Hari Aktif   ← tambah
+            'J' => 18,  // Approved
+            'K' => 16,  // Rejected
+            'L' => 16,  // Pending (mode all)
+            'M' => 40,  // Keterangan (mode all)
         ];
     }
 

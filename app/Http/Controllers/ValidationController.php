@@ -88,7 +88,7 @@ class ValidationController extends Controller
                 $q->whereIn('id', (clone $baseQuery)->where('validation_status', 'approved')->select('id'));
             })
             ->whereHas('field', function ($q) {
-                $q->whereIn('code', ['mb_omset', 'mb_revenue', 'mb_jumlah_akad']);
+                $q->whereIn('code', ['mb_omset', 'mb_revenue', 'mb_jumlah_akad', 'mb_nasabah_baru']);
             })
             ->with('field:id,code')
             ->get()
@@ -103,8 +103,10 @@ class ValidationController extends Controller
             'total_omset'   => $metrikTotals->get('mb_omset', 0),
             'total_revenue' => $metrikTotals->get('mb_revenue', 0),
             'total_akad'    => $metrikTotals->get('mb_jumlah_akad', 0),
+            'total_nasabah_baru' => $metrikTotals->get('mb_nasabah_baru', 0),
         ];
 
+        // dd($stats);
         // -------------------------------------------------------
         // Query laporan dengan filter tambahan
         // -------------------------------------------------------
@@ -128,27 +130,6 @@ class ValidationController extends Controller
             $reportQuery->where('shift', $shiftFilter);
         }
 
-        // terdahulu
-        // $reports = $reportQuery
-        //     ->orderBy('shift', 'asc')
-        //     ->orderBy('slot', 'asc')
-        //     ->orderBy('uploaded_at', 'asc')
-        //     ->paginate($perPage)
-        //     ->withQueryString();
-
-        // baru 1
-        // $reports = $reportQuery
-        //     ->orderBy('uploaded_at', 'desc')
-        //     ->paginate($perPage)
-        //     ->withQueryString();
-
-        // terberbaru 2 — group by user_id, lalu order by latest uploaded_at per user
-        // $reports = $reportQuery
-        //     ->orderBy('user_id', 'asc')        // kelompokkan per FO dulu
-        //     ->orderBy('uploaded_at', 'desc')   // dalam 1 FO, terbaru di atas
-        //     ->paginate($perPage)
-        //     ->withQueryString();
-
         // Ambil dulu max uploaded_at per user dari baseQuery
         $latestPerUser = (clone $baseQuery)
             ->selectRaw('user_id, MAX(uploaded_at) as latest_upload')
@@ -164,17 +145,6 @@ class ValidationController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        // return view('daily-reports-fo.validation.index', [
-        //     'accessibleBranches' => $accessibleBranches,
-        //     'selectedBranch'     => $selectedBranch,
-        //     'isAllBranches'      => $isAllBranches,
-        //     'branchIdParam'      => $branchIdParam,
-        //     'tanggal'            => $tanggal,
-        //     'reports'            => $reports,
-        //     'stats'              => $stats,
-        //     'canValidate'        => ! $user->hasRole('marketing'),
-        //     'isSuperadmin'       => $user->hasRole('superadmin'),
-        // ]);
         $groupedUserIds = $reports->pluck('user_id')->unique()->values();
 
         return view('daily-reports-fo.validation.index', [
@@ -241,29 +211,6 @@ class ValidationController extends Controller
         }
     }
 
-    /**
-     * Cek apakah user bisa memvalidasi laporan ini
-     */
-    // private function canValidate($user, DailyReportFo $report): bool
-    // {
-    //     // Marketing tidak bisa validasi
-    //     if ($user->hasRole('marketing')) {
-    //         return false;
-    //     }
-
-    //     // Superadmin selalu bisa (untuk reset/override)
-    //     if ($user->hasRole('superadmin')) {
-    //         return true;
-    //     }
-
-    //     // Manager: hanya bisa jika window open dan laporan masih pending
-    //     return $report->manager_window_status === 'open'
-    //         && $report->validation_status === 'pending';
-    // }
-
-    // new
-    // Hanya bagian yang berubah di ValidationController
-    // Ganti method canValidate() dan validate() dengan ini:
 
     /**
      * Proses validasi (approve/reject) oleh manager

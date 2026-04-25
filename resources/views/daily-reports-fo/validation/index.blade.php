@@ -19,20 +19,20 @@
             </div>
             <div class="flex flex-wrap gap-2">
                 {{-- for superadmin route into superadmin.daily-report-fo.photo-cleanup.index --}}
-                {{-- @if (auth()->user()->hasRole('superadmin'))
+                @if (auth()->user()->hasRole('superadmin'))
                     <a href="{{ route('superadmin.daily-report-fo.photo-cleanup.index') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-purple-600 rounded-lg hover:bg-purple-700">
                         📸 Photo Cleanup
                     </a>
-                @endif --}}
+                @endif
 
                 {{-- show only for superadmin and marketing --}}
-                {{-- @if (auth()->user()->hasRole('superadmin') || auth()->user()->hasRole('marketing'))
+                @if (auth()->user()->hasRole('superadmin') || auth()->user()->hasRole('marketing'))
                     <a href="{{ route('ranking-fo.index') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
                         🏆 Ranking FO
                     </a>
-                @endif --}}
+                @endif
 
                 {{-- Tombol Export --}}
                 <button onclick="openExportModal()"
@@ -217,34 +217,34 @@
                 <p class="mb-2 text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                     Metrik Bisnis
                 </p>
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 
                     {{-- Total Omset --}}
                     <div x-data="{ open: false }" @click="open = !open"
                         class="relative overflow-hidden border rounded-xl
-        bg-[#E6F1FB] border-[#B5D4F4]
-        before:absolute before:inset-y-0 before:left-0 before:w-[3px]
-        before:bg-[#378ADD] before:rounded-full
-        flex flex-row items-center gap-0 p-3
-        md:flex-col md:items-start md:p-4
-        md:cursor-pointer md:hover:ring-1 md:hover:ring-[#378ADD]/40 md:transition-shadow">
+    bg-[#EDFAF3] border-[#A8DFC4]
+    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+    before:bg-[#22A366] before:rounded-full
+    flex flex-row items-center gap-0 p-3
+    md:flex-col md:items-start md:p-4
+    md:cursor-pointer md:hover:ring-1 md:hover:ring-[#22A366]/40 md:transition-shadow">
                         <div class="flex flex-col flex-1 min-w-0">
                             <p class="mb-1 text-[15px]">💰</p>
-                            <p class="text-[10px] font-semibold tracking-wider text-[#0C447C] uppercase">Total Omset</p>
-                            <p class="mt-1 text-[11px] text-[#185FA5] md:hidden">dari laporan disetujui</p>
+                            <p class="text-[10px] font-semibold tracking-wider text-[#0D5C38] uppercase">Total Omset</p>
+                            <p class="mt-1 text-[11px] text-[#1F7A50] md:hidden">dari laporan disetujui</p>
                         </div>
                         <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
-                            <p class="font-medium leading-tight text-[#0C447C] text-lg md:text-lg">
+                            <p class="font-medium leading-tight text-[#0D5C38] text-lg md:text-lg">
                                 {{ \App\Helpers\FormatHelper::rupiah($stats['total_omset']) }}
                                 <span class="hidden md:inline text-[11px] font-normal opacity-50 ml-0.5"
                                     x-text="open ? 'Hide' : 'Detail'"></span>
                             </p>
-                            <p class="text-[11px] text-[#185FA5] md:hidden">
+                            <p class="text-[11px] text-[#1F7A50] md:hidden">
                                 {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_omset']) }}
                             </p>
-                            <p x-show="!open" class="hidden mt-1 text-[11px] text-[#185FA5] md:block">dari laporan
+                            <p x-show="!open" class="hidden mt-1 text-[11px] text-[#1F7A50] md:block">dari laporan
                                 disetujui</p>
-                            <p x-show="open" class="hidden mt-1 text-[11px] text-[#185FA5] md:block break-all">
+                            <p x-show="open" class="hidden mt-1 text-[11px] text-[#1F7A50] md:block break-all">
                                 {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_omset']) }}
                             </p>
                         </div>
@@ -253,54 +253,77 @@
                     {{-- Total Revenue --}}
                     <div x-data="{ open: false }" @click="open = !open"
                         class="relative overflow-hidden border rounded-xl
-        bg-[#EEEDFE] border-[#CECBF6]
-        before:absolute before:inset-y-0 before:left-0 before:w-[3px]
-        before:bg-[#7F77DD] before:rounded-full
-        flex flex-row items-center gap-0 p-3
-        md:flex-col md:items-start md:p-4
-        md:cursor-pointer md:hover:ring-1 md:hover:ring-[#7F77DD]/40 md:transition-shadow">
+    bg-[#E6F1FB] border-[#B5D4F4]
+    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+    before:bg-[#1D6FBF] before:rounded-full
+    flex flex-row items-center gap-0 p-3
+    md:flex-col md:items-start md:p-4
+    md:cursor-pointer md:hover:ring-1 md:hover:ring-[#1D6FBF]/40 md:transition-shadow">
                         <div class="flex flex-col flex-1 min-w-0">
                             <p class="mb-1 text-[15px]">📈</p>
-                            <p class="text-[10px] font-semibold tracking-wider text-[#3C3489] uppercase">Total Revenue
+                            <p class="text-[10px] font-semibold tracking-wider text-[#0C3D6E] uppercase">Total Revenue
                             </p>
-                            <p class="mt-1 text-[11px] text-[#534AB7] md:hidden">dari laporan disetujui</p>
+                            <p class="mt-1 text-[11px] text-[#1A5A9C] md:hidden">dari laporan disetujui</p>
                         </div>
                         <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
-                            <p class="font-medium leading-tight text-[#3C3489] text-lg md:text-lg">
+                            <p class="font-medium leading-tight text-[#0C3D6E] text-lg md:text-lg">
                                 {{ \App\Helpers\FormatHelper::rupiah($stats['total_revenue']) }}
                                 <span class="hidden md:inline text-[11px] font-normal opacity-50 ml-0.5"
                                     x-text="open ? 'Hide' : 'Detail'"></span>
                             </p>
-                            <p class="text-[11px] text-[#534AB7] md:hidden">
+                            <p class="text-[11px] text-[#1A5A9C] md:hidden">
                                 {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_revenue']) }}
                             </p>
-                            <p x-show="!open" class="hidden mt-1 text-[11px] text-[#534AB7] md:block">dari laporan
+                            <p x-show="!open" class="hidden mt-1 text-[11px] text-[#1A5A9C] md:block">dari laporan
                                 disetujui</p>
-                            <p x-show="open" class="hidden mt-1 text-[11px] text-[#534AB7] md:block break-all">
+                            <p x-show="open" class="hidden mt-1 text-[11px] text-[#1A5A9C] md:block break-all">
                                 {{ \App\Helpers\FormatHelper::rupiahFull($stats['total_revenue']) }}
                             </p>
                         </div>
                     </div>
 
-                    {{-- Total Akad — tidak ada toggle, angka sudah integer biasa --}}
+                    {{-- Total Akad --}}
                     <div
                         class="relative overflow-hidden border rounded-xl
-        bg-[#EEEDFE] border-[#AFA9EC]
-        before:absolute before:inset-y-0 before:left-0 before:w-[3px]
-        before:bg-[#534AB7] before:rounded-full
-        flex flex-row items-center gap-0 p-3 md:flex-col md:items-start md:p-4">
+    bg-[#FEF9EC] border-[#F3DFA0]
+    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+    before:bg-[#D4960A] before:rounded-full
+    flex flex-row items-center gap-0 p-3 md:flex-col md:items-start md:p-4">
                         <div class="flex flex-col flex-1 min-w-0">
                             <p class="mb-1 text-[15px]">🤝</p>
-                            <p class="text-[10px] font-semibold tracking-wider text-[#3C3489] uppercase">Total Akad</p>
-                            <p class="mt-1 text-[11px] text-[#534AB7] md:hidden">transaksi disetujui</p>
+                            <p class="text-[10px] font-semibold tracking-wider text-[#6B4A04] uppercase">Total Akad</p>
+                            <p class="mt-1 text-[11px] text-[#946A0E] md:hidden">transaksi disetujui</p>
                         </div>
                         <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
                             <p
-                                class="font-medium text-[#3C3489]
-                @if ($stats['total_akad'] >= 1000) text-base @elseif($stats['total_akad'] >= 100) text-xl @else text-2xl @endif">
+                                class="font-medium text-[#6B4A04]
+            @if ($stats['total_akad'] >= 1000) text-base @elseif($stats['total_akad'] >= 100) text-xl @else text-2xl @endif">
                                 {{ number_format($stats['total_akad'], 0, ',', '.') }}
                             </p>
-                            <p class="hidden mt-1 text-[11px] text-[#534AB7] md:block">transaksi disetujui</p>
+                            <p class="hidden mt-1 text-[11px] text-[#946A0E] md:block">transaksi disetujui</p>
+                        </div>
+                    </div>
+
+                    {{-- Total Nasabah Baru --}}
+                    <div
+                        class="relative overflow-hidden border rounded-xl
+    bg-[#E8F7F7] border-[#A0D8D8]
+    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+    before:bg-[#0E8F8F] before:rounded-full
+    flex flex-row items-center gap-0 p-3 md:flex-col md:items-start md:p-4">
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <p class="mb-1 text-[15px]">🧑</p>
+                            <p class="text-[10px] font-semibold tracking-wider text-[#0A4A4A] uppercase">Total Nasabah
+                                Baru</p>
+                            <p class="mt-1 text-[11px] text-[#0D6B6B] md:hidden">dari transaksi disetujui</p>
+                        </div>
+                        <div class="flex flex-col items-end text-right md:items-start md:text-left shrink-0">
+                            <p
+                                class="font-medium text-[#0A4A4A]
+            @if ($stats['total_nasabah_baru'] >= 1000) text-base @elseif($stats['total_nasabah_baru'] >= 100) text-xl @else text-2xl @endif">
+                                {{ number_format($stats['total_nasabah_baru'], 0, ',', '.') }}
+                            </p>
+                            <p class="hidden mt-1 text-[11px] text-[#0D6B6B] md:block">transaksi disetujui</p>
                         </div>
                     </div>
 
@@ -345,6 +368,9 @@
                                         Akad
                                     </th>
                                     <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                        NB
+                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
                                         Status
                                     </th>
                                     <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
@@ -364,6 +390,7 @@
                                         $omset = $metrikDetails->get('mb_omset')?->value_number ?? 0;
                                         $revenue = $metrikDetails->get('mb_revenue')?->value_number ?? 0;
                                         $akad = $metrikDetails->get('mb_jumlah_akad')?->value_number ?? 0;
+                                        $nasabahBaru = $metrikDetails->get('mb_nasabah_baru')?->value_number ?? 0;
                                         $windowStatus = $report->manager_window_status;
 
                                         // Color coding per status validasi
@@ -430,6 +457,9 @@
                                         </td>
                                         <td class="px-4 py-3 font-medium text-center text-gray-800">
                                             {{ number_format($akad, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 font-medium text-center text-gray-800">
+                                            {{ number_format($nasabahBaru, 0, ',', '.') }}
                                         </td>
 
                                         {{-- Status Validasi --}}

@@ -166,8 +166,8 @@
                                 </div>
 
                                 <div>
-                                    <label class="block mb-1 text-xs font-medium text-gray-600">Helper Text</label>
-                                    <input type="text" name="helper_text" id="fInputHelper"
+                                    <label class="block mb-1 text-xs font-medium text-gray-600">Help Text</label>
+                                    <input type="text" name="help_text" id="fInputHelp"
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
                                         placeholder="Petunjuk pengisian (opsional)">
                                 </div>
@@ -247,10 +247,11 @@
             document.getElementById('fInputCode').value = field.code;
             document.getElementById('fInputCategory').value = field.category_id;
             document.getElementById('fInputType').value = field.input_type;
-            document.getElementById('fInputHelper').value = field.helper_text ?? '';
+            document.getElementById('fInputHelp').value = field.help_text ?? '';
             document.getElementById('fInputOrder').value = field.order ?? 0;
             document.getElementById('fInputRequired').checked = field.is_required == 1;
             document.getElementById('fInputActive').checked = field.is_active == 1;
+            console.log('Edit field:', field); // 🔥 debug
 
             document.getElementById('fieldFormCard').scrollIntoView({
                 behavior: 'smooth'

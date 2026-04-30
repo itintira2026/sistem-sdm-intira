@@ -402,10 +402,11 @@
                 {{-- Info Box --}}
                 <div class="p-4 mt-6 rounded-lg bg-blue-50">
                     <p class="text-sm text-blue-800">
-                        💡 <strong>Info:</strong>
-                        Setiap slot punya window <strong>30 menit</strong> untuk upload laporan.
-                        Setelah itu manager punya <strong>30 menit</strong> untuk memvalidasi.
-                        Laporan yang disetujui ditandai hijau, ditolak merah.
+                        {{-- isi dengan info pengisian laporan yang dalam jangka waktu 3 jam dan untuk slot 1 harus mengisi yang sudah dilakukan dan action plan --}}
+                        ℹ️ Pastikan untuk mengisi laporan sesuai dengan slot yang tersedia. Setelah window upload
+                        ditutup, Anda tidak dapat mengubah laporan tersebut. Untuk slot pertama, harap isi bagian "Yang
+                        Sudah Dikerjakan" dan "Action Plan" dengan detail agar memudahkan validasi. Jika ada kendala
+                        atau pertanyaan, segera hubungi TIM IT Anda.
                     </p>
                 </div>
 

@@ -464,7 +464,7 @@
             if (btn.dataset.revenue) lines.push('📈 Revenue: Rp ' + btn.dataset.revenue);
             if (btn.dataset.akad) lines.push('🤝 Akad: ' + btn.dataset.akad);
             if (btn.dataset.nb) lines.push('🧑 NB: ' + btn.dataset.nb);
-            if (btn.dataset.ysd) lines.push('✅ YSD: ' + btn.dataset.ysd);
+            if (btn.dataset.ysd) lines.push('✅ Yang Sudah Dikerjakan: ' + btn.dataset.ysd);
             if (btn.dataset.action_plan) lines.push('🎯 Action Plan: ' + btn.dataset.action_plan);
             if (btn.dataset.catatan) lines.push('📝 Catatan: ' + btn.dataset.catatan);
 

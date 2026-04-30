@@ -27,12 +27,12 @@
                 @endif
 
                 {{-- show only for superadmin and marketing --}}
-                @if (auth()->user()->hasRole('superadmin') || auth()->user()->hasRole('marketing'))
+                {{-- @if (auth()->user()->hasRole('superadmin') || auth()->user()->hasRole('marketing'))
                     <a href="{{ route('ranking-fo.index') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
                         🏆 Ranking FO
                     </a>
-                @endif
+                @endif --}}
 
                 {{-- Tombol Export --}}
                 <button onclick="openExportModal()"

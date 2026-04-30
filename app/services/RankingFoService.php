@@ -10,7 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class RankingFoService
 {
     // Field codes yang kita butuhkan
-    const FIELD_CODES = ['mb_omset', 'mb_revenue', 'mb_jumlah_akad'];
+    const FIELD_CODES = ['mb_omset', 'mb_revenue', 'mb_jumlah_akad', 'mb_nasabah_baru'];
 
     public function __construct(
         private RankingCacheService $cacheService
@@ -115,6 +115,7 @@ class RankingFoService
                 metrics.total_omset,
                 metrics.total_revenue,
                 metrics.total_akad,
+                metrics.total_nasabah_baru,
                 COALESCE(counts.total_laporan,   0) as total_laporan,
                 COALESCE(counts.hari_aktif,       0) as hari_aktif,
                 COALESCE(counts.laporan_approved, 0) as laporan_approved,
@@ -126,7 +127,8 @@ class RankingFoService
                     drfo.user_id,
                     SUM(CASE WHEN rf.code = 'mb_omset'       THEN drfod.value_number ELSE 0 END) as total_omset,
                     SUM(CASE WHEN rf.code = 'mb_revenue'     THEN drfod.value_number ELSE 0 END) as total_revenue,
-                    SUM(CASE WHEN rf.code = 'mb_jumlah_akad' THEN drfod.value_number ELSE 0 END) as total_akad
+                    SUM(CASE WHEN rf.code = 'mb_jumlah_akad' THEN drfod.value_number ELSE 0 END) as total_akad,
+                    SUM(CASE WHEN rf.code = 'mb_nasabah_baru' THEN drfod.value_number ELSE 0 END) as total_nasabah_baru
                 FROM daily_report_fo_details drfod
                 JOIN daily_report_fo drfo ON drfo.id = drfod.daily_report_fo_id
                 JOIN report_fields rf     ON rf.id   = drfod.field_id
@@ -207,7 +209,8 @@ class RankingFoService
                     drfo.user_id,
                     SUM(CASE WHEN rf.code = 'mb_omset'       THEN drfod.value_number ELSE 0 END) as total_omset,
                     SUM(CASE WHEN rf.code = 'mb_revenue'     THEN drfod.value_number ELSE 0 END) as total_revenue,
-                    SUM(CASE WHEN rf.code = 'mb_jumlah_akad' THEN drfod.value_number ELSE 0 END) as total_akad
+                    SUM(CASE WHEN rf.code = 'mb_jumlah_akad' THEN drfod.value_number ELSE 0 END) as total_akad,
+                    SUM(CASE WHEN rf.code = 'mb_nasabah_baru' THEN drfod.value_number ELSE 0 END) as total_nasabah_baru
                 ")
                 ->from('daily_report_fo_details as drfod')
                 ->join('daily_report_fo as drfo', 'drfo.id', '=', 'drfod.daily_report_fo_id')

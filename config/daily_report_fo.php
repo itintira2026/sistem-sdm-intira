@@ -25,10 +25,12 @@ return [
             'start_time' => '08:00',
             'end_time' => '16:00',
             'slots' => [
-                1 => '10:00',
-                2 => '11:30',
-                3 => '14:00',
-                4 => '16:00',
+                1 => '12:00',
+                2 => '16:00',
+                // 1 => '10:00',
+                // 2 => '11:30',
+                // 3 => '14:00',
+                // 4 => '16:00',
             ],
         ],
         'siang' => [
@@ -36,10 +38,12 @@ return [
             'start_time' => '13:00',
             'end_time' => '21:00',
             'slots' => [
-                1 => '14:00',
-                2 => '16:00',
-                3 => '17:30',
-                4 => '20:00',
+                1 => '16:00',
+                2 => '21:00',
+                // 1 => '14:00',
+                // 2 => '16:00',
+                // 3 => '17:30',
+                // 4 => '20:00',
             ],
         ],
     ],
@@ -58,10 +62,10 @@ return [
 
     // Durasi window FO untuk upload laporan (menit)
     // DIUBAH dari 60 → 15 menit
-    'upload_window_minutes' => 30,
+    'upload_window_minutes' => 180,
 
     // Durasi window manager untuk validasi (menit, dihitung setelah window FO tutup)
-    'validation_window_minutes' => 30,
+    'validation_window_minutes' => 60,
 
     /*
     |--------------------------------------------------------------------------

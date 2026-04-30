@@ -19,15 +19,16 @@ class DailyReportFoPhotoCleanupService
      * - Foto dari laporan sebelum 1 Maret 2026 = eligible hapus
      * - Maret 2026 dan April 2026 = aman
      */
-    // public function getThresholdDate(): Carbon
-    // {
-    //     return now()->subMonthsNoOverflow(1)->startOfMonth();
-    // }
-
     public function getThresholdDate(): Carbon
     {
-        return now()->addMonthsNoOverflow(2)->startOfMonth();
+        return now()->subMonthsNoOverflow(1)->startOfMonth();
     }
+
+    //for testing
+    // public function getThresholdDate(): Carbon
+    // {
+    //     return now()->addMonthsNoOverflow(2)->startOfMonth();
+    // }
 
     /**
      * Preview: kalkulasi tanpa menghapus apapun

@@ -26,6 +26,7 @@ class Presensi extends Model
         'tanggal' => 'date',
         'jam' => 'datetime',
     ];
+    // laci,gudang,raung pelayanan, gembok
 
     public function user()
     {
@@ -35,6 +36,11 @@ class Presensi extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    public function closingCabangs()
+{
+    return $this->hasMany(ClosingCabang::class);
+}
     /**
      * Hitung potongan keterlambatan
      *

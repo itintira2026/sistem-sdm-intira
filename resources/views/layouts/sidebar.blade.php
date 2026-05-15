@@ -75,8 +75,9 @@
                 <span x-show="desktopOpen || isMobile">Gaji Saya</span>
             </a>
 
-            <a href="{{ route('presensi-karyawan.index') }}"
-                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi-karyawan.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+            {{-- <a href="{{ route('presensi-karyawan.index') }}" --}}
+            <a href="{{ route('absensi.index') }}"   
+           class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi-karyawan.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                 <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

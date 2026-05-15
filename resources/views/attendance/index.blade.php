@@ -326,13 +326,196 @@
 
                     $disableCheckIn = $hasCheckIn;
                     $disableCheckOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
-                    $disableIstirahatOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat; 
-                    $disableIstirahatIn = !$hasCheckIn || $hasCheckOut || !$sedangIstirahat; 
+                    $disableIstirahatOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
+                    $disableIstirahatIn = !$hasCheckIn || $hasCheckOut || !$sedangIstirahat;
                     @endphp
 
                     <form method="POST" action="{{ route('absensi.store') }}" id="attendanceForm"
                         enctype="multipart/form-data">
                         @csrf
+                        {{-- Upload Foto Closing Cabang --}}
+                        @if(!$disableCheckOut)
+                        <div class="mb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Upload Foto Closing Cabang
+                                    </span>
+                                </label>
+
+                                {{-- Toggle Switch --}}
+                                <button type="button" id="toggleFotoClosing" onclick="toggleUploadClosing()"
+                                    class="relative inline-flex items-center w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none bg-gray-300">
+                                    <span id="toggleKnobClosing"
+                                        class="inline-block w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-300 translate-x-1"></span>
+                                </button>
+                            </div>
+
+                            <p id="toggleStatusClosing" class="text-xs text-gray-400 mb-3">
+                                Aktifkan untuk upload foto closing cabang.
+                            </p>
+
+                            {{-- Upload Section (tersembunyi secara default) --}}
+                            <div id="uploadSectionClosing"
+                                style="overflow:hidden; max-height:0; opacity:0; transition: max-height 0.35s ease, opacity 0.3s ease;">
+
+                                <div id="closingContainer" class="space-y-3">
+                                    {{-- ITEM 1 (default) --}}
+                                    <div
+                                        class="closing-row border border-gray-200 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <select name="kategori[]"
+                                                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-shrink-0"
+                                                disabled>
+                                                <option value="">Pilih Kategori</option>
+                                                <option value="laci">Laci</option>
+                                                <option value="gudang">Gudang</option>
+                                                <option value="ruang_pelayanan">Ruang Pelayanan</option>
+                                                <option value="gembok">Gembok</option>
+                                            </select>
+                                            <button type="button" onclick="removeClosingRow(this)"
+                                                class="ml-auto flex items-center justify-center w-7 h-7 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 transition flex-shrink-0">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white hover:bg-gray-50 transition text-center cursor-pointer"
+                                            onclick="this.querySelector('input[type=file]').click()">
+                                            <input type="file" name="foto[]" accept="image/*" class="hidden" disabled
+                                                onchange="previewClosingPhoto(event, this)">
+                                            <div class="upload-placeholder flex flex-col items-center gap-1">
+                                                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="1.5"
+                                                        d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
+                                                </svg>
+                                                <p class="text-sm text-gray-500 font-medium">Klik untuk upload foto</p>
+                                                <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
+                                            </div>
+                                            <div class="preview-container hidden">
+                                                <img
+                                                    class="preview-img mx-auto rounded-lg shadow-md max-h-32 object-cover">
+                                                <p class="text-xs text-green-600 mt-2 font-medium">✓ Foto berhasil
+                                                    dipilih</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" onclick="addClosingRow()"
+                                    class="mt-3 flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Tambah Foto
+                                </button>
+                            </div>
+                        </div>
+@endif
+                        <script>
+                            let isClosingUploadOn = false;
+
+    function toggleUploadClosing() {
+        isClosingUploadOn = !isClosingUploadOn;
+
+        const btn = document.getElementById('toggleFotoClosing');
+        const knob = document.getElementById('toggleKnobClosing');
+        const section = document.getElementById('uploadSectionClosing');
+        const status = document.getElementById('toggleStatusClosing');
+
+        if (isClosingUploadOn) {
+            btn.classList.replace('bg-gray-300', 'bg-blue-500');
+            knob.classList.replace('translate-x-1', 'translate-x-6');
+            section.style.maxHeight = '1000px';
+            section.style.opacity = '1';
+            status.textContent = 'Upload foto closing cabang aktif.';
+            status.classList.replace('text-gray-400', 'text-blue-500');
+            // enable inputs
+            section.querySelectorAll('input[type=file], select').forEach(el => el.disabled = false);
+        } else {
+            btn.classList.replace('bg-blue-500', 'bg-gray-300');
+            knob.classList.replace('translate-x-6', 'translate-x-1');
+            section.style.maxHeight = '0';
+            section.style.opacity = '0';
+            status.textContent = 'Aktifkan untuk upload foto closing cabang.';
+            status.classList.replace('text-blue-500', 'text-gray-400');
+            // disable inputs agar tidak ikut submit
+            section.querySelectorAll('input[type=file], select').forEach(el => el.disabled = true);
+        }
+    }
+
+    function addClosingRow() {
+        const container = document.getElementById('closingContainer');
+        const row = document.createElement('div');
+        row.className = 'closing-row border border-gray-200 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition';
+        row.innerHTML = `
+            <div class="flex items-center gap-2 mb-2">
+                <select name="kategori[]"
+                    class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-shrink-0">
+                    <option value="">Pilih Kategori</option>
+                    <option value="laci">Laci</option>
+                    <option value="gudang">Gudang</option>
+                    <option value="ruang_pelayanan">Ruang Pelayanan</option>
+                    <option value="gembok">Gembok</option>
+                </select>
+                <button type="button" onclick="removeClosingRow(this)"
+                    class="ml-auto flex items-center justify-center w-7 h-7 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 transition flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white hover:bg-gray-50 transition text-center cursor-pointer"
+                onclick="this.querySelector('input[type=file]').click()">
+                <input type="file" name="foto[]" accept="image/*" class="hidden"
+                    onchange="previewClosingPhoto(event, this)">
+                <div class="upload-placeholder flex flex-col items-center gap-1">
+                    <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4"/>
+                    </svg>
+                    <p class="text-sm text-gray-500 font-medium">Klik untuk upload foto</p>
+                    <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
+                </div>
+                <div class="preview-container hidden">
+                    <img class="preview-img mx-auto rounded-lg shadow-md max-h-32 object-cover">
+                    <p class="text-xs text-green-600 mt-2 font-medium">✓ Foto berhasil dipilih</p>
+                </div>
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    function removeClosingRow(btn) {
+        const rows = document.querySelectorAll('.closing-row');
+        if (rows.length > 1) btn.closest('.closing-row').remove();
+    }
+
+    function previewClosingPhoto(event, input) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const dropArea = input.closest('.relative');
+        const reader = new FileReader();
+        reader.onload = e => {
+            dropArea.querySelector('.preview-img').src = e.target.result;
+            dropArea.querySelector('.upload-placeholder').classList.add('hidden');
+            dropArea.querySelector('.preview-container').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+                        </script>
                         {{-- Upload Foto Outfit --}}
                         {{-- Upload Foto Outfit --}}
                         <div class="mb-6">

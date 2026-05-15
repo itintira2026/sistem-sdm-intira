@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ReportCateory;
 use Illuminate\Http\Request;
 
-class ReportCateoryController extends Controller
+class ReportCategoryController extends Controller
 {
     /**
      * Display a listing of the resource.

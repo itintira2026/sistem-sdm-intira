@@ -78,7 +78,8 @@ class AttendanceController extends Controller
             'photo_outfit'  => 'nullable|image|max:2048',
             // Tambahan:
             'kategori'     => 'nullable|array',
-            'kategori.*'   => 'nullable|string|in:laci,gudang,ruang_pelayanan,gembok',
+            'kategori.*'   => 'required_with:foto.*|string|in:laci,gudang,ruang_pelayanan,gembok',
+            // 'kategori.*'   => 'nullable|string|in:laci,gudang,ruang_pelayanan,gembok',
             'foto'         => 'nullable|array',
             'foto.*'       => 'nullable|image|max:2048',
         ]);

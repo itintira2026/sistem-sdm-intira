@@ -32,79 +32,81 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('auth.login'))->middleware('guest');
+Route::get('/gd-test', function () {
+    dd(gd_info());
+});
+// Route::get('/dashboard', function () {
+//     $today = \Carbon\Carbon::today();
+//     $bulan = $today->month;
+//     $tahun = $today->year;
 
-Route::get('/dashboard', function () {
-    $today = \Carbon\Carbon::today();
-    $bulan = $today->month;
-    $tahun = $today->year;
+//     $totalKaryawan = \App\Models\User::count();
 
-    $totalKaryawan = \App\Models\User::count();
+//     $presensiHariIni = \App\Models\Presensi::whereDate('tanggal', $today)
+//         ->where('status', 'CHECK_IN')
+//         ->with(['user', 'branch'])
+//         ->latest('jam')
+//         ->get();
 
-    $presensiHariIni = \App\Models\Presensi::whereDate('tanggal', $today)
-        ->where('status', 'CHECK_IN')
-        ->with(['user', 'branch'])
-        ->latest('jam')
-        ->get();
+//     $hadirHariIni     = $presensiHariIni->count();
+//     $terlambatHariIni = $presensiHariIni->filter(fn($p) => $p->hitungPotonganTerlambat()['menit_terlambat'] > 0)->count();
+//     $presensiTerbaru  = $presensiHariIni->take(10);
 
-    $hadirHariIni     = $presensiHariIni->count();
-    $terlambatHariIni = $presensiHariIni->filter(fn($p) => $p->hitungPotonganTerlambat()['menit_terlambat'] > 0)->count();
-    $presensiTerbaru  = $presensiHariIni->take(10);
+//     $presensiCheckIn = \App\Models\Presensi::forMonth($bulan, $tahun)
+//         ->checkIn()
+//         ->with('user')
+//         ->get();
 
-    $presensiCheckIn = \App\Models\Presensi::forMonth($bulan, $tahun)
-        ->checkIn()
-        ->with('user')
-        ->get();
+//     $rekapBulanIni = ['hadir' => 0, 'terlambat' => 0, 'izin' => 0, 'absen' => 0];
 
-    $rekapBulanIni = ['hadir' => 0, 'terlambat' => 0, 'izin' => 0, 'absen' => 0];
+//     foreach ($presensiCheckIn as $p) {
+//         $ket = strtolower($p->keterangan ?? '');
+//         if (str_contains($ket, 'sakit') || str_contains($ket, 'izin')) {
+//             $rekapBulanIni['izin']++;
+//         } else {
+//             $pot = $p->hitungPotonganTerlambat();
+//             $pot['menit_terlambat'] > 0 ? $rekapBulanIni['terlambat']++ : $rekapBulanIni['hadir']++;
+//         }
+//     }
+//     $rekapBulanIni['absen'] = max(0, $totalKaryawan - $presensiCheckIn->pluck('user_id')->unique()->count());
 
-    foreach ($presensiCheckIn as $p) {
-        $ket = strtolower($p->keterangan ?? '');
-        if (str_contains($ket, 'sakit') || str_contains($ket, 'izin')) {
-            $rekapBulanIni['izin']++;
-        } else {
-            $pot = $p->hitungPotonganTerlambat();
-            $pot['menit_terlambat'] > 0 ? $rekapBulanIni['terlambat']++ : $rekapBulanIni['hadir']++;
-        }
-    }
-    $rekapBulanIni['absen'] = max(0, $totalKaryawan - $presensiCheckIn->pluck('user_id')->unique()->count());
+//     $topTerlambat = collect();
+//     foreach ($presensiCheckIn->groupBy('user_id') as $records) {
+//         $jumlah = 0;
+//         $totalPot = 0;
+//         foreach ($records as $r) {
+//             $pot = $r->hitungPotonganTerlambat();
+//             if ($pot['menit_terlambat'] > 0) {
+//                 $jumlah++;
+//                 $totalPot += $pot['potongan'];
+//             }
+//         }
+//         if ($jumlah > 0) {
+//             $topTerlambat->push((object)['user' => $records->first()->user, 'jumlah_terlambat' => $jumlah, 'total_potongan' => $totalPot]);
+//         }
+//     }
+//     $topTerlambat = $topTerlambat->sortByDesc('jumlah_terlambat')->take(5);
 
-    $topTerlambat = collect();
-    foreach ($presensiCheckIn->groupBy('user_id') as $records) {
-        $jumlah = 0;
-        $totalPot = 0;
-        foreach ($records as $r) {
-            $pot = $r->hitungPotonganTerlambat();
-            if ($pot['menit_terlambat'] > 0) {
-                $jumlah++;
-                $totalPot += $pot['potongan'];
-            }
-        }
-        if ($jumlah > 0) {
-            $topTerlambat->push((object)['user' => $records->first()->user, 'jumlah_terlambat' => $jumlah, 'total_potongan' => $totalPot]);
-        }
-    }
-    $topTerlambat = $topTerlambat->sortByDesc('jumlah_terlambat')->take(5);
+//     $reportToday    = \App\Models\DailyReportFo::whereDate('tanggal', $today);
+//     $reportPending  = (clone $reportToday)->pendingValidation()->count();
+//     $reportApproved = (clone $reportToday)->approved()->count();
+//     $reportRejected = (clone $reportToday)->rejected()->count();
 
-    $reportToday    = \App\Models\DailyReportFo::whereDate('tanggal', $today);
-    $reportPending  = (clone $reportToday)->pendingValidation()->count();
-    $reportApproved = (clone $reportToday)->approved()->count();
-    $reportRejected = (clone $reportToday)->rejected()->count();
-
-    return view('dashboard', compact(
-        'totalKaryawan',
-        'hadirHariIni',
-        'terlambatHariIni',
-        'presensiTerbaru',
-        'rekapBulanIni',
-        'topTerlambat',
-        'reportPending',
-        'reportApproved',
-        'reportRejected'
-    ));
-})->middleware(['auth', 'verified'])->name('dashboard');
-// Route::get('/dashboard', fn() => view('dashboard'))
-//     ->middleware(['auth', 'verified'])
-//     ->name('dashboard');
+//     return view('dashboard', compact(
+//         'totalKaryawan',
+//         'hadirHariIni',
+//         'terlambatHariIni',
+//         'presensiTerbaru',
+//         'rekapBulanIni',
+//         'topTerlambat',
+//         'reportPending',
+//         'reportApproved',
+//         'reportRejected'
+//     ));
+// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', fn() => view('dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 Route::middleware('auth')->group(function () {
     Route::get('/gaji-pokok/{gajihPokok}/export-pdf', [GajihPokokController::class, 'exportPdf'])
         ->name('gaji-pokok.export-pdf');

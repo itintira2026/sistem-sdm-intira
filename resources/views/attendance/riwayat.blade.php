@@ -179,7 +179,8 @@
                         </button>
 
                         {{-- Body — tersembunyi by default --}}
-                        <div id="acc-{{ $loop->index }}" style="max-height:0; opacity:0; overflow:hidden; transition: max-height 0.35s ease, opacity 0.25s ease;" >
+                        <div id="acc-{{ $loop->index }}"
+                            style="max-height:0; opacity:0; overflow:hidden; transition: max-height 0.35s ease, opacity 0.25s ease;">
                             <div class="p-5">
                                 <div class="flex flex-col gap-5">
 
@@ -259,11 +260,15 @@
 
                                     {{-- Foto-foto di bawah (bukan samping) --}}
                                     @php
+
                                     $photosToShow = $entries->filter(fn($e) => !empty($e->photo))->values();
                                     $outfitPhoto = $entries->where('status', 'CHECK_IN')->first()?->photo_outfit;
+                                    $closingFotos = $entries->flatMap(fn($e) => $e->closingCabangs)->filter(fn($c) =>
+                                    !empty($c->foto))->values();
+
                                     @endphp
 
-                                    @if($photosToShow->count() > 0 || $outfitPhoto)
+                                    @if($photosToShow->count() > 0 || $outfitPhoto )
                                     <div class="border-t border-gray-100 pt-4">
                                         <p class="text-xs text-gray-400 uppercase font-medium mb-3">Foto Absensi</p>
                                         <div class="flex flex-row flex-wrap gap-3">
@@ -319,6 +324,34 @@
                                         </div>
                                     </div>
                                     @endif
+@if($closingFotos->count() > 0)
+<div class="border-t border-gray-100 pt-4">
+    <p class="text-xs text-gray-400 uppercase font-medium mb-3">Foto Closing Cabang</p>
+    <div class="flex flex-row flex-wrap gap-3">
+        @foreach($closingFotos as $closing)
+        <div class="group relative">
+            <div class="relative overflow-hidden rounded-lg cursor-pointer"
+                onclick="openPhoto('{{ Storage::url($closing->foto) }}', '{{ $closing->kategori }}', '{{ \Carbon\Carbon::parse($closing->created_at)->format('H:i') }}')">
+                <img src="{{ Storage::url($closing->foto) }}"
+                    alt="{{ $closing->kategori }}"
+                    class="w-20 h-20 object-cover rounded-lg border-2 border-orange-200 group-hover:border-orange-400 transition-all"
+                    onerror="this.closest('.relative').innerHTML='<div class=\'w-20 h-20 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center\'><svg class=\'w-6 h-6 text-gray-300\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\'/></svg></div>'">
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                </div>
+            </div>
+            <p class="text-center text-xs text-orange-400 mt-1 leading-tight">
+                {{ $closing->kategori }}
+            </p>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
                                 </div>
                             </div>
                         </div>

@@ -367,7 +367,7 @@ class AttendanceController extends Controller
         [$tahun, $bln] = explode('-', $bulan);
 
         // Ambil semua presensi bulan tersebut dengan relasi branch
-        $presensis = Presensi::with('branch')
+        $presensis = Presensi::with(['branch', 'closingCabangs'])
             ->where('user_id', $user->id)
             ->whereYear('tanggal', $tahun)
             ->whereMonth('tanggal', $bln)

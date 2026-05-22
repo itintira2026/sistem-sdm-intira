@@ -45,12 +45,11 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
         $period = CarbonPeriod::create($this->startDate, $this->endDate);
         $dates  = collect($period)->map(fn($d) => $d->format('Y-m-d'));
 
-        // Ambil semua presensi dalam range sekaligus (1 query), eager load closingCabangs
+        // Ambil semua presensi dalam range sekaligus (1 query)
         $allPresensis = Presensi::whereBetween('tanggal', [
             $this->startDate->toDateString(),
             $this->endDate->toDateString(),
         ])
-            ->with('closingCabangs')
             ->whereIn('user_id', $users->pluck('id'))
             ->get()
             ->groupBy(fn($p) => $p->user_id . '_' . $p->tanggal->format('Y-m-d'));
@@ -97,19 +96,18 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                         $statusLabel = '-';
                     }
                     $rows->push([
-                        'nama'            => $user->name,
-                        'branch'          => $branch,
-                        'tanggal'         => $carbonDate->format('d/m/Y'),
-                        'hari'            => $hariNama,
-                        'check_in'        => '-',
-                        'istirahat_out'   => '-',
-                        'istirahat_in'    => '-',
-                        'check_out'       => '-',
-                        'foto_outfit'     => '-',
-                        'foto_closing'    => '-',
-                        'status'          => $statusLabel,
+                        'nama'          => $user->name,
+                        'branch'        => $branch,
+                        'tanggal'       => $carbonDate->format('d/m/Y'),
+                        'hari'          => $hariNama,
+                        'check_in'      => '-',
+                        'istirahat_out' => '-',
+                        'istirahat_in'  => '-',
+                        'check_out'     => '-',
+                        'foto_check_in' => '-',
+                        'status'        => $statusLabel,
                         'menit_terlambat' => '-',
-                        'keterangan'      => 'Tidak ada data absensi',
+                        'keterangan'    => 'Tidak ada data absensi',
                     ]);
                     continue;
                 }
@@ -119,16 +117,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $jamIO  = $istirahatOut ? Carbon::parse($istirahatOut->jam)->format('H:i')  : '-';
                 $jamII  = $istirahatIn  ? Carbon::parse($istirahatIn->jam)->format('H:i')   : '-';
                 $jamCO  = $checkOut     ? Carbon::parse($checkOut->jam)->format('H:i')      : '-';
-
-                // Foto outfit dari check in
-                $fotoOutfit = $checkIn?->photo_outfit ? 'Ada' : 'Tidak Ada';
-
-                // Foto closing dari semua presensi hari itu
-                $closingFotos = $dayData->flatMap(fn($p) => $p->closingCabangs);
-                $fotoClosing  = $closingFotos->count() > 0
-                    ? 'Ada ' . $closingFotos->count() . ' foto (' . $closingFotos->pluck('kategori')->join(', ') . ')'
-                    : 'Tidak Ada';
-
+                $foto   = $checkIn?->photo ? 'Ada' : 'Tidak Ada';
                 $keterangan = $checkIn?->keterangan ?? '-';
 
                 // Hitung potongan & menit terlambat
@@ -162,8 +151,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                     'istirahat_out'   => $jamIO,
                     'istirahat_in'    => $jamII,
                     'check_out'       => $jamCO,
-                    'foto_outfit'     => $fotoOutfit,
-                    'foto_closing'    => $fotoClosing,
+                    'foto_check_in'   => $foto,
                     'status'          => $statusLabel,
                     'menit_terlambat' => $menitTerlambat > 0 ? $menitTerlambat . ' mnt' : '-',
                     'keterangan'      => $keterangan,
@@ -174,7 +162,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
 
             // Update progress ke cache
             if ($this->progressKey) {
-                $percent = (int) round(($processed / $totalUsers) * 90);
+                $percent = (int) round(($processed / $totalUsers) * 90); // max 90%, sisanya untuk write excel
                 Cache::put($this->progressKey, $percent, now()->addMinutes(10));
             }
         }
@@ -182,7 +170,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
         // Simpan info untuk styling nanti
         $this->rows           = $rows;
         $this->rekapTotal     = $rekapTotal;
-        $this->summaryStartRow = $rows->count() + 3;
+        $this->summaryStartRow = $rows->count() + 3; // +2 heading + 1 spacing
 
         return $rows->map(fn($r) => array_values($r));
     }
@@ -198,8 +186,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
             'Istirahat Out',
             'Istirahat In',
             'Check Out',
-            'Foto Outfit',
-            'Foto Closing',
+            'Foto Check In',
             'Status',
             'Menit Terlambat',
             'Keterangan',
@@ -222,18 +209,17 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
             'F' => 14, // Istirahat Out
             'G' => 13, // Istirahat In
             'H' => 12, // Check Out
-            'I' => 15, // Foto Outfit
-            'J' => 35, // Foto Closing
-            'K' => 16, // Status
-            'L' => 16, // Menit Terlambat
-            'M' => 30, // Keterangan
+            'I' => 15, // Foto Check In
+            'J' => 16, // Status
+            'K' => 16, // Menit Terlambat
+            'L' => 30, // Keterangan
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Header row styling
-        $sheet->getStyle('A1:M1')->applyFromArray([
+        $sheet->getStyle('A1:L1')->applyFromArray([
             'font' => [
                 'bold'  => true,
                 'color' => ['argb' => 'FFFFFFFF'],
@@ -259,28 +245,28 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $sheet       = $event->sheet->getDelegate();
-                $lastRow     = $sheet->getHighestRow();
+                $sheet     = $event->sheet->getDelegate();
+                $lastRow   = $sheet->getHighestRow();
                 $lastDataRow = $lastRow;
 
                 // ================================
                 // STYLING TIAP ROW DATA
                 // ================================
                 for ($row = 2; $row <= $lastDataRow; $row++) {
-                    $status = $sheet->getCell('K' . $row)->getValue(); // status sekarang di kolom K
+                    $status = $sheet->getCell('J' . $row)->getValue();
 
                     // Warna per status
                     $bgColor = match (true) {
-                        str_contains((string)$status, 'Tidak Absen')   => 'FFFF0000',
-                        str_contains((string)$status, 'Sakit')         => 'FFFFC000',
-                        str_contains((string)$status, 'Izin')          => 'FFFFC000',
-                        str_contains((string)$status, 'Tidak Lengkap') => 'FFFF7F00',
-                        str_contains((string)$status, 'Hadir Lengkap') => 'FF00B050',
-                        default                                         => null,
+                        str_contains((string)$status, 'Tidak Absen') => 'FFFF0000', // merah
+                        str_contains((string)$status, 'Sakit')       => 'FFFFC000', // kuning
+                        str_contains((string)$status, 'Izin')        => 'FFFFC000', // kuning
+                        str_contains((string)$status, 'Tidak Lengkap') => 'FFFF7F00', // oranye
+                        str_contains((string)$status, 'Hadir Lengkap') => 'FF00B050', // hijau
+                        default                                        => null,
                     };
 
                     if ($bgColor) {
-                        $sheet->getStyle('K' . $row)->applyFromArray([
+                        $sheet->getStyle('J' . $row)->applyFromArray([
                             'fill' => [
                                 'fillType'   => Fill::FILL_SOLID,
                                 'startColor' => ['argb' => $bgColor],
@@ -292,9 +278,10 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                         ]);
                     }
 
-                    // Zebra striping (kolom A-M kecuali K)
+                    // Zebra striping
                     if ($row % 2 === 0) {
-                        foreach (['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'L', 'M'] as $col) {
+                        foreach (range('A', 'I') as $col) {
+                            if ($col === 'J') continue;
                             $sheet->getStyle($col . $row)->applyFromArray([
                                 'fill' => [
                                     'fillType'   => Fill::FILL_SOLID,
@@ -302,10 +289,16 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                                 ],
                             ]);
                         }
+                        $sheet->getStyle('K' . $row)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF2F2F2']],
+                        ]);
+                        $sheet->getStyle('L' . $row)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF2F2F2']],
+                        ]);
                     }
 
                     // Border tipis tiap row
-                    $sheet->getStyle('A' . $row . ':M' . $row)->applyFromArray([
+                    $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
@@ -314,18 +307,12 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                         ],
                     ]);
 
-                    // Center alignment untuk kolom jam, foto & status
-                    foreach (['C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L'] as $col) {
+                    // Center alignment untuk kolom jam & status
+                    foreach (['C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'] as $col) {
                         $sheet->getStyle($col . $row)->getAlignment()
                             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                             ->setVertical(Alignment::VERTICAL_CENTER);
                     }
-
-                    // Foto closing (J) left align + wrap karena teksnya panjang
-                    $sheet->getStyle('J' . $row)->getAlignment()
-                        ->setHorizontal(Alignment::HORIZONTAL_LEFT)
-                        ->setVertical(Alignment::VERTICAL_CENTER)
-                        ->setWrapText(true);
                 }
 
                 // ================================
@@ -337,7 +324,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
 
                 $sheet->mergeCells('A' . $summaryRow . ':C' . $summaryRow);
                 $sheet->setCellValue('A' . $summaryRow, 'REKAP KESELURUHAN');
-                $sheet->getStyle('A' . $summaryRow . ':M' . $summaryRow)->applyFromArray([
+                $sheet->getStyle('A' . $summaryRow . ':L' . $summaryRow)->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12, 'color' => ['argb' => 'FFFFFFFF']],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F4E79']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
@@ -371,7 +358,7 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $sheet->freezePane('A2');
 
                 // Auto filter
-                $sheet->setAutoFilter('A1:M1');
+                $sheet->setAutoFilter('A1:L1');
 
                 // Update progress 100%
                 if ($this->progressKey) {

@@ -166,59 +166,66 @@ class PresensiController extends Controller
     /**
      * Display the specified resource.
      */
-   public function show(Request $request, $userId)
-{
-    $bulan = $request->input('bulan', now()->format('Y-m'));
+    public function show(Request $request, $userId)
+    {
+        $bulan = $request->input('bulan', now()->format('Y-m'));
 
-    $user = User::where('is_active', true)
-        ->with('branches')
-        ->findOrFail($userId);
+        $user = User::where('is_active', true)
+            ->with('branches')
+            ->findOrFail($userId);
 
-    $branch = $user->branches->first();
+        $branch = $user->branches->first();
 
-    $presensis = Presensi::where('user_id', $user->id)
-        ->whereYear('tanggal', substr($bulan, 0, 4))
-        ->whereMonth('tanggal', substr($bulan, 5, 2))
-        ->orderBy('tanggal')
-        ->orderBy('jam')
-        ->get();
+        // $presensis = Presensi::where('user_id', $user->id)
+        //     ->whereYear('tanggal', substr($bulan, 0, 4))
+        //     ->whereMonth('tanggal', substr($bulan, 5, 2))
+        //     ->orderBy('tanggal')
+        //     ->orderBy('jam')
+        //     ->get();
+        $presensis = Presensi::with(['branch', 'closingCabangs']) // tambah closingCabangs
+            ->where('user_id', $user->id)
+            ->whereYear('tanggal', substr($bulan, 0, 4))
+            ->whereMonth('tanggal', substr($bulan, 5, 2))
+            ->orderBy('tanggal')
+            ->orderBy('jam')
+            ->get();
 
-    // Group per tanggal
-    $grouped = $presensis->groupBy(fn($p) => \Carbon\Carbon::parse($p->tanggal)->format('Y-m-d'));
+        // Group per tanggal
+        $grouped = $presensis->groupBy(fn($p) => \Carbon\Carbon::parse($p->tanggal)->format('Y-m-d'));
 
-    // Summary
-    $summary = [
-        'total_hadir'     => 0,
-        'total_terlambat' => 0,
-        'total_izin'      => 0,
-        'total_alpha'     => 0,
-    ];
+        // Summary
+        $summary = [
+            'total_hadir'     => 0,
+            'total_terlambat' => 0,
+            'total_izin'      => 0,
+            'total_alpha'     => 0,
+        ];
 
-    foreach ($grouped as $tanggal => $entries) {
-        $checkIn = $entries->where('status', 'CHECK_IN')->first();
+        foreach ($grouped as $tanggal => $entries) {
+            $checkIn = $entries->where('status', 'CHECK_IN')->first();
 
-        if (!$checkIn) {
-            $summary['total_alpha']++;
-        } elseif ($checkIn->keterangan && (
-            str_contains(strtolower($checkIn->keterangan), 'izin') ||
-            str_contains(strtolower($checkIn->keterangan), 'sakit')
-        )) {
-            $summary['total_izin']++;
-        } else {
-            $jamCI = \Carbon\Carbon::parse($checkIn->jam);
-            $hour  = $jamCI->hour;
-            $late  = false;
-            if ($hour >= 8 && $hour < 12) {
-                $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 08:00:00'));
-            } elseif ($hour > 13 && $hour <= 21) {
-                $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 13:00:00'));
+            if (!$checkIn) {
+                $summary['total_alpha']++;
+            } elseif ($checkIn->keterangan && (
+                str_contains(strtolower($checkIn->keterangan), 'izin') ||
+                str_contains(strtolower($checkIn->keterangan), 'sakit')
+            )) {
+                $summary['total_izin']++;
+            } else {
+                $jamCI = \Carbon\Carbon::parse($checkIn->jam);
+                $hour  = $jamCI->hour;
+                $late  = false;
+                if ($hour >= 8 && $hour < 12) {
+                    $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 08:00:00'));
+                } elseif ($hour > 13 && $hour <= 21) {
+                    $late = $jamCI->gt(\Carbon\Carbon::parse($tanggal . ' 13:00:00'));
+                }
+                $late ? $summary['total_terlambat']++ : $summary['total_hadir']++;
             }
-            $late ? $summary['total_terlambat']++ : $summary['total_hadir']++;
         }
-    }
 
-    return view('presensi.show', compact('user', 'bulan', 'branch', 'grouped', 'summary'));
-}
+        return view('presensi.show', compact('user', 'bulan', 'branch', 'grouped', 'summary'));
+    }
     // public function show(Request $request, $userId)
     // {
     //     $tanggal = $request->input('tanggal', now()->toDateString());

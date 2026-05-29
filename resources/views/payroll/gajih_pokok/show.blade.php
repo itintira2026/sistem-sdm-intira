@@ -226,7 +226,7 @@
                     </div>
 
                     <!-- Tabel Potongan Keterlambatan -->
-                    <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                    {{-- <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">Potongan Keterlambatan</h3>
@@ -328,7 +328,7 @@
                                 </div>
                             @endif
                         </div>
-                    </div>
+                    </div> --}}
 
                     <!-- Tabel Potongan & Tambahan dari Model Potongan -->
                     <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
@@ -447,11 +447,11 @@
                                     <span class="font-medium">Gaji Kotor</span>
                                     <span class="font-bold">Rp {{ number_format($gajiKotor, 0, ',', '.') }}</span>
                                 </div>
-                                <div class="flex items-center justify-between">
+                                {{-- <div class="flex items-center justify-between">
                                     <span class="text-sm">Potongan Keterlambatan</span>
                                     <span class="text-sm font-semibold text-red-200">- Rp
                                         {{ number_format($totalPotonganTerlambat, 0, ',', '.') }}</span>
-                                </div>
+                                </div> --}}
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">Potongan Lainnya</span>
                                     <span class="text-sm font-semibold text-red-200">- Rp

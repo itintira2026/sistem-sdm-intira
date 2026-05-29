@@ -258,10 +258,10 @@
                             <td class="item-label">Potongan KPI<br><span class="item-sub">{{ $gajihPokok->persentase_kpi }}%</span></td>
                             <td class="item-value val-red">{{ number_format($gajihPokok->bonus_kpi, 0, ',', '.') }}</td>
                         </tr>
-                        <tr>
+                        {{-- <tr>
                             <td class="item-label">Keterlambatan<br><span class="item-sub">{{ count($dataPotonganTerlambat) }}x kejadian</span></td>
                             <td class="item-value val-red">{{ number_format($totalPotonganTerlambat, 0, ',', '.') }}</td>
-                        </tr>
+                        </tr> --}}
                         @if($totalPotonganLain > 0)
                         <tr>
                             <td class="item-label">Potongan Lain</td>
@@ -313,7 +313,7 @@
         </table>
     </div>
 
-    @if(count($dataPotonganTerlambat) > 0 || count($potongans) > 0)
+    {{-- @if(count($dataPotonganTerlambat) > 0 || count($potongans) > 0)
     <div class="section-title">Rincian Potongan &amp; Tambahan</div>
     <table class="detail-table">
         <thead>
@@ -368,7 +368,7 @@
             </tr>
         </tfoot>
     </table>
-    @endif
+    @endif --}}
 
     <div class="sig-wrap">
         <table class="sig-table">

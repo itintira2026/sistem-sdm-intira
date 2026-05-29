@@ -338,8 +338,8 @@ class AttendanceController extends Controller
             $statusMessages = [
                 'CHECK_IN'     => 'Selamat bekerja! Check In berhasil.',
                 'CHECK_OUT'    => 'Hati-hati di jalan! Check Out berhasil.',
-                'ISTIRAHAT_IN' => 'Selamat beristirahat!',
-                'ISTIRAHAT_OUT' => 'Selamat bekerja kembali!',
+                'ISTIRAHAT_IN' => 'Selamat bekerja kembali!',
+                'ISTIRAHAT_OUT' => 'Selamat beristirahat!',
             ];
 
             $message = $statusMessages[$request->status] ?? 'Absensi berhasil.';

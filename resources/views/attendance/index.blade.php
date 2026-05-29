@@ -20,52 +20,51 @@
                     <span class="hidden sm:inline">Riwayat</span>
                 </a>
 
-                {{-- Branch Switcher (untuk user dengan multiple branch) --}}
+                {{-- Branch Switcher (untuk user dengan multiple branch)
                 @if ($userBranches->count() > 1)
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open"
-                            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
-                            </svg>
-                            <span>{{ $activeBranch->name ?? 'Pilih Cabang' }}</span>
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+                        </svg>
+                        <span>{{ $activeBranch->name ?? 'Pilih Cabang' }}</span>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
 
-                        <div x-show="open" @click.away="open = false"
-                            class="absolute right-0 z-50 w-64 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
-                            <div class="p-2">
-                                @foreach ($userBranches as $branch)
-                                    <a href="{{ route('branch.switch', $branch->id) }}"
-                                        class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50
+                    <div x-show="open" @click.away="open = false"
+                        class="absolute right-0 z-50 w-64 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <div class="p-2">
+                            @foreach ($userBranches as $branch)
+                            <a href="{{ route('branch.switch', $branch->id) }}"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50
                                 {{ $branch->id === ($activeBranch->id ?? null) ? 'bg-blue-50 text-blue-600' : 'text-gray-700' }}">
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium">{{ $branch->name }}</p>
-                                            <p class="text-xs text-gray-500">
-                                                @if ($branch->pivot->is_manager ?? false)
-                                                    <span class="text-yellow-600">Manager</span>
-                                                @else
-                                                    Staff
-                                                @endif
-                                            </p>
-                                        </div>
-                                        @if ($branch->id === ($activeBranch->id ?? null))
-                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 13l4 4L19 7" />
-                                            </svg>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">{{ $branch->name }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        @if ($branch->pivot->is_manager ?? false)
+                                        <span class="text-yellow-600">Manager</span>
+                                        @else
+                                        Staff
                                         @endif
-                                    </a>
-                                @endforeach
-                            </div>
+                                    </p>
+                                </div>
+                                @if ($branch->id === ($activeBranch->id ?? null))
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                @endif
+                            </a>
+                            @endforeach
                         </div>
                     </div>
-                @endif
+                </div>
+                @endif --}}
             </div>
         </div>
     </x-slot>
@@ -75,27 +74,27 @@
 
             {{-- Alert Messages --}}
             @if (session('success'))
-                <div class="p-4 mb-4 text-green-700 bg-green-100 border border-green-400 rounded-lg" role="alert">
-                    <div class="flex items-center gap-3">
-                        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ session('success') }}</span>
-                    </div>
+            <div class="p-4 mb-4 text-green-700 bg-green-100 border border-green-400 rounded-lg" role="alert">
+                <div class="flex items-center gap-3">
+                    <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ session('success') }}</span>
                 </div>
+            </div>
             @endif
 
             @if (session('error'))
-                <div class="p-4 mb-4 text-red-700 bg-red-100 border border-red-400 rounded-lg" role="alert">
-                    <div class="flex items-center gap-3">
-                        <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{!! session('error') !!}</span>
-                    </div>
+            <div class="p-4 mb-4 text-red-700 bg-red-100 border border-red-400 rounded-lg" role="alert">
+                <div class="flex items-center gap-3">
+                    <svg class="flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{!! session('error') !!}</span>
                 </div>
+            </div>
             @endif
 
             {{-- Info Card --}}
@@ -108,19 +107,20 @@
                             <p class="mb-1 text-xs font-medium text-gray-500 uppercase">Nama</p>
                             <div class="flex items-center gap-2">
                                 @if ($user->profile_photo)
-                                    <img src="{{ Storage::url($user->profile_photo) }}" alt=""
-                                        class="object-cover w-8 h-8 rounded-full">
+                                <img src="{{ Storage::url($user->profile_photo) }}" alt=""
+                                    class="object-cover w-8 h-8 rounded-full">
                                 @else
-                                    <div class="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                                        <span class="text-sm font-medium text-blue-600">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                        </span>
-                                    </div>
+                                <div class="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                                    <span class="text-sm font-medium text-blue-600">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </span>
+                                </div>
                                 @endif
                                 <p class="text-sm font-semibold text-gray-800">{{ $user->name }}</p>
                             </div>
                         </div>
 
+                        {{-- Cabang Aktif --}}
                         {{-- Cabang Aktif --}}
                         <div class="p-3 border border-gray-200 rounded-lg bg-gray-50">
                             <p class="mb-1 text-xs font-medium text-gray-500 uppercase">Cabang Aktif</p>
@@ -131,12 +131,11 @@
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
                                 </svg>
                                 <div>
-                                    <p class="text-sm font-semibold text-gray-800">
+                                    <p class="text-sm font-semibold text-gray-800" id="activeBranchName">
                                         {{ $activeBranch->name ?? '-' }}
                                     </p>
                                     @if ($userBranches->count() > 1)
-                                        <p class="text-xs text-gray-500">{{ $userBranches->count() }} cabang terdaftar
-                                        </p>
+                                    <p class="text-xs text-gray-500">{{ $userBranches->count() }} cabang terdaftar</p>
                                     @endif
                                 </div>
                             </div>
@@ -154,15 +153,17 @@
                                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 @if ($activeBranch)
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-800">{{ $activeBranch->name }}</p>
-                                        <p class="text-xs text-gray-500">
-                                            Lat: {{ substr($activeBranch->latitude, 0, 8) }}... |
-                                            Long: {{ substr($activeBranch->longitude, 0, 8) }}...
-                                        </p>
-                                    </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800" id="nearestBranchNameLabel">
+                                        {{ $activeBranch->name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500" id="nearestBranchCoords">
+                                        Lat: {{ substr($activeBranch->latitude, 0, 8) }}... |
+                                        Long: {{ substr($activeBranch->longitude, 0, 8) }}...
+                                    </p>
+                                </div>
                                 @else
-                                    <p class="text-sm text-gray-500">Tidak ada data</p>
+                                <p class="text-sm text-gray-500">Tidak ada data</p>
                                 @endif
                             </div>
                         </div>
@@ -186,35 +187,34 @@
 
                     {{-- Info multiple branch --}}
                     @if ($userBranches->count() > 1)
-                        <div class="p-3 mt-4 border border-blue-200 rounded-lg bg-blue-50">
-                            <div class="flex items-start gap-3">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <div>
-                                    <p class="text-sm font-medium text-blue-800">
-                                        Anda terdaftar di {{ $userBranches->count() }} cabang
-                                    </p>
-                                    <p class="mt-1 text-xs text-blue-600">
-                                        Sistem akan otomatis memilih cabang terdekat dari lokasi Anda.
-                                    </p>
-                                    <div class="flex flex-wrap gap-2 mt-2">
-                                        @foreach ($userBranches as $branch)
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                                        {{ $branch->id === ($activeBranch->id ?? null) ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800' }}">
-                                                {{ $branch->name }}
-                                                @if ($branch->pivot->is_manager ?? false)
-                                                    (Mgr)
-                                                @endif
-                                            </span>
-                                        @endforeach
-                                    </div>
+                    <div class="p-3 mt-4 border border-blue-200 rounded-lg bg-blue-50">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="text-sm font-medium text-blue-800">
+                                    Anda terdaftar di {{ $userBranches->count() }} cabang
+                                </p>
+                                <p class="mt-1 text-xs text-blue-600">
+                                    Sistem akan otomatis memilih cabang terdekat dari lokasi Anda.
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    @foreach ($userBranches as $branch)
+                                    <span id="branchBadge-{{ $branch->id }}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+    {{ $branch->id === ($activeBranch->id ?? null) ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800' }}">
+                                        {{ $branch->name }}
+                                        @if ($branch->pivot->is_manager ?? false)
+                                        (Mgr)
+                                        @endif
+                                    </span>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -224,104 +224,107 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-medium text-gray-900">Riwayat Absensi Hari Ini</h3>
-                        <span class="text-sm text-gray-500">{{ $todayPresensis->count() }} kali absensi</span>
+                        {{-- <span class="text-sm text-gray-500">{{ $todayPresensis->count() }} kali absensi</span> --}}
+                        <a href="{{ route('absensi.riwayat') }}"
+                            class="flex items-center gap-2 px-4 py-2 text-sm font-medium transition rounded-lg text-violet-950 bg-violet-50 hover:bg-violet-100">
+
+                            <span class="">Lihat Riwayat</span>
+                        </a>
                     </div>
 
                     <div class="overflow-hidden border border-gray-200 rounded-lg">
                         @forelse($todayPresensis as $item)
-                            @php
-                                $colorMap = [
-                                    'CHECK_IN' => [
-                                        'bg' => 'bg-green-100',
-                                        'text' => 'text-green-600',
-                                        'badge' => 'bg-green-100
+                        @php
+                        $colorMap = [
+                        'CHECK_IN' => [
+                        'bg' => 'bg-green-100',
+                        'text' => 'text-green-600',
+                        'badge' => 'bg-green-100
                         text-green-800',
-                                    ],
-                                    'CHECK_OUT' => [
-                                        'bg' => 'bg-red-100',
-                                        'text' => 'text-red-600',
-                                        'badge' => 'bg-red-100
+                        ],
+                        'CHECK_OUT' => [
+                        'bg' => 'bg-red-100',
+                        'text' => 'text-red-600',
+                        'badge' => 'bg-red-100
                         text-red-800',
-                                    ],
-                                    'ISTIRAHAT_IN' => [
-                                        'bg' => 'bg-yellow-100',
-                                        'text' => 'text-yellow-600',
-                                        'badge' => 'bg-yellow-100 text-yellow-800',
-                                    ],
-                                    'ISTIRAHAT_OUT' => [
-                                        'bg' => 'bg-blue-100',
-                                        'text' => 'text-blue-600',
-                                        'badge' => 'bg-blue-100
+                        ],
+                        'ISTIRAHAT_IN' => [
+                        'bg' => 'bg-yellow-100',
+                        'text' => 'text-yellow-600',
+                        'badge' => 'bg-yellow-100 text-yellow-800',
+                        ],
+                        'ISTIRAHAT_OUT' => [
+                        'bg' => 'bg-blue-100',
+                        'text' => 'text-blue-600',
+                        'badge' => 'bg-blue-100
                         text-blue-800',
-                                    ],
-                                ];
-                                $color = $colorMap[$item->status] ?? [
-                                    'bg' => 'bg-gray-100',
-                                    'text' => 'text-gray-600',
-                                    'badge' => 'bg-gray-100 text-gray-800',
-                                ];
-                            @endphp
-                            <div
-                                class="flex items-center justify-between px-4 py-3
+                        ],
+                        ];
+                        $color = $colorMap[$item->status] ?? [
+                        'bg' => 'bg-gray-100',
+                        'text' => 'text-gray-600',
+                        'badge' => 'bg-gray-100 text-gray-800',
+                        ];
+                        @endphp
+                        <div class="flex items-center justify-between px-4 py-3
                             {{ !$loop->last ? 'border-b border-gray-100' : '' }}">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-8 h-8 rounded-full flex items-center justify-center {{ $color['bg'] }}">
-                                        <svg class="w-4 h-4 {{ $color['text'] }}" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            @if ($item->status === 'CHECK_IN')
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                            @elseif($item->status === 'CHECK_OUT')
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                            @elseif($item->status === 'ISTIRAHAT_IN')
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            @else
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            @endif
-                                        </svg>
-                                    </div>
-
-                                    <div>
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $color['badge'] }}">
-                                            {{ str_replace('_', ' ', $item->status) }}
-                                        </span>
-                                        @if ($item->branch)
-                                            <p class="mt-1 text-xs text-gray-500">
-                                                {{ $item->branch->name }}
-                                                @if ($item->jarak)
-                                                    <span class="ml-2">({{ $item->jarak_formatted }} dari
-                                                        kantor)</span>
-                                                @endif
-                                            </p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center {{ $color['bg'] }}">
+                                    <svg class="w-4 h-4 {{ $color['text'] }}" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        @if ($item->status === 'CHECK_IN')
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                        @elseif($item->status === 'CHECK_OUT')
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        @elseif($item->status === 'ISTIRAHAT_IN')
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        @else
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         @endif
-                                    </div>
+                                    </svg>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {{ \Carbon\Carbon::parse($item->jam)->format('H:i:s') }}
+
+                                <div>
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $color['badge'] }}">
+                                        {{ str_replace('_', ' ', $item->status) }}
+                                    </span>
+                                    @if ($item->branch)
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        {{ $item->branch->name }}
+                                        @if ($item->jarak)
+                                        <span class="ml-2">({{ $item->jarak_formatted }} dari
+                                            kantor)</span>
+                                        @endif
                                     </p>
-                                    <p class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($item->jam)->format('d M Y') }}
-                                    </p>
+                                    @endif
                                 </div>
                             </div>
-                        @empty
-                            <div class="px-4 py-8 text-center">
-                                <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p class="text-sm text-gray-400">Belum ada absensi hari ini</p>
-                                <p class="mt-1 text-xs text-gray-300">Silakan lakukan absensi menggunakan tombol di
-                                    bawah
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ \Carbon\Carbon::parse($item->jam)->format('H:i:s') }}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($item->jam)->format('d M Y') }}
                                 </p>
                             </div>
+                        </div>
+                        @empty
+                        <div class="px-4 py-8 text-center">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-sm text-gray-400">Belum ada absensi hari ini</p>
+                            <p class="mt-1 text-xs text-gray-300">Silakan lakukan absensi menggunakan tombol di
+                                bawah
+                            </p>
+                        </div>
                         @endforelse
                     </div>
                 </div>
@@ -331,27 +334,27 @@
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     @php
-                        // $hasCheckIn = $todayPresensis->where('status', 'CHECK_IN')->isNotEmpty();
-                        // $hasCheckOut = $todayPresensis->where('status', 'CHECK_OUT')->isNotEmpty();
-                        // $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
-                        // $istirahatOut = $todayPresensis->where('status', 'ISTIRAHAT_OUT')->count();
-                        // $sedangIstirahat = $istirahatIn > $istirahatOut;
+                    // $hasCheckIn = $todayPresensis->where('status', 'CHECK_IN')->isNotEmpty();
+                    // $hasCheckOut = $todayPresensis->where('status', 'CHECK_OUT')->isNotEmpty();
+                    // $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
+                    // $istirahatOut = $todayPresensis->where('status', 'ISTIRAHAT_OUT')->count();
+                    // $sedangIstirahat = $istirahatIn > $istirahatOut;
 
-                        // // Disabled logic per tombol
-                        // $disableCheckIn = $hasCheckIn;
-                        // $disableCheckOut = !$hasCheckIn || $hasCheckOut;
-                        // $disableIstirahatIn = !$hasCheckIn || $sedangIstirahat || $hasCheckOut;
-                        // $disableIstirahatOut= $istirahatIn === 0 || !$sedangIstirahat;
-                        $hasCheckIn = $todayPresensis->where('status', 'CHECK_IN')->isNotEmpty();
-                        $hasCheckOut = $todayPresensis->where('status', 'CHECK_OUT')->isNotEmpty();
-                        $istirahatOut = $todayPresensis->where('status', 'ISTIRAHAT_OUT')->count();
-                        $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
-                        $sedangIstirahat = $istirahatOut > $istirahatIn; // Sedang di luar (istirahat)
+                    // // Disabled logic per tombol
+                    // $disableCheckIn = $hasCheckIn;
+                    // $disableCheckOut = !$hasCheckIn || $hasCheckOut;
+                    // $disableIstirahatIn = !$hasCheckIn || $sedangIstirahat || $hasCheckOut;
+                    // $disableIstirahatOut= $istirahatIn === 0 || !$sedangIstirahat;
+                    $hasCheckIn = $todayPresensis->where('status', 'CHECK_IN')->isNotEmpty();
+                    $hasCheckOut = $todayPresensis->where('status', 'CHECK_OUT')->isNotEmpty();
+                    $istirahatOut = $todayPresensis->where('status', 'ISTIRAHAT_OUT')->count();
+                    $istirahatIn = $todayPresensis->where('status', 'ISTIRAHAT_IN')->count();
+                    $sedangIstirahat = $istirahatOut > $istirahatIn; // Sedang di luar (istirahat)
 
-                        $disableCheckIn = $hasCheckIn;
-                        $disableCheckOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
-                        $disableIstirahatOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
-                        $disableIstirahatIn = !$hasCheckIn || $hasCheckOut || !$sedangIstirahat;
+                    $disableCheckIn = $hasCheckIn;
+                    $disableCheckOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
+                    $disableIstirahatOut = !$hasCheckIn || $hasCheckOut || $sedangIstirahat;
+                    $disableIstirahatIn = !$hasCheckIn || $hasCheckOut || !$sedangIstirahat;
                     @endphp
 
                     <form method="POST" action="{{ route('absensi.store') }}" id="attendanceForm"
@@ -359,96 +362,95 @@
                         @csrf
                         {{-- Upload Foto Closing Cabang --}}
                         @if (!$disableCheckOut)
-                            <div class="mb-6">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        <span class="flex items-center gap-2">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            Upload Foto Closing Cabang
-                                        </span>
-                                    </label>
+                        <div class="mb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Upload Foto Closing Cabang
+                                    </span>
+                                </label>
 
-                                    {{-- Toggle Switch --}}
-                                    <button type="button" id="toggleFotoClosing" onclick="toggleUploadClosing()"
-                                        class="relative inline-flex items-center h-6 transition-colors duration-300 bg-gray-300 rounded-full w-11 focus:outline-none">
-                                        <span id="toggleKnobClosing"
-                                            class="inline-block w-4 h-4 transition-transform duration-300 transform translate-x-1 bg-white rounded-full shadow"></span>
-                                    </button>
-                                </div>
+                                {{-- Toggle Switch --}}
+                                <button type="button" id="toggleFotoClosing" onclick="toggleUploadClosing()"
+                                    class="relative inline-flex items-center h-6 transition-colors duration-300 bg-gray-300 rounded-full w-11 focus:outline-none">
+                                    <span id="toggleKnobClosing"
+                                        class="inline-block w-4 h-4 transition-transform duration-300 transform translate-x-1 bg-white rounded-full shadow"></span>
+                                </button>
+                            </div>
 
-                                <p id="toggleStatusClosing" class="mb-3 text-xs text-gray-400">
-                                    Aktifkan untuk upload foto closing cabang.
-                                </p>
+                            <p id="toggleStatusClosing" class="mb-3 text-xs text-gray-400">
+                                Aktifkan untuk upload foto closing cabang.
+                            </p>
 
-                                {{-- Upload Section (tersembunyi secara default) --}}
-                                <div id="uploadSectionClosing"
-                                    style="overflow:hidden; max-height:0; opacity:0; transition: max-height 0.35s ease, opacity 0.3s ease;">
+                            {{-- Upload Section (tersembunyi secara default) --}}
+                            <div id="uploadSectionClosing"
+                                style="overflow:hidden; max-height:0; opacity:0; transition: max-height 0.35s ease, opacity 0.3s ease;">
 
-                                    <div id="closingContainer" class="space-y-3">
-                                        {{-- ITEM 1 (default) --}}
-                                        <div
-                                            class="p-3 transition border border-gray-200 rounded-lg closing-row bg-gray-50 hover:bg-gray-100">
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <select name="kategori[]"
-                                                    class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-shrink-0"
-                                                    disabled>
-                                                    <option value="">Pilih Kategori</option>
-                                                    <option value="laci">Laci</option>
-                                                    <option value="gudang">Gudang</option>
-                                                    <option value="ruang_pelayanan">Ruang Pelayanan</option>
-                                                    <option value="gembok">Gembok</option>
-                                                </select>
-                                                <button type="button" onclick="removeClosingRow(this)"
-                                                    class="flex items-center justify-center flex-shrink-0 ml-auto text-red-400 transition rounded-full w-7 h-7 bg-red-50 hover:bg-red-100 hover:text-red-600">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
+                                <div id="closingContainer" class="space-y-3">
+                                    {{-- ITEM 1 (default) --}}
+                                    <div
+                                        class="p-3 transition border border-gray-200 rounded-lg closing-row bg-gray-50 hover:bg-gray-100">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <select name="kategori[]"
+                                                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-shrink-0"
+                                                disabled>
+                                                <option value="">Pilih Kategori</option>
+                                                <option value="laci">Laci</option>
+                                                <option value="gudang">Gudang</option>
+                                                <option value="ruang_pelayanan">Ruang Pelayanan</option>
+                                                <option value="gembok">Gembok</option>
+                                            </select>
+                                            <button type="button" onclick="removeClosingRow(this)"
+                                                class="flex items-center justify-center flex-shrink-0 ml-auto text-red-400 transition rounded-full w-7 h-7 bg-red-50 hover:bg-red-100 hover:text-red-600">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="relative p-4 text-center transition bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50"
+                                            onclick="this.querySelector('input[type=file]').click()">
+                                            <input type="file" name="foto[]" accept="image/*" class="hidden" disabled
+                                                onchange="previewClosingPhoto(event, this)">
+                                            <div class="flex flex-col items-center gap-1 upload-placeholder">
+                                                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="1.5"
+                                                        d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
+                                                </svg>
+                                                <p class="text-sm font-medium text-gray-500">Klik untuk upload foto
+                                                </p>
+                                                <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
                                             </div>
-                                            <div class="relative p-4 text-center transition bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50"
-                                                onclick="this.querySelector('input[type=file]').click()">
-                                                <input type="file" name="foto[]" accept="image/*" class="hidden"
-                                                    disabled onchange="previewClosingPhoto(event, this)">
-                                                <div class="flex flex-col items-center gap-1 upload-placeholder">
-                                                    <svg class="w-8 h-8 text-gray-300" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="1.5"
-                                                            d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
-                                                    </svg>
-                                                    <p class="text-sm font-medium text-gray-500">Klik untuk upload foto
-                                                    </p>
-                                                    <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
-                                                </div>
-                                                <div class="hidden preview-container">
-                                                    <img
-                                                        class="object-cover mx-auto rounded-lg shadow-md preview-img max-h-32">
-                                                    <p class="mt-2 text-xs font-medium text-green-600">✓ Foto berhasil
-                                                        dipilih</p>
-                                                </div>
+                                            <div class="hidden preview-container">
+                                                <img
+                                                    class="object-cover mx-auto rounded-lg shadow-md preview-img max-h-32">
+                                                <p class="mt-2 text-xs font-medium text-green-600">✓ Foto berhasil
+                                                    dipilih</p>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <button type="button" onclick="addClosingRow()"
-                                        class="mt-3 flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Tambah Foto
-                                    </button>
                                 </div>
+
+                                <button type="button" onclick="addClosingRow()"
+                                    class="mt-3 flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Tambah Foto
+                                </button>
                             </div>
+                        </div>
                         @endif
                         <script>
                             let isClosingUploadOn = false;
@@ -557,60 +559,58 @@
                             </label>
 
                             @if ($disableCheckIn)
-                                {{-- Sudah Check In: tampilkan pesan disabled --}}
-                                <div
-                                    class="p-6 text-center border-2 border-gray-200 border-dashed rounded-lg bg-gray-50">
-                                    <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                    </svg>
-                                    <p class="text-sm font-medium text-gray-400">Upload foto outfit tidak tersedia</p>
-                                    <p class="mt-1 text-xs text-gray-300">Foto outfit hanya dapat diupload saat Check
-                                        In</p>
+                            {{-- Sudah Check In: tampilkan pesan disabled --}}
+                            <div class="p-6 text-center border-2 border-gray-200 border-dashed rounded-lg bg-gray-50">
+                                <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                                <p class="text-sm font-medium text-gray-400">Upload foto outfit tidak tersedia</p>
+                                <p class="mt-1 text-xs text-gray-300">Foto outfit hanya dapat diupload saat Check
+                                    In</p>
 
-                                    {{-- Tampilkan foto outfit yang sudah diupload jika ada --}}
-                                    @php
-                                        $outfitPhoto = $todayPresensis->where('status', 'CHECK_IN')->first()
-                                            ?->photo_outfit;
-                                    @endphp
-                                    @if ($outfitPhoto)
-                                        <div class="mt-3">
-                                            <img src="{{ Storage::url($outfitPhoto) }}"
-                                                class="object-cover mx-auto rounded-lg shadow-md max-h-32 opacity-60">
-                                            <p class="mt-1 text-xs text-gray-400">Foto outfit hari ini</p>
-                                        </div>
-                                    @endif
+                                {{-- Tampilkan foto outfit yang sudah diupload jika ada --}}
+                                @php
+                                $outfitPhoto = $todayPresensis->where('status', 'CHECK_IN')->first()
+                                ?->photo_outfit;
+                                @endphp
+                                @if ($outfitPhoto)
+                                <div class="mt-3">
+                                    <img src="{{ Storage::url($outfitPhoto) }}"
+                                        class="object-cover mx-auto rounded-lg shadow-md max-h-32 opacity-60">
+                                    <p class="mt-1 text-xs text-gray-400">Foto outfit hari ini</p>
                                 </div>
-                                <input type="hidden" name="photo_outfit" value="">
+                                @endif
+                            </div>
+                            <input type="hidden" name="photo_outfit" value="">
                             @else
-                                {{-- Belum Check In: tampilkan upload --}}
-                                <p class="mb-3 text-xs text-gray-500">
-                                    Upload foto outfit sebelum Check In. Hanya bisa diupload 1x per hari.
-                                </p>
+                            {{-- Belum Check In: tampilkan upload --}}
+                            <p class="mb-3 text-xs text-gray-500">
+                                Upload foto outfit sebelum Check In. Hanya bisa diupload 1x per hari.
+                            </p>
 
-                                <div
-                                    class="relative p-6 text-center transition border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 hover:bg-gray-100">
-                                    <input type="file" name="photo_outfit" id="photo_outfit" accept="image/*"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        onchange="previewOutfit(event)">
+                            <div
+                                class="relative p-6 text-center transition border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 hover:bg-gray-100">
+                                <input type="file" name="photo_outfit" id="photo_outfit" accept="image/*"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    onchange="previewOutfit(event)">
 
-                                    <div id="uploadPlaceholder" class="flex flex-col items-center gap-2">
-                                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
-                                        </svg>
-                                        <p class="text-sm font-medium text-gray-600">Klik untuk upload foto</p>
-                                        <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
-                                    </div>
-
-                                    <div id="outfitPreviewContainer" class="hidden">
-                                        <img id="outfitPreview"
-                                            class="object-cover mx-auto rounded-lg shadow-md max-h-48">
-                                        <p class="mt-2 text-xs font-medium text-green-600">Foto berhasil dipilih</p>
-                                    </div>
+                                <div id="uploadPlaceholder" class="flex flex-col items-center gap-2">
+                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M3 16l4-4a3 3 0 014 0l4 4m0 0l4-4a3 3 0 014 0l1 1M3 16v4a1 1 0 001 1h16a1 1 0 001-1v-4" />
+                                    </svg>
+                                    <p class="text-sm font-medium text-gray-600">Klik untuk upload foto</p>
+                                    <p class="text-xs text-gray-400">JPG / PNG • Maks 2MB</p>
                                 </div>
+
+                                <div id="outfitPreviewContainer" class="hidden">
+                                    <img id="outfitPreview" class="object-cover mx-auto rounded-lg shadow-md max-h-48">
+                                    <p class="mt-2 text-xs font-medium text-green-600">Foto berhasil dipilih</p>
+                                </div>
+                            </div>
                             @endif
                         </div>
 
@@ -728,8 +728,8 @@
 
                             <div id="nearestBranchInfo" class="hidden mt-2">
                                 <div class="flex items-center gap-2 p-2 border border-blue-200 rounded-lg bg-blue-50">
-                                    <svg class="flex-shrink-0 w-4 h-4 text-blue-600" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="flex-shrink-0 w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -931,7 +931,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                <p class="text-xs text-yellow-700">Kedip dulu ya, hehe...</p>
+                                <p class="text-xs text-yellow-700">Kedip dulu dan jangan senyum dulu ya, hehe...</p>
 
                             </div>`);
                         }
@@ -1229,6 +1229,30 @@
             if (!nearest) return;
             const dist = Math.round(minDist);
             const ok = minDist <= 150;
+
+// ── Update card info ──
+const nameEl = document.getElementById('activeBranchName');
+const labelEl = document.getElementById('nearestBranchNameLabel');
+const coordsEl = document.getElementById('nearestBranchCoords');
+if (nameEl) nameEl.textContent = nearest.name;
+if (labelEl) labelEl.textContent = nearest.name;
+if (coordsEl) coordsEl.textContent =
+    `Lat: ${String(nearest.latitude).substring(0, 8)}... | Long: ${String(nearest.longitude).substring(0, 8)}...`;
+
+
+       // ── Update badge cabang ──  // [ttambahkan di sini]
+    allBranches.forEach(branch => {
+        const badge = document.getElementById(`branchBadge-${branch.id}`);
+        if (!badge) return;
+        if (branch.id === nearest.id) {
+            badge.classList.remove('bg-blue-100', 'text-blue-800');
+            badge.classList.add('bg-blue-600', 'text-white');
+        } else {
+            badge.classList.remove('bg-blue-600', 'text-white');
+            badge.classList.add('bg-blue-100', 'text-blue-800');
+        }
+    });
+// ── Status radius (sudah ada sebelumnya) ──
             nearestBranchInfo.classList.remove('hidden');
             nearestBranchInfo.innerHTML = ok ?
                 `<div class="flex items-center gap-2 p-2 border border-green-200 rounded-lg bg-green-50">
@@ -1365,9 +1389,14 @@
                     reject(new Error('Kamera belum siap, tunggu sebentar lalu coba lagi.'));
                     return;
                 }
+                const maxWidth = 480;
 
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
+                const scale = maxWidth / video.videoWidth;
+
+                canvas.width = maxWidth;
+                canvas.height = video.videoHeight * scale;
+                // canvas.width = video.videoWidth;
+                // canvas.height = video.videoHeight;
                 const ctx = canvas.getContext('2d');
 
                 // Mirror (flip horizontal)
@@ -1448,6 +1477,10 @@
         //     }
         //     return;
         // }
+
+        document.addEventListener('DOMContentLoaded', () => {
+    getLocationSilent();
+});
     </script>
     <style>
         .absen-btn:disabled {

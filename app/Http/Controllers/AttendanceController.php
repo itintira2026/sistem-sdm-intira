@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use App\Helpers\TimeHelper;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -69,274 +73,293 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi
-        $request->validate([
-            'status'    => 'required|in:CHECK_IN,CHECK_OUT,ISTIRAHAT_IN,ISTIRAHAT_OUT',
-            'latitude'  => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'photo'     => 'required|string',
-            'photo_outfit'  => 'nullable|image|max:2048',
-            // Tambahan:
-            'kategori'     => 'nullable|array',
-            'kategori.*'   => 'nullable|string|in:laci,gudang,ruang_pelayanan,gembok',
-            'foto'         => 'nullable|array',
-            'foto.*'       => 'nullable|image|max:2048',
-        ]);
+        DB::beginTransaction();
+        try {
+            // Validasi
+            $request->validate([
+                'status'    => 'required|in:CHECK_IN,CHECK_OUT,ISTIRAHAT_IN,ISTIRAHAT_OUT',
+                'latitude'  => 'required|numeric',
+                'longitude' => 'required|numeric',
+                'photo'     => 'required|string',
+                'photo_outfit'  => 'nullable|image|max:2048',
+                // Tambahan:
+                'kategori'     => 'nullable|array',
+                'kategori.*'   => 'nullable|string|in:laci,gudang,ruang_pelayanan,gembok',
+                'foto'         => 'nullable|array',
+                'foto.*'       => 'nullable|image|max:2048',
+            ]);
 
-        $user = auth()->user();
+            $user = auth()->user();
 
-        // ==========================
-        // CEK BRANCH USER
-        // ==========================
-        $branches = $user->branches()->get();
+            // ==========================
+            // CEK BRANCH USER
+            // ==========================
+            $branches = $user->branches()->get();
 
-        if ($branches->isEmpty()) {
-            return back()->with('error', 'Anda tidak terdaftar di cabang manapun. Hubungi administrator.');
-        }
-
-        // ==========================
-        // CARI CABANG TERDEKAT
-        // ==========================
-        $nearestBranch = null;
-        $minDistance   = PHP_FLOAT_MAX;
-        $distances     = [];
-
-        foreach ($branches as $branch) {
-            if (!$branch->latitude || !$branch->longitude) {
-                continue;
+            if ($branches->isEmpty()) {
+                return back()->with('error', 'Anda tidak terdaftar di cabang manapun. Hubungi administrator.');
             }
 
-            $distance = $this->calculateDistance(
-                (float) $request->latitude,
-                (float) $request->longitude,
-                (float) $branch->latitude,
-                (float) $branch->longitude
-            );
+            // ==========================
+            // CARI CABANG TERDEKAT
+            // ==========================
+            $nearestBranch = null;
+            $minDistance   = PHP_FLOAT_MAX;
+            $distances     = [];
 
-            $distances[$branch->id] = [
-                'branch'   => $branch,
-                'distance' => $distance,
-            ];
-
-            if ($distance < $minDistance) {
-                $minDistance   = $distance;
-                $nearestBranch = $branch;
-            }
-        }
-
-        if (!$nearestBranch) {
-            return back()->with('error', 'Data koordinat cabang tidak lengkap. Hubungi administrator.');
-        }
-
-        // ==========================
-        // VALIDASI RADIUS
-        // ==========================
-        $maxDistance = 150; // meter
-
-        if ($minDistance > $maxDistance) {
-            $branchDistances = [];
-            foreach ($distances as $data) {
-                $branchDistances[] = '• ' . $data['branch']->name . ': ' . round($data['distance']) . ' m';
-            }
-
-            return back()->with(
-                'error',
-                'Anda berada di luar radius semua cabang.<br>' .
-                    implode('<br>', $branchDistances) .
-                    '<br>Maksimal radius: ' . $maxDistance . ' meter.'
-            );
-        }
-
-        $branch = $nearestBranch;
-
-        // ==========================
-        // CEK LOGIKA ABSENSI HARI INI
-        // ==========================
-        $today = Presensi::where('user_id', $user->id)
-            ->whereDate('tanggal', now()->toDateString())
-            ->get();
-
-        $hasCheckIn      = $today->where('status', 'CHECK_IN')->isNotEmpty();
-        $hasCheckOut     = $today->where('status', 'CHECK_OUT')->isNotEmpty();
-        $istirahatInCount  = $today->where('status', 'ISTIRAHAT_IN')->count();
-        $istirahatOutCount = $today->where('status', 'ISTIRAHAT_OUT')->count();
-
-        switch ($request->status) {
-            case 'CHECK_IN':
-                if ($hasCheckIn) {
-                    return back()->with('error', 'Anda sudah CHECK IN hari ini.');
-                }
-                break;
-
-            case 'CHECK_OUT':
-                if (!$hasCheckIn) {
-                    return back()->with('error', 'Anda belum melakukan CHECK IN.');
-                }
-                if ($hasCheckOut) {
-                    return back()->with('error', 'Anda sudah CHECK OUT hari ini.');
-                }
-                // Tidak boleh checkout kalau sedang istirahat
-                if ($istirahatOutCount > $istirahatInCount) {
-                    return back()->with('error', 'Anda sedang ISTIRAHAT. Silakan ISTIRAHAT IN terlebih dahulu.');
-                }
-                break;
-
-            case 'ISTIRAHAT_OUT':
-                if (!$hasCheckIn) {
-                    return back()->with('error', 'Anda belum melakukan CHECK IN.');
-                }
-                if ($hasCheckOut) {
-                    return back()->with('error', 'Anda sudah melakukan CHECK OUT.');
-                }
-                // Tidak boleh istirahat out kalau sedang istirahat (sudah out tapi belum in)
-                if ($istirahatOutCount > $istirahatInCount) {
-                    return back()->with('error', 'Anda sedang dalam ISTIRAHAT. Silakan ISTIRAHAT IN terlebih dahulu.');
-                }
-                break;
-
-            case 'ISTIRAHAT_IN':
-                if (!$hasCheckIn) {
-                    return back()->with('error', 'Anda belum melakukan CHECK IN.');
-                }
-                // Harus sudah ada ISTIRAHAT_OUT lebih dulu
-                if ($istirahatOutCount === 0) {
-                    return back()->with('error', 'Anda belum melakukan ISTIRAHAT OUT.');
-                }
-                // Tidak boleh istirahat in kalau sudah seimbang (sudah balik)
-                if ($istirahatInCount >= $istirahatOutCount) {
-                    return back()->with('error', 'Anda sudah melakukan ISTIRAHAT IN.');
-                }
-                break;
-        }
-
-
-        // ==========================
-        // SIMPAN FOTO
-        // ==========================
-
-        // Definisikan path dulu
-        $manager = new ImageManager(new Driver());
-
-        $dateFolder = now()->format('Y/m/d');
-
-        // ubah ekstensi ke webp
-        $imageName = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.webp';
-
-        $imagePath       = 'absensi/' . $dateFolder . '/' . $user->name . '/' . $imageName;
-        $imagePathOutfit = null;
-
-        // ==========================
-        // FOTO SELFIE (BASE64)
-        // ==========================
-        $photoData = $request->photo;
-
-        if (str_contains($photoData, ';base64,')) {
-            $photoData = substr($photoData, strpos($photoData, ',') + 1);
-        }
-
-        $photoData = str_replace(' ', '+', $photoData);
-        $decoded   = base64_decode($photoData, true);
-
-        if ($decoded === false) {
-            return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
-        }
-
-        // buat folder
-        Storage::disk('public')->makeDirectory('absensi/' . $dateFolder . '/' . $user->name);
-
-        // proses ke webp
-        $image = $manager->read($decoded)
-            ->toWebp(75); // kualitas 75 (balance bagus)
-
-        // simpan
-        Storage::disk('public')->put($imagePath, (string) $image);
-
-
-        // ==========================
-        // FOTO OUTFIT (UPLOAD FILE)
-        // ==========================
-        if ($request->hasFile('photo_outfit')) {
-
-            $imagePathOutfit = 'absensi-outfit/' . $dateFolder . '/' . $user->name . '/' . $imageName;
-
-            Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder . '/' . $user->name);
-
-            $file = $request->file('photo_outfit');
-
-            // proses ke webp
-            $imageOutfit = $manager->read($file->getPathname())
-                ->toWebp(75);
-
-            // simpan
-            Storage::disk('public')->put($imagePathOutfit, (string) $imageOutfit);
-        }
-
-
-        // ==========================
-        // SIMPAN DATA PRESENSI
-        // ==========================
-        $presensi = Presensi::create([
-            'user_id'    => $user->id,
-            'branch_id'  => $branch->id,
-            'tanggal'    => now()->toDateString(),
-            'status'     => $request->status,
-            'jam'        => now()->format('H:i:s'),
-            'latitude'   => $request->latitude,
-            'longitude'  => $request->longitude,
-            'wilayah'    => $branch->name,
-            'photo'      => $imagePath,
-            'photo_outfit'      => $imagePathOutfit,
-            'jarak'      => round($minDistance),
-            'keterangan' => 'Absensi via mobile di ' . $branch->name,
-        ]);
-        // ==========================
-        // FOTO CLOSING CABANG
-        // ==========================
-        if ($request->hasFile('foto')) {
-            $fotoFiles   = $request->file('foto');
-            $kategoriArr = $request->input('kategori', []);
-
-            foreach ($fotoFiles as $index => $fotoFile) {
-                if (!$fotoFile || !$fotoFile->isValid()) {
+            foreach ($branches as $branch) {
+                if (!$branch->latitude || !$branch->longitude) {
                     continue;
                 }
 
-                $kategori    = $kategoriArr[$index] ?? null;
-                $closingName = 'closing_' . now()->format('Y-m-d-H-i-s') . '_' . $index . '_' . $user->name . '.webp';
-                $closingPath = 'absensi-closing/' . $dateFolder . '/' . $user->name . '/' . $closingName;
+                $distance = $this->calculateDistance(
+                    (float) $request->latitude,
+                    (float) $request->longitude,
+                    (float) $branch->latitude,
+                    (float) $branch->longitude
+                );
 
-                Storage::disk('public')->makeDirectory('absensi-closing/' . $dateFolder . '/' . $user->name);
+                $distances[$branch->id] = [
+                    'branch'   => $branch,
+                    'distance' => $distance,
+                ];
 
-                $imageClosing = $manager->read($fotoFile->getPathname())
+                if ($distance < $minDistance) {
+                    $minDistance   = $distance;
+                    $nearestBranch = $branch;
+                }
+            }
+
+            if (!$nearestBranch) {
+                return back()->with('error', 'Data koordinat cabang tidak lengkap. Hubungi administrator.');
+            }
+
+            // ==========================
+            // VALIDASI RADIUS
+            // ==========================
+            $maxDistance = 150; // meter
+
+            if ($minDistance > $maxDistance) {
+                $branchDistances = [];
+                foreach ($distances as $data) {
+                    $branchDistances[] = '• ' . $data['branch']->name . ': ' . round($data['distance']) . ' m';
+                }
+
+                return back()->with(
+                    'error',
+                    'Anda berada di luar radius semua cabang.<br>' .
+                        implode('<br>', $branchDistances) .
+                        '<br>Maksimal radius: ' . $maxDistance . ' meter.'
+                );
+            }
+
+            $branch = $nearestBranch;
+
+            // ==========================
+            // CEK LOGIKA ABSENSI HARI INI
+            // ==========================
+            $today = Presensi::where('user_id', $user->id)
+                ->whereDate('tanggal', now()->toDateString())
+                ->get();
+
+            $hasCheckIn      = $today->where('status', 'CHECK_IN')->isNotEmpty();
+            $hasCheckOut     = $today->where('status', 'CHECK_OUT')->isNotEmpty();
+            $istirahatInCount  = $today->where('status', 'ISTIRAHAT_IN')->count();
+            $istirahatOutCount = $today->where('status', 'ISTIRAHAT_OUT')->count();
+
+            switch ($request->status) {
+                case 'CHECK_IN':
+                    if ($hasCheckIn) {
+                        return back()->with('error', 'Anda sudah CHECK IN hari ini.');
+                    }
+                    break;
+
+                case 'CHECK_OUT':
+                    if (!$hasCheckIn) {
+                        return back()->with('error', 'Anda belum melakukan CHECK IN.');
+                    }
+                    if ($hasCheckOut) {
+                        return back()->with('error', 'Anda sudah CHECK OUT hari ini.');
+                    }
+                    // Tidak boleh checkout kalau sedang istirahat
+                    if ($istirahatOutCount > $istirahatInCount) {
+                        return back()->with('error', 'Anda sedang ISTIRAHAT. Silakan ISTIRAHAT IN terlebih dahulu.');
+                    }
+                    break;
+
+                case 'ISTIRAHAT_OUT':
+                    if (!$hasCheckIn) {
+                        return back()->with('error', 'Anda belum melakukan CHECK IN.');
+                    }
+                    if ($hasCheckOut) {
+                        return back()->with('error', 'Anda sudah melakukan CHECK OUT.');
+                    }
+                    // Tidak boleh istirahat out kalau sedang istirahat (sudah out tapi belum in)
+                    if ($istirahatOutCount > $istirahatInCount) {
+                        return back()->with('error', 'Anda sedang dalam ISTIRAHAT. Silakan ISTIRAHAT IN terlebih dahulu.');
+                    }
+                    break;
+
+                case 'ISTIRAHAT_IN':
+                    if (!$hasCheckIn) {
+                        return back()->with('error', 'Anda belum melakukan CHECK IN.');
+                    }
+                    // Harus sudah ada ISTIRAHAT_OUT lebih dulu
+                    if ($istirahatOutCount === 0) {
+                        return back()->with('error', 'Anda belum melakukan ISTIRAHAT OUT.');
+                    }
+                    // Tidak boleh istirahat in kalau sudah seimbang (sudah balik)
+                    if ($istirahatInCount >= $istirahatOutCount) {
+                        return back()->with('error', 'Anda sudah melakukan ISTIRAHAT IN.');
+                    }
+                    break;
+            }
+
+
+            // ==========================
+            // SIMPAN FOTO
+            // ==========================
+
+            // Definisikan path dulu
+            $manager = new ImageManager(new Driver());
+
+            $dateFolder = now()->format('Y/m/d');
+
+            // ubah ekstensi ke webp
+            $imageName = 'absen_' . now()->format('Y-m-d-H-i-s') . '_' . $user->name . '.webp';
+
+            $imagePath       = 'absensi/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+            $imagePathOutfit = null;
+
+            // ==========================
+            // FOTO SELFIE (BASE64)
+            // ==========================
+            $photoData = $request->photo;
+
+            if (str_contains($photoData, ';base64,')) {
+                $photoData = substr($photoData, strpos($photoData, ',') + 1);
+            }
+
+            $photoData = str_replace(' ', '+', $photoData);
+            $decoded   = base64_decode($photoData, true);
+
+            if ($decoded === false) {
+                return back()->with('error', 'Gagal memproses foto. Silakan coba lagi.');
+            }
+
+            // buat folder
+            Storage::disk('public')->makeDirectory('absensi/' . $dateFolder . '/' . $user->name);
+
+            // proses ke webp
+            $image = $manager->read($decoded)
+                ->toWebp(75); // kualitas 75 (balance bagus)
+
+            // simpan
+            Storage::disk('public')->put($imagePath, (string) $image);
+
+
+            // ==========================
+            // FOTO OUTFIT (UPLOAD FILE)
+            // ==========================
+            if ($request->hasFile('photo_outfit')) {
+
+                $imagePathOutfit = 'absensi-outfit/' . $dateFolder . '/' . $user->name . '/' . $imageName;
+
+                Storage::disk('public')->makeDirectory('absensi-outfit/' . $dateFolder . '/' . $user->name);
+
+                $file = $request->file('photo_outfit');
+
+                // proses ke webp
+                $imageOutfit = $manager->read($file->getPathname())
                     ->toWebp(75);
 
-                Storage::disk('public')->put($closingPath, (string) $imageClosing);
-
-                ClosingCabang::create([
-                    'presensi_id' => $presensi->id,
-                    'kategori'    => $kategori,
-                    'foto'        => $closingPath,
-                ]);
+                // simpan
+                Storage::disk('public')->put($imagePathOutfit, (string) $imageOutfit);
             }
+
+            // gunakan cabang terdekat yang sudah didapat sebelumnya
+            $branch = $nearestBranch;
+
+            $branchTime = TimeHelper::getBranchTime($branch->id);
+            // ==========================
+            // SIMPAN DATA PRESENSI
+            // ==========================
+            $presensi = Presensi::create([
+                'user_id'    => $user->id,
+                'branch_id'  => $branch->id,
+                // 'tanggal'    => now()->toDateString(),
+                'status'     => $request->status,
+                // 'jam'        => now()->format('H:i:s'),
+                'tanggal'    => $branchTime->toDateString(),
+                'jam'        => $branchTime->format('H:i:s'),
+                'latitude'   => $request->latitude,
+                'longitude'  => $request->longitude,
+                'wilayah'    => $branch->name,
+                'photo'      => $imagePath,
+                'photo_outfit'      => $imagePathOutfit,
+                'jarak'      => round($minDistance),
+                'keterangan' => 'Absensi via mobile di ' . $branch->name,
+            ]);
+            // ==========================
+            // FOTO CLOSING CABANG
+            // ==========================
+            if ($request->hasFile('foto')) {
+                $fotoFiles   = $request->file('foto');
+                $kategoriArr = $request->input('kategori', []);
+
+                foreach ($fotoFiles as $index => $fotoFile) {
+                    if (!$fotoFile || !$fotoFile->isValid()) {
+                        continue;
+                    }
+
+                    $kategori    = $kategoriArr[$index] ?? null;
+                    $closingName = 'closing_' . now()->format('Y-m-d-H-i-s') . '_' . $index . '_' . $user->name . '.webp';
+                    $closingPath = 'absensi-closing/' . $dateFolder . '/' . $user->name . '/' . $closingName;
+
+                    Storage::disk('public')->makeDirectory('absensi-closing/' . $dateFolder . '/' . $user->name);
+
+                    $imageClosing = $manager->read($fotoFile->getPathname())
+                        ->toWebp(75);
+
+                    Storage::disk('public')->put($closingPath, (string) $imageClosing);
+
+                    ClosingCabang::create([
+                        'presensi_id' => $presensi->id,
+                        'kategori'    => $kategori,
+                        'foto'        => $closingPath,
+                    ]);
+                }
+            }
+
+
+            // ==========================
+            // RESPONSE SUKSES
+            // ==========================
+            $statusMessages = [
+                'CHECK_IN'     => 'Selamat bekerja! Check In berhasil.',
+                'CHECK_OUT'    => 'Hati-hati di jalan! Check Out berhasil.',
+                'ISTIRAHAT_IN' => 'Selamat beristirahat!',
+                'ISTIRAHAT_OUT' => 'Selamat bekerja kembali!',
+            ];
+
+            $message = $statusMessages[$request->status] ?? 'Absensi berhasil.';
+            DB::commit();
+            return back()->with(
+                'success',
+                $message . ' (Cabang: ' . $branch->name . ', Jarak: ' . round($minDistance) . 'm)'
+            );
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            Log::error($e->getMessage());
+            Log::error($e->getTraceAsString());
+
+            return back()->with(
+                'error',
+                'Terjadi kesalahan saat menyimpan absensi.'
+            );
         }
-
-
-        // ==========================
-        // RESPONSE SUKSES
-        // ==========================
-        $statusMessages = [
-            'CHECK_IN'     => 'Selamat bekerja! Check In berhasil.',
-            'CHECK_OUT'    => 'Hati-hati di jalan! Check Out berhasil.',
-            'ISTIRAHAT_IN' => 'Selamat beristirahat!',
-            'ISTIRAHAT_OUT' => 'Selamat bekerja kembali!',
-        ];
-
-        $message = $statusMessages[$request->status] ?? 'Absensi berhasil.';
-
-        return back()->with(
-            'success',
-            $message . ' (Cabang: ' . $branch->name . ', Jarak: ' . round($minDistance) . 'm)'
-        );
     }
 
     // ==========================

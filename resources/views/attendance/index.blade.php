@@ -423,7 +423,7 @@
                                 </button>
                             </div>
                         </div>
-@endif
+                        @endif
                         <script>
                             let isClosingUploadOn = false;
 
@@ -1254,8 +1254,14 @@ function previewOutfit(event) {
             return;
         }
 
-        canvas.width  = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // canvas.width  = video.videoWidth;
+        // canvas.height = video.videoHeight;
+        const maxWidth = 480;
+
+const scale = maxWidth / video.videoWidth;
+
+canvas.width = maxWidth;
+canvas.height = video.videoHeight * scale;
         const ctx = canvas.getContext('2d');
 
         // Mirror (flip horizontal)

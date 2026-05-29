@@ -218,32 +218,32 @@ class PayrollController extends Controller
         }
 
         // ===== HITUNG POTONGAN TERLAMBAT =====
-        $presensis = Presensi::forUser($gajihPokok->user_id)
-            ->forMonth($gajihPokok->bulan, $gajihPokok->tahun)
-            ->checkIn()
-            ->orderBy('tanggal', 'asc')
-            ->get();
+        // $presensis = Presensi::forUser($gajihPokok->user_id)
+        //     ->forMonth($gajihPokok->bulan, $gajihPokok->tahun)
+        //     ->checkIn()
+        //     ->orderBy('tanggal', 'asc')
+        //     ->get();
 
-        $potonganFlat           = 15000;
-        $dataPotonganTerlambat  = [];
-        $totalPotonganTerlambat = 0;
+        // $potonganFlat           = 15000;
+        // $dataPotonganTerlambat  = [];
+        // $totalPotonganTerlambat = 0;
 
-        foreach ($presensis as $presensi) {
-            $hitungan = $presensi->hitungPotonganTerlambat($potonganFlat);
+        // foreach ($presensis as $presensi) {
+        //     $hitungan = $presensi->hitungPotonganTerlambat($potonganFlat);
 
-            if ($hitungan['potongan'] > 0) {
-                $dataPotonganTerlambat[] = [
-                    'tanggal'         => $presensi->tanggal,
-                    'jam_check_in'    => $hitungan['jam_check_in'],
-                    'menit_terlambat' => $hitungan['menit_terlambat'],
-                    'potongan'        => $hitungan['potongan'],
-                    'keterangan'      => $presensi->keterangan
-                        ?? 'Terlambat ' . $hitungan['menit_terlambat'] . ' menit (Potongan Flat)',
-                ];
+        //     if ($hitungan['potongan'] > 0) {
+        //         $dataPotonganTerlambat[] = [
+        //             'tanggal'         => $presensi->tanggal,
+        //             'jam_check_in'    => $hitungan['jam_check_in'],
+        //             'menit_terlambat' => $hitungan['menit_terlambat'],
+        //             'potongan'        => $hitungan['potongan'],
+        //             'keterangan'      => $presensi->keterangan
+        //                 ?? 'Terlambat ' . $hitungan['menit_terlambat'] . ' menit (Potongan Flat)',
+        //         ];
 
-                $totalPotonganTerlambat += $hitungan['potongan'];
-            }
-        }
+        //         $totalPotonganTerlambat += $hitungan['potongan'];
+        //     }
+        // }
 
         // ===== AMBIL POTONGAN & TAMBAHAN =====
         $potongans = Potongan::where('user_id', $gajihPokok->user_id)
@@ -254,7 +254,7 @@ class PayrollController extends Controller
 
         $totalPotonganLain = $potongans->where('jenis', 'potongan')->sum('amount');
         $totalTambahan     = $potongans->where('jenis', 'tambahan')->sum('amount');
-        $totalPotongan     = $totalPotonganTerlambat + $totalPotonganLain;
+        $totalPotongan     =  $totalPotonganLain;
 
         // ===== HITUNG GAJI =====
         $gajiKotor  = $gajihPokok->total_gaji_kotor;
@@ -270,8 +270,8 @@ class PayrollController extends Controller
         return view('payroll.show', compact(
             'gajihPokok',
             'initialGajihPokok',        // ← ditambahkan
-            'dataPotonganTerlambat',
-            'totalPotonganTerlambat',
+            // 'dataPotonganTerlambat',
+            // 'totalPotonganTerlambat',
             'potongans',
             'totalPotonganLain',
             'totalPotongan',

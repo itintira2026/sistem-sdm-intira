@@ -8,6 +8,8 @@ use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DailyReportFoController;
 use App\Http\Controllers\DailyReportFoPhotoCleanupController;
 use App\Http\Controllers\ELearningKaryawanController;
+use App\Http\Controllers\FotoClosingController;
+use App\Http\Controllers\FotoPresensiController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\Payroll\GajihPokokController;
 use App\Http\Controllers\Payroll\GajihPokokImportController;
@@ -416,6 +418,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/import/users', [App\Http\Controllers\UserImportController::class, 'import'])->name('users.import.import');
         Route::post('/branches/import', [App\Http\Controllers\BranchImportController::class, 'store'])->name('branches.import.store');
 
+        Route::get('/foto-presensi', [FotoPresensiController::class, 'index'])
+            ->name('foto-presensi.index');
+
+        Route::get('/foto-closing', [FotoClosingController::class, 'index'])
+            ->name('foto-closing.index');
         /*
         |--------------------------------------------------------------------------
         | PRESENSI

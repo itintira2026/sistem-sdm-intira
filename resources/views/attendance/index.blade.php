@@ -71,7 +71,6 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-
             {{-- Alert Messages --}}
             @if (session('success'))
             <div class="p-4 mb-4 text-green-700 bg-green-100 border border-green-400 rounded-lg" role="alert">
@@ -613,7 +612,11 @@
                             </div>
                             @endif
                         </div>
-
+                        @if ($errors->has('photo_outfit'))
+                        <div class="mt-2 text-sm font-medium text-red-600">
+                            {{ $errors->first('photo_outfit') }}
+                        </div>
+                        @endif
                         <input type="hidden" name="latitude" id="latitude">
                         <input type="hidden" name="longitude" id="longitude">
                         <input type="hidden" name="photo" id="photo">
@@ -1283,6 +1286,16 @@ if (coordsEl) coordsEl.textContent =
         // SUBMIT ABSENSI
         // =====================
         async function prepareSubmit(button, statusValue) {
+                // Konfirmasi khusus CHECK OUT
+    if (statusValue === 'CHECK_OUT') {
+        const confirmed = confirm(
+            'Apakah Anda yakin ingin melakukan CHECK OUT?'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+    }
             if (!cameraReady) {
                 alert('❌ Kamera belum aktif. Klik tombol "Aktifkan Kamera" terlebih dahulu.');
                 return;

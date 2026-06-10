@@ -76,8 +76,8 @@
             </a>
 
             {{-- <a href="{{ route('presensi-karyawan.index') }}" --}}
-            <a href="{{ route('absensi.index') }}"   
-           class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi-karyawan.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+            <a href="{{ route('absensi.index') }}"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi-karyawan.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                 <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -134,7 +134,7 @@
                     <span x-show="desktopOpen || isMobile">Gaji</span>
                 </a>
 
-                <a href="{{ route('presensi.index') }}"
+                {{-- <a href="{{ route('presensi.index') }}"
                     class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
@@ -143,6 +143,106 @@
                     </svg>
                     <span x-show="desktopOpen || isMobile">Presensi</span>
                 </a>
+                <a href="{{ route('foto-presensi.index') }}"
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('foto-presensi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span x-show="desktopOpen || isMobile">Foto Presensi</span>
+                </a>
+
+                <a href="{{ route('foto-closing.index') }}"
+                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('foto-closing.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    <span x-show="desktopOpen || isMobile">Foto Closing</span>
+                </a> --}}
+                {{--
+    Ganti 3 menu (Presensi, Foto Presensi, Foto Closing) dengan dropdown ini
+    Letakkan di dalam @role('hr|superadmin')
+--}}
+
+                @php
+                    $presensiActive =
+                        request()->routeIs('presensi.*') ||
+                        request()->routeIs('foto-presensi.*') ||
+                        request()->routeIs('foto-closing.*');
+                @endphp
+
+                <div x-data="{ presensiOpen: {{ $presensiActive ? 'true' : 'false' }} }">
+
+                    {{-- Trigger Dropdown --}}
+                    <button type="button" @click="presensiOpen = !presensiOpen"
+                        class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition
+            {{ $presensiActive ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+
+                        {{-- Icon --}}
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+
+                        {{-- Label + chevron --}}
+                        <span x-show="desktopOpen || isMobile" class="flex-1 text-left">Presensi</span>
+                        <svg x-show="desktopOpen || isMobile"
+                            class="flex-shrink-0 w-4 h-4 transition-transform duration-200"
+                            :class="presensiOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {{-- Sub Menu --}}
+                    <div x-show="presensiOpen && (desktopOpen || isMobile)"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 -translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-1"
+                        class="mt-1 ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+
+                        {{-- Presensi --}}
+                        <a href="{{ route('presensi.index') }}"
+                            class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                {{ request()->routeIs('presensi.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                            <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            Manajemen Presensi
+                        </a>
+
+                        {{-- Foto Presensi --}}
+                        <a href="{{ route('foto-presensi.index') }}"
+                            class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                {{ request()->routeIs('foto-presensi.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                            <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Foto Presensi
+                        </a>
+
+                        {{-- Foto Closing --}}
+                        <a href="{{ route('foto-closing.index') }}"
+                            class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                {{ request()->routeIs('foto-closing.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                            <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                            Foto Closing
+                        </a>
+
+                    </div>
+                </div>
             @endrole
 
             {{-- ============================================================ --}}

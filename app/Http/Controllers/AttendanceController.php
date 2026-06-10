@@ -73,30 +73,43 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
-        DB::beginTransaction();
-        try {
+       
             // Validasi
             $request->validate([
                 'status'    => 'required|in:CHECK_IN,CHECK_OUT,ISTIRAHAT_IN,ISTIRAHAT_OUT',
                 'latitude'  => 'required|numeric',
                 'longitude' => 'required|numeric',
                 'photo'     => 'required|string',
-                'photo_outfit'  => 'nullable|image|max:2048',
+                'photo_outfit'  => 'nullable|image|max:5120',
                 // Tambahan:
                 'kategori'     => 'nullable|array',
                 'kategori.*'   => 'nullable|string|in:laci,gudang,ruang_pelayanan,gembok',
                 'foto'         => 'nullable|array',
                 'foto.*'       => 'nullable|image|max:2048',
+            ], [
+                'photo_outfit.max' => 'Ukuran foto outfit maksimal 5 MB.',
+                'photo_outfit.image' => 'File yang diupload harus berupa gambar.',
             ]);
 
             $user = auth()->user();
 
+            if ($request->hasFile('photo_outfit')) {
+
+    $file = $request->file('photo_outfit');
+
+    if ($file->getSize() > (5 * 1024 * 1024)) {
+        return back()
+            ->withInput()
+            ->with('error', 'Foto outfit tidak boleh lebih dari 5 MB.');
+    }
+}
             // ==========================
             // CEK BRANCH USER
             // ==========================
             $branches = $user->branches()->get();
 
             if ($branches->isEmpty()) {
+                //  dd('masuk sini');
                 return back()->with('error', 'Anda tidak terdaftar di cabang manapun. Hubungi administrator.');
             }
 
@@ -347,19 +360,7 @@ class AttendanceController extends Controller
             return back()->with(
                 'success',
                 $message . ' (Cabang: ' . $branch->name . ', Jarak: ' . round($minDistance) . 'm)'
-            );
-        } catch (\Throwable $e) {
-
-            DB::rollBack();
-
-            Log::error($e->getMessage());
-            Log::error($e->getTraceAsString());
-
-            return back()->with(
-                'error',
-                'Terjadi kesalahan saat menyimpan absensi.'
-            );
-        }
+            );  
     }
 
     // ==========================

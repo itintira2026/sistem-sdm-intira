@@ -23,6 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
+    // bootstrap/app.php
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\CheckUserActive::class,
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

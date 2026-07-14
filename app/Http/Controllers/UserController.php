@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\BranchUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -97,7 +98,7 @@ class UserController extends Controller
         return view('management_data.user.show', compact('user'));
     }
 
- public function edit(User $user)
+    public function edit(User $user)
     {
         $roles = Role::all();
         $branches = Branch::all();
@@ -164,12 +165,33 @@ class UserController extends Controller
 
         // Sync branches with manager status
         // First, remove all existing branch assignments
-        $user->branchAssignments()->delete();
+        // $user->branchAssignments()->delete();
 
-        // Then, add new assignments
+        // // Then, add new assignments
+        // foreach ($validated['branches'] as $branchId) {
+        //     $isManager = isset($request->branch_managers[$branchId]) && $request->branch_managers[$branchId];
+        //     $user->assignToBranch($branchId, $isManager);
+        // }
+
+
+        // Nonaktifkan SEMUA assignment lama milik user ini (aktif maupun tidak),
+        // query langsung ke tabel branch_users, tidak lewat relasi yang sudah difilter
+        BranchUser::where('user_id', $user->id)->update(['is_active' => false]);
+
+        // Aktifkan / buat baru sesuai pilihan form saat ini
         foreach ($validated['branches'] as $branchId) {
             $isManager = isset($request->branch_managers[$branchId]) && $request->branch_managers[$branchId];
-            $user->assignToBranch($branchId, $isManager);
+
+            BranchUser::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'branch_id' => $branchId,
+                ],
+                [
+                    'is_manager' => $isManager,
+                    'is_active' => true,
+                ]
+            );
         }
 
         return redirect()->route('users.index')

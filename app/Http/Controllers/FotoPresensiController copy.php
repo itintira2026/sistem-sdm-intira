@@ -27,8 +27,8 @@ class FotoPresensiController extends Controller
             ->get();
 
         // Build query presensi
-        // $query = Presensi::with(['user', 'user.branches'])
-        $query = Presensi::with(['user', 'branch'])->whereDate('tanggal', $tanggal)
+        $query = Presensi::with(['user', 'user.branches'])
+            ->whereDate('tanggal', $tanggal)
             ->whereHas('user', function ($q) use ($search) {
                 $q->where('is_active', true);
                 if ($search) {
@@ -40,13 +40,10 @@ class FotoPresensiController extends Controller
             });
 
         // Filter by cabang (via relasi user → branches pivot)
-        // if ($branchId) {
-        //     $query->whereHas('user.branches', function ($q) use ($branchId) {
-        //         $q->where('branches.id', $branchId);
-        //     });
-        // }
         if ($branchId) {
-            $query->where('branch_id', $branchId);
+            $query->whereHas('user.branches', function ($q) use ($branchId) {
+                $q->where('branches.id', $branchId);
+            });
         }
 
         // Filter berdasarkan tipe foto
@@ -66,10 +63,8 @@ class FotoPresensiController extends Controller
 
         // Transform untuk view
         $fotos = $presensis->map(function ($p) use ($tipeFilter) {
-            // $user   = $p->user;
-            // $branch = $user?->branches->first();
             $user   = $p->user;
-            $branch = $p->branch;
+            $branch = $user?->branches->first();
 
             // Tentukan URL foto
             $fotoPath = $tipeFilter === 'OUTFIT' ? $p->photo_outfit : $p->photo;

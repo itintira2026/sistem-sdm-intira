@@ -154,6 +154,7 @@
                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
                                 {{ $badgeLabel }}
                             </span>
+                            {{-- here the code --}}
                             @if ($checkIn && $checkIn->branch)
                                 <span
                                     class="items-center hidden gap-1 px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full sm:inline-flex">

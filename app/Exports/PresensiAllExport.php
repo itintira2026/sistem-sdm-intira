@@ -46,11 +46,22 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
         $dates  = collect($period)->map(fn($d) => $d->format('Y-m-d'));
 
         // Ambil semua presensi dalam range sekaligus (1 query), eager load closingCabangs
+        // $allPresensis = Presensi::whereBetween('tanggal', [
+        //     $this->startDate->toDateString(),
+        //     $this->endDate->toDateString(),
+        // ])
+        //     ->with('closingCabangs')
+        //     ->whereIn('user_id', $users->pluck('id'))
+        //     ->get()
+        //     ->groupBy(fn($p) => $p->user_id . '_' . $p->tanggal->format('Y-m-d'));
         $allPresensis = Presensi::whereBetween('tanggal', [
             $this->startDate->toDateString(),
             $this->endDate->toDateString(),
         ])
-            ->with('closingCabangs')
+            ->with([
+                'branch',
+                'closingCabangs',
+            ])
             ->whereIn('user_id', $users->pluck('id'))
             ->get()
             ->groupBy(fn($p) => $p->user_id . '_' . $p->tanggal->format('Y-m-d'));
@@ -69,17 +80,24 @@ class PresensiAllExport implements FromCollection, WithHeadings, WithStyles, Wit
         ];
 
         foreach ($users as $user) {
-            $branch = $user->branches->first()?->name ?? '-';
+            // $branch = $user->branches->first()?->name ?? '-';
 
             foreach ($dates as $date) {
                 $key      = $user->id . '_' . $date;
                 $dayData  = $allPresensis->get($key, collect());
                 $grouped  = $dayData->keyBy('status');
 
+                // $checkIn      = $grouped->get('CHECK_IN');
+                // $istirahatOut = $grouped->get('ISTIRAHAT_OUT');
+                // $istirahatIn  = $grouped->get('ISTIRAHAT_IN');
+                // $checkOut     = $grouped->get('CHECK_OUT');
                 $checkIn      = $grouped->get('CHECK_IN');
                 $istirahatOut = $grouped->get('ISTIRAHAT_OUT');
                 $istirahatIn  = $grouped->get('ISTIRAHAT_IN');
                 $checkOut     = $grouped->get('CHECK_OUT');
+
+                // Ambil cabang dari data CHECK IN (sesuai histori presensi)
+                $branch = $checkIn?->branch?->name ?? '-';
 
                 $carbonDate = Carbon::parse($date);
                 $hariNama   = $this->hariIndonesia($carbonDate->dayOfWeek);

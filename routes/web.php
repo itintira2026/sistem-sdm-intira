@@ -34,19 +34,45 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('auth.login'))->middleware('guest');
-Route::get('/kanban', fn() => view('kanban'))->middleware('guest');
+Route::get('/kanban', fn() => view('kanban'))->middleware('guest'); // v before
+
 Route::get('/superadmin-1-manajemen-role', fn() => view('kanbantest.superadmin-1-manajemen-role'))->middleware('guest');
 Route::get('/superadmin-2-koreksi-data', fn() => view('kanbantest.superadmin-2-koreksi-data'))->middleware('guest');
+
 Route::get('/owner-1-dashboard', fn() => view('kanbantest.owner-1-dashboard'))->middleware('guest');
 Route::get('/owner-2-drilldown', fn() => view('kanbantest.owner-2-drilldown'))->middleware('guest');
+
 Route::get('/ketua-1-board', fn() => view('kanbantest.ketua-1-board'))->middleware('guest');
 Route::get('/ketua-2-list-goal', fn() => view('kanbantest.ketua-2-list-goal'))->middleware('guest');
 Route::get('/ketua-3-form-goal', fn() => view('kanbantest.ketua-3-form-goal'))->middleware('guest');
 Route::get('/ketua-4-drilldown', fn() => view('kanbantest.ketua-4-drilldown'))->middleware('guest');
+
 Route::get('/direktur-1-board', fn() => view('kanbantest.direktur-1-board'))->middleware('guest');
 Route::get('/direktur-2-list-goal', fn() => view('kanbantest.direktur-2-list-goal'))->middleware('guest');
 Route::get('/direktur-3-form-breakdown', fn() => view('kanbantest.direktur-3-form-breakdown'))->middleware('guest');
 Route::get('/direktur-4-drilldown', fn() => view('kanbantest.direktur-4-drilldown'))->middleware('guest');
+
+Route::get('/spi-1-board', fn() => view('kanbantest.spi-1-board'))->middleware('guest');
+Route::get('/spi-2-list-goal', fn() => view('kanbantest.spi-2-list-goal'))->middleware('guest');
+Route::get('/spi-3-form-breakdown', fn() => view('kanbantest.spi-3-form-breakdown'))->middleware('guest');
+Route::get('/spi-4-drilldown', fn() => view('kanbantest.spi-4-drilldown'))->middleware('guest');
+
+Route::get('/kadiv-1-board', fn() => view('kanbantest.kadiv-1-board'))->middleware('guest');
+Route::get('/kadiv-2-list-goal', fn() => view('kanbantest.kadiv-2-list-goal'))->middleware('guest');
+Route::get('/kadiv-3-form-breakdown', fn() => view('kanbantest.kadiv-3-form-breakdown'))->middleware('guest');
+Route::get('/kadiv-4-drilldown', fn() => view('kanbantest.kadiv-4-drilldown'))->middleware('guest');
+
+Route::get('/korea-1-board', fn() => view('kanbantest.korea-1-board'))->middleware('guest');
+Route::get('/korea-2-list-goal', fn() => view('kanbantest.korea-2-list-goal'))->middleware('guest');
+Route::get('/korea-3-form-breakdown', fn() => view('kanbantest.korea-3-form-breakdown'))->middleware('guest');
+Route::get('/korea-4-drilldown', fn() => view('kanbantest.korea-4-drilldown'))->middleware('guest');
+
+Route::get('/am-1-board', fn() => view('kanbantest.am-1-board'))->middleware('guest');
+Route::get('/am-2-list-goal', fn() => view('kanbantest.am-2-list-goal'))->middleware('guest');
+Route::get('/am-3-form-breakdown', fn() => view('kanbantest.am-3-form-breakdown'))->middleware('guest');
+Route::get('/am-4-drilldown', fn() => view('kanbantest.am-4-drilldown'))->middleware('guest');
+
+Route::get('/staff-fo-1-board', fn() => view('kanbantest.staff-fo-1-board'))->middleware('guest');
 
 Route::get('/gd-test', function () {
     dd(gd_info());

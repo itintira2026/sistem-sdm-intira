@@ -134,38 +134,6 @@
                     <span x-show="desktopOpen || isMobile">Gaji</span>
                 </a>
 
-                {{-- <a href="{{ route('presensi.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('presensi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    <span x-show="desktopOpen || isMobile">Presensi</span>
-                </a>
-                <a href="{{ route('foto-presensi.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('foto-presensi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span x-show="desktopOpen || isMobile">Foto Presensi</span>
-                </a>
-
-                <a href="{{ route('foto-closing.index') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('foto-closing.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                    <span x-show="desktopOpen || isMobile">Foto Closing</span>
-                </a> --}}
-                {{--
-    Ganti 3 menu (Presensi, Foto Presensi, Foto Closing) dengan dropdown ini
-    Letakkan di dalam @role('hr|superadmin')
---}}
 
                 @php
                     $presensiActive =
@@ -245,6 +213,307 @@
                 </div>
             @endrole
 
+            {{--
+    =================================================================
+    FILE TUJUAN : resources/views/layouts/sidebar.blade.php
+    AKSI        : TAMBAH blok BARU ini — sarankan taruh SEBELUM section
+                  "KPI & Data Resmi" yang sudah ada dari sesi sebelumnya
+                  (section itu tetap dipertahankan apa adanya, ini section
+                  terpisah khusus untuk fitur Sistem Tugas & KPI Grup A-E).
+    =================================================================
+--}}
+
+            {{-- ============================================================ --}}
+            {{-- SISTEM TUGAS & KPI (BARU)                                      --}}
+            {{-- ============================================================ --}}
+            <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
+                <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Sistem Tugas & KPI
+                </p>
+            </div>
+
+            {{-- Tugas Saya & KPI Saya — SEMUA orang punya ini, tetap flat --}}
+            <a href="{{ route('tasks.my-tasks') }}"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('tasks.my-tasks') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span x-show="desktopOpen || isMobile">Tugas Saya</span>
+            </a>
+
+            <a href="{{ route('tasks.my-kpi') }}"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('tasks.my-kpi') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span x-show="desktopOpen || isMobile">KPI Saya</span>
+            </a>
+
+            {{-- ============================================================ --}}
+            {{-- DROPDOWN: Kelola Tugas Tim                                     --}}
+            {{-- (Bikin Tugas KPI, Tugas Yang diberikan, Perlu Saya Cek, Perlu Saya Approve) --}}
+            {{-- ============================================================ --}}
+            @role('manager|korwil|kadiv|ketua|direktur_utama|direktur_bisnis|direktur_operasional|superadmin')
+                @php
+                    $kelolaTugasActive =
+                        request()->routeIs('tasks.create') ||
+                        request()->routeIs('tasks.assigned') ||
+                        request()->routeIs('task-check-queue.*') ||
+                        request()->routeIs('task-approve-queue.*');
+                @endphp
+
+                <div x-data="{ kelolaTugasOpen: {{ $kelolaTugasActive ? 'true' : 'false' }} }">
+                    <button type="button" @click="kelolaTugasOpen = !kelolaTugasOpen"
+                        class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition
+            {{ $kelolaTugasActive ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+
+                        <span x-show="desktopOpen || isMobile" class="flex-1 text-left">Kelola Tugas Tim</span>
+                        <svg x-show="desktopOpen || isMobile"
+                            class="flex-shrink-0 w-4 h-4 transition-transform duration-200"
+                            :class="kelolaTugasOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div x-show="kelolaTugasOpen && (desktopOpen || isMobile)"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 -translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-1"
+                        class="mt-1 ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+
+                        @role('ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|korwil|superadmin')
+                            <a href="{{ route('tasks.create') }}"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                    {{ request()->routeIs('tasks.create') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                                <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Bikin Tugas KPI
+                            </a>
+
+                            <a href="{{ route('tasks.assigned') }}"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                    {{ request()->routeIs('tasks.assigned') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                                <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                Tugas Yang diberikan
+                            </a>
+                        @endrole
+
+                        @role('manager|korwil|kadiv|ketua|direktur_utama|direktur_bisnis|direktur_operasional|superadmin')
+                            <a href="{{ route('task-check-queue.index') }}"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                    {{ request()->routeIs('task-check-queue.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                                <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Perlu Saya Cek
+                            </a>
+
+                            <a href="{{ route('task-approve-queue.index') }}"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                    {{ request()->routeIs('task-approve-queue.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                                <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Perlu Saya Approve
+                            </a>
+                        @endrole
+                    </div>
+                </div>
+            @endrole
+
+            {{-- ============================================================ --}}
+            {{-- DROPDOWN: Laporan & Monitoring                                 --}}
+            {{-- (KPI Tim, Set Hari Kerja)                                      --}}
+            {{-- ============================================================ --}}
+            @role('ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|korwil|superadmin')
+                @php
+                    $laporanActive =
+                        request()->routeIs('tasks.team-drilldown') || request()->routeIs('period-working-days.*');
+                @endphp
+
+                <div x-data="{ laporanOpen: {{ $laporanActive ? 'true' : 'false' }} }">
+                    <button type="button" @click="laporanOpen = !laporanOpen"
+                        class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition
+            {{ $laporanActive ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+
+                        <span x-show="desktopOpen || isMobile" class="flex-1 text-left">Laporan & Monitoring</span>
+                        <svg x-show="desktopOpen || isMobile"
+                            class="flex-shrink-0 w-4 h-4 transition-transform duration-200"
+                            :class="laporanOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div x-show="laporanOpen && (desktopOpen || isMobile)"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 -translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-1"
+                        class="mt-1 ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+
+                        @role('ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|korwil|superadmin')
+                            <a href="{{ route('tasks.team-drilldown') }}"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                    {{ request()->routeIs('tasks.team-drilldown') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                                <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                KPI Tim
+                            </a>
+                        @endrole
+
+                        @role('superadmin|ketua|direktur_utama|direktur_bisnis|direktur_operasional')
+                            <a href="{{ route('period-working-days.index') }}"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                    {{ request()->routeIs('period-working-days.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                                <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Set Hari Kerja
+                            </a>
+                        @endrole
+                    </div>
+                </div>
+            @endrole
+
+            {{-- ============================================================ --}}
+            {{-- DROPDOWN: Administrasi (Superadmin only)                       --}}
+            {{-- (Kelola Divisi, Panel Koreksi Data)                            --}}
+            {{-- ============================================================ --}}
+            @role('superadmin')
+                @php
+                    $administrasiActive =
+                        request()->routeIs('divisions.*') || request()->routeIs('superadmin.koreksi-data.*');
+                @endphp
+
+                <div x-data="{ administrasiOpen: {{ $administrasiActive ? 'true' : 'false' }} }">
+                    <button type="button" @click="administrasiOpen = !administrasiOpen"
+                        class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition
+            {{ $administrasiActive ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+
+                        <span x-show="desktopOpen || isMobile" class="flex-1 text-left">Administrasi</span>
+                        <svg x-show="desktopOpen || isMobile"
+                            class="flex-shrink-0 w-4 h-4 transition-transform duration-200"
+                            :class="administrasiOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div x-show="administrasiOpen && (desktopOpen || isMobile)"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 -translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-1"
+                        class="mt-1 ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5">
+
+                        <a href="{{ route('divisions.index') }}"
+                            class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                {{ request()->routeIs('divisions.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                            <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Kelola Divisi
+                        </a>
+
+                        <a href="{{ route('superadmin.koreksi-data.index') }}"
+                            class="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition
+                {{ request()->routeIs('superadmin.koreksi-data.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
+                            <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Panel Koreksi Data
+                        </a>
+                    </div>
+                </div>
+            @endrole
+
+            {{-- KPI & Data Resmi — dibiarkan flat seperti semula, tidak diubah --}}
+            @role('superadmin|kadiv|owner|ketua|direktur_utama|direktur_bisnis|direktur_operasional|staff')
+                <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
+                    <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">KPI & Data Resmi</p>
+                </div>
+
+                @role('kadiv|superadmin')
+                    <a href="{{ route('data-resmi.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('data-resmi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Upload Data Resmi</span>
+                    </a>
+                @endrole
+
+                @role('superadmin')
+                    <a href="{{ route('kpi-roles.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('kpi-roles.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975M15 9.75a3 3 0 11-6 0 3 3 0 016 0zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Set Role KPI</span>
+                    </a>
+                @endrole
+
+                @role('superadmin|marketing|owner|ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|staff')
+                    <a href="{{ route('rekonsiliasi.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('rekonsiliasi.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">Rekonsiliasi</span>
+                    </a>
+                @endrole
+            @endrole
+
             {{-- ============================================================ --}}
             {{-- Marketing                                                       --}}
             {{-- ============================================================ --}}
@@ -292,6 +561,15 @@
                         </svg>
                         <span x-show="desktopOpen || isMobile">Manager - Contact 90</span>
                     </a>
+                    {{-- <a href="{{ route('kpi-roles.index') }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('kpi-roles.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span x-show="desktopOpen || isMobile">KPI Roles</span>
+                    </a> --}}
                 @endrole
             @endrole
 
@@ -329,7 +607,7 @@
             {{-- ============================================================ --}}
             {{-- Daily Reports FO                                                --}}
             {{-- ============================================================ --}}
-            @role('fo|manager|superadmin|marketing')
+            @role('fo|manager|superadmin|marketing|owner|ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|staff')
                 <div class="pt-2 pb-2 border-t border-gray-200" x-show="desktopOpen || isMobile">
                     <p class="px-3 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Daily Reports FO</p>
                 </div>
@@ -348,7 +626,7 @@
                 @endrole
 
                 {{-- Manager: FO Reports + Validasi --}}
-                @role('manager|superadmin|marketing')
+                @role('manager|superadmin|marketing|owner|ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|staff')
                     {{-- <a href="{{ route('daily-reports-fo.manager.dashboard') }}"
                         class="flex items-center px-3 py-2 text-sm font-medium rounded-lg group {{ request()->routeIs('daily-reports-fo.manager.*') ? 'bg-teal-50 text-teal-700' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg class="flex-shrink-0 w-5 h-5" :class="{ 'mr-3': desktopOpen || isMobile }" fill="none"
@@ -461,7 +739,10 @@
 
                 <div x-show="desktopOpen || isMobile" class="flex-1 min-w-0 ml-3">
                     <p class="text-sm font-medium text-gray-700 truncate">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ Auth::user()->getRoleNames()->first() }}</p>
+                    @php
+                        $roles = Auth::user()->getRoleNames();
+                    @endphp
+                    <p class="text-xs text-gray-500 truncate">{{ $roles->get(1, $roles->first()) }}</p>
                 </div>
 
                 <button @click="showDropdown = !showDropdown" x-show="desktopOpen || isMobile"

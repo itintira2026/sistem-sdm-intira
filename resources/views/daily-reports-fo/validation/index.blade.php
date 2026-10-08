@@ -1,5 +1,5 @@
 {{-- resources/views/daily-reports-fo/validation/index.blade.php --}}
-{{-- GANTI SELURUH FILE dengan ini --}}
+{{-- REVISI Part F2: tambah status 'checked' di filter, stats, dan badge tabel --}}
 
 <x-app-layout>
     <x-slot name="header">
@@ -18,7 +18,6 @@
                 </p>
             </div>
             <div class="flex flex-wrap gap-2">
-                {{-- for superadmin route into superadmin.daily-report-fo.photo-cleanup.index --}}
                 @if (auth()->user()->hasRole('superadmin'))
                     <a href="{{ route('superadmin.daily-report-fo.photo-cleanup.index') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-purple-600 rounded-lg hover:bg-purple-700">
@@ -26,7 +25,6 @@
                     </a>
                 @endif
 
-                {{-- show only for superadmin and marketing --}}
                 @if (auth()->user()->hasRole('superadmin') || auth()->user()->hasRole('marketing'))
                     <a href="{{ route('ranking-fo.index') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
@@ -34,41 +32,30 @@
                     </a>
                 @endif
 
-                {{-- Tombol Export --}}
                 <button onclick="openExportModal()"
                     class="flex items-center gap-2 px-4 py-2 text-sm text-white transition bg-teal-600 rounded-lg hover:bg-teal-700">
                     📥 Export Excel
                 </button>
             </div>
-            {{-- tombol link ke ranking FO --}}
         </div>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-            {{-- ============================================================ --}}
-            {{-- ALERTS                                                         --}}
-            {{-- ============================================================ --}}
+            {{-- ALERTS --}}
             @if (session('success'))
-                <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
-                    {{ session('success') }}
-                </div>
+                <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">{{ session('success') }}</div>
             @endif
             @if (session('error'))
-                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
-                    {{ session('error') }}
-                </div>
+                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">{{ session('error') }}</div>
             @endif
 
-            {{-- ============================================================ --}}
-            {{-- FILTER                                                         --}}
-            {{-- ============================================================ --}}
+            {{-- FILTER --}}
             <div class="p-4 mb-6 bg-white rounded-lg shadow-sm">
                 <form id="filterForm" method="GET" action="{{ route('validation.index') }}">
                     <div class="flex flex-wrap items-end gap-3">
 
-                        {{-- Cabang --}}
                         <div>
                             <label class="block mb-1 text-xs font-medium text-gray-500">Cabang</label>
                             <select name="branch_id" onchange="submitFilter()"
@@ -85,14 +72,12 @@
                             </select>
                         </div>
 
-                        {{-- Tanggal --}}
                         <div>
                             <label class="block mb-1 text-xs font-medium text-gray-500">Tanggal</label>
                             <input type="date" name="tanggal" value="{{ $tanggal }}" onchange="submitFilter()"
                                 class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                         </div>
 
-                        {{-- Shift --}}
                         <div>
                             <label class="block mb-1 text-xs font-medium text-gray-500">Shift</label>
                             <select name="shift" onchange="submitFilter()"
@@ -101,13 +86,13 @@
                                 <option value="pagi" {{ request('shift') === 'pagi' ? 'selected' : '' }}>
                                     🌅 Shift Pagi
                                 </option>
-                                <option value="siang" {{ request('siang') === 'siang' ? 'selected' : '' }}>
+                                <option value="siang" {{ request('shift') === 'siang' ? 'selected' : '' }}>
                                     🌆 Shift Siang
                                 </option>
                             </select>
                         </div>
 
-                        {{-- Status Validasi --}}
+                        {{-- Status Validasi — DITAMBAH opsi 'checked' --}}
                         <div>
                             <label class="block mb-1 text-xs font-medium text-gray-500">Status Validasi</label>
                             <select name="validation_status" onchange="submitFilter()"
@@ -116,6 +101,10 @@
                                 <option value="pending"
                                     {{ request('validation_status') === 'pending' ? 'selected' : '' }}>
                                     ⏳ Pending
+                                </option>
+                                <option value="checked"
+                                    {{ request('validation_status') === 'checked' ? 'selected' : '' }}>
+                                    🔍 Dicek (menunggu approve)
                                 </option>
                                 <option value="approved"
                                     {{ request('validation_status') === 'approved' ? 'selected' : '' }}>
@@ -128,7 +117,6 @@
                             </select>
                         </div>
 
-                        {{-- Loading indicator --}}
                         <div id="filterLoading" class="items-center hidden gap-2 pb-1 text-sm text-gray-400">
                             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
@@ -142,16 +130,13 @@
                 </form>
             </div>
 
-            {{-- ============================================================ --}}
-            {{-- STATS                                                          --}}
-            {{-- ============================================================ --}}
-
-            {{-- Baris 1: Status Validasi --}}
+            {{-- STATS --}}
             <div class="mx-4 mb-3 md:mx-0">
                 <p class="mb-2 text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                     Status Validasi
                 </p>
-                <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {{-- DIUBAH: grid-cols-5 karena nambah kartu "Dicek" --}}
+                <div class="grid grid-cols-2 gap-3 md:grid-cols-5">
 
                     {{-- Total --}}
                     <div
@@ -178,7 +163,21 @@
                             class="font-medium text-[#854F0B] @if ($stats['pending'] >= 1000) text-base @elseif($stats['pending'] >= 100) text-xl @else text-2xl @endif">
                             {{ number_format($stats['pending'], 0, ',', '.') }}
                         </p>
-                        <p class="mt-1 text-[11px] text-[#BA7517]">menunggu validasi</p>
+                        <p class="mt-1 text-[11px] text-[#BA7517]">belum dicek</p>
+                    </div>
+
+                    {{-- Dicek — BARU --}}
+                    <div
+                        class="relative overflow-hidden p-4 bg-[#E6F1FB] border border-[#B5D4F4] rounded-xl
+                    before:absolute before:inset-y-0 before:left-0 before:w-[3px]
+                    before:bg-[#1D6FBF] before:rounded-full">
+                        <p class="mb-1 text-[15px]">🔍</p>
+                        <p class="text-[10px] font-semibold tracking-wider text-[#0C3D6E] uppercase">Dicek</p>
+                        <p
+                            class="font-medium text-[#0C3D6E] @if ($stats['checked'] >= 1000) text-base @elseif($stats['checked'] >= 100) text-xl @else text-2xl @endif">
+                            {{ number_format($stats['checked'], 0, ',', '.') }}
+                        </p>
+                        <p class="mt-1 text-[11px] text-[#1A5A9C]">menunggu approve Korwil</p>
                     </div>
 
                     {{-- Disetujui --}}
@@ -212,14 +211,13 @@
                 </div>
             </div>
 
-            {{-- Baris 2: Metrik Bisnis --}}
+            {{-- Metrik Bisnis (tidak berubah dari versi sebelumnya) --}}
             <div class="mx-4 mb-6 md:mx-0">
                 <p class="mb-2 text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                     Metrik Bisnis
                 </p>
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 
-                    {{-- Total Omset --}}
                     <div x-data="{ open: false }" @click="open = !open"
                         class="relative overflow-hidden border rounded-xl
     bg-[#EDFAF3] border-[#A8DFC4]
@@ -250,7 +248,6 @@
                         </div>
                     </div>
 
-                    {{-- Total Revenue --}}
                     <div x-data="{ open: false }" @click="open = !open"
                         class="relative overflow-hidden border rounded-xl
     bg-[#E6F1FB] border-[#B5D4F4]
@@ -282,7 +279,6 @@
                         </div>
                     </div>
 
-                    {{-- Total Akad --}}
                     <div
                         class="relative overflow-hidden border rounded-xl
     bg-[#FEF9EC] border-[#F3DFA0]
@@ -304,7 +300,6 @@
                         </div>
                     </div>
 
-                    {{-- Total Nasabah Baru --}}
                     <div
                         class="relative overflow-hidden border rounded-xl
     bg-[#E8F7F7] border-[#A0D8D8]
@@ -330,9 +325,7 @@
                 </div>
             </div>
 
-            {{-- ============================================================ --}}
-            {{-- REPORT LIST                                                    --}}
-            {{-- ============================================================ --}}
+            {{-- REPORT LIST --}}
             <div class="bg-white rounded-lg shadow-sm">
                 @if ($reports->isEmpty())
                     <div class="p-12 text-center text-gray-400">
@@ -344,41 +337,29 @@
                         <table class="w-full text-sm min-w-max whitespace-nowrap">
                             <thead class="border-b border-gray-200 bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                        FO
-                                    </th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">FO</th>
                                     @if ($isAllBranches)
                                         <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                            Cabang
-                                        </th>
+                                            Cabang</th>
                                     @endif
                                     <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                        Shift / Slot
-                                    </th>
+                                        Shift / Slot</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-left text-gray-500 uppercase">
-                                        Upload
-                                    </th>
+                                        Upload</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
-                                        Omset
-                                    </th>
+                                        Omset</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-right text-gray-500 uppercase">
-                                        Revenue
+                                        Revenue</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
+                                        Akad</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">NB
                                     </th>
                                     <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                        Akad
-                                    </th>
+                                        Status</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                        NB
-                                    </th>
+                                        Window</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                        Status
-                                    </th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                        Window
-                                    </th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-500 uppercase">
-                                        Aksi
-                                    </th>
+                                        Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -393,14 +374,14 @@
                                         $nasabahBaru = $metrikDetails->get('mb_nasabah_baru')?->value_number ?? 0;
                                         $windowStatus = $report->manager_window_status;
 
-                                        // Color coding per status validasi
+                                        // DIUBAH: tambah warna untuk status 'checked'
                                         $rowBg = match ($report->validation_status) {
                                             'approved' => $index % 2 === 0 ? 'bg-green-50' : 'bg-green-100/50',
                                             'rejected' => $index % 2 === 0 ? 'bg-red-50' : 'bg-red-100/50',
+                                            'checked' => $index % 2 === 0 ? 'bg-blue-50' : 'bg-blue-100/50',
                                             default => $index % 2 === 0 ? 'bg-yellow-50/50' : 'bg-yellow-100/30',
                                         };
 
-                                        // Grouping visual: border tebal jika ganti FO
                                         $isNewUser = !in_array($report->user_id, $seenUserIds);
                                         $seenUserIds[] = $report->user_id;
                                         $groupBorder =
@@ -412,43 +393,31 @@
                                     <tr
                                         class="{{ $rowBg }} {{ $groupBorder }} transition-colors hover:brightness-95">
 
-                                        {{-- FO --}}
                                         <td class="px-4 py-3">
                                             @if ($isNewUser)
-                                                <p class="font-semibold text-gray-800">
-                                                    {{ $report->user->name }}
-                                                </p>
+                                                <p class="font-semibold text-gray-800">{{ $report->user->name }}</p>
                                             @else
                                                 <p class="pl-2 text-xs text-gray-400 border-l-2 border-gray-200">
-                                                    {{ $report->user->name }}
-                                                </p>
+                                                    {{ $report->user->name }}</p>
                                             @endif
                                         </td>
 
-                                        {{-- Cabang --}}
                                         @if ($isAllBranches)
                                             <td class="px-4 py-3 text-xs text-gray-500">
                                                 {{ $report->branch->name }}
-                                                <span class="text-gray-400">
-                                                    ({{ $report->branch->timezone }})
-                                                </span>
+                                                <span class="text-gray-400">({{ $report->branch->timezone }})</span>
                                             </td>
                                         @endif
 
-                                        {{-- Shift / Slot --}}
                                         <td class="px-4 py-3 text-gray-600">
                                             {{ $report->shift_label }} / Slot {{ $report->slot }}
-                                            <span class="text-xs text-gray-400">
-                                                ({{ $report->slot_time }})
-                                            </span>
+                                            <span class="text-xs text-gray-400">({{ $report->slot_time }})</span>
                                         </td>
 
-                                        {{-- Upload --}}
                                         <td class="px-4 py-3 text-xs text-gray-500">
                                             {{ $report->uploaded_at->format('H:i:s') }}
                                         </td>
 
-                                        {{-- Metrik --}}
                                         <td class="px-4 py-3 font-medium text-right text-gray-800">
                                             Rp {{ number_format($omset, 0, ',', '.') }}
                                         </td>
@@ -462,7 +431,7 @@
                                             {{ number_format($nasabahBaru, 0, ',', '.') }}
                                         </td>
 
-                                        {{-- Status Validasi --}}
+                                        {{-- Status Validasi — DITAMBAH badge 'checked' --}}
                                         <td class="px-4 py-3 text-center">
                                             @if ($report->validation_status === 'approved')
                                                 <span
@@ -474,6 +443,15 @@
                                                     class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-200 rounded-full">
                                                     ❌ Ditolak
                                                 </span>
+                                            @elseif ($report->validation_status === 'checked')
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-200 rounded-full">
+                                                    🔍 Dicek
+                                                </span>
+                                                <br>
+                                                <span class="text-[10px] text-gray-400">
+                                                    menunggu Korwil
+                                                </span>
                                             @else
                                                 <span
                                                     class="px-2 py-1 text-xs font-semibold text-yellow-700 bg-yellow-200 rounded-full">
@@ -482,7 +460,6 @@
                                             @endif
                                         </td>
 
-                                        {{-- Window Status --}}
                                         <td class="px-4 py-3 text-xs text-center">
                                             @if ($windowStatus === 'open')
                                                 <span
@@ -506,7 +483,6 @@
                                             @endif
                                         </td>
 
-                                        {{-- Aksi --}}
                                         <td class="px-4 py-3 text-center">
                                             <a href="{{ route('validation.show', $report->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition">
@@ -519,7 +495,6 @@
                         </table>
                     </div>
 
-                    {{-- Skeleton (hidden, ditampilkan saat filter berubah) --}}
                     <div id="tableSkeleton" class="hidden p-4 space-y-3">
                         @for ($i = 0; $i < 8; $i++)
                             <div class="flex gap-3 animate-pulse">
@@ -534,7 +509,6 @@
                         @endfor
                     </div>
 
-                    {{-- Pagination --}}
                     <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
                         <p class="text-xs text-gray-400">
                             Menampilkan {{ $reports->firstItem() }}–{{ $reports->lastItem() }}
@@ -548,33 +522,24 @@
         </div>
     </div>
 
-    {{-- ============================================================ --}}
-    {{-- MODAL EXPORT                                                   --}}
-    {{-- ============================================================ --}}
+    {{-- MODAL EXPORT (tidak berubah) --}}
     <div id="exportModal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
         <div class="w-full max-w-md mx-4 bg-white rounded-lg shadow-xl">
-
-            {{-- Header --}}
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h3 class="font-semibold text-gray-800">📥 Export Laporan Validasi FO</h3>
                 <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-
-            {{-- Body --}}
             <form method="GET" action="{{ route('validation.export') }}">
                 <div class="px-6 py-4 space-y-4">
-
-                    {{-- Info batas hari --}}
                     <div class="p-3 text-xs text-blue-700 rounded-lg bg-blue-50">
                         ℹ️ Maksimal export
-                        @if (auth()->user()->hasRole('manager'))
-                            <strong>7 hari</strong> (role Manager)
+                        @if (auth()->user()->hasRole('manager') || auth()->user()->hasRole('korwil'))
+                            <strong>7 hari</strong> (role {{ ucfirst(auth()->user()->getRoleNames()->first()) }})
                         @else
                             <strong>3 hari</strong> (role {{ ucfirst(auth()->user()->getRoleNames()->first()) }})
                         @endif
                     </div>
 
-                    {{-- Tanggal Dari --}}
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">
                             Tanggal Dari <span class="text-red-500">*</span>
@@ -583,7 +548,6 @@
                             class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                     </div>
 
-                    {{-- Tanggal Sampai --}}
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">
                             Tanggal Sampai <span class="text-red-500">*</span>
@@ -592,7 +556,6 @@
                             class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
                     </div>
 
-                    {{-- Cabang --}}
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">
                             Cabang <span class="text-red-500">*</span>
@@ -608,10 +571,8 @@
                             @endforeach
                         </select>
                     </div>
-
                 </div>
 
-                {{-- Footer --}}
                 <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
                     <button type="button" onclick="closeExportModal()"
                         class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
@@ -627,30 +588,21 @@
     </div>
 
     <script>
-        // ============================================================
-        // Filter + Skeleton Loading
-        // ============================================================
         function submitFilter() {
             const loading = document.getElementById('filterLoading');
             const tableWrapper = document.getElementById('tableWrapper');
             const skeleton = document.getElementById('tableSkeleton');
 
-            // Tampilkan loading indicator di filter
             if (loading) {
                 loading.classList.remove('hidden');
                 loading.classList.add('flex');
             }
-
-            // Swap tabel → skeleton
             if (tableWrapper) tableWrapper.classList.add('hidden');
             if (skeleton) skeleton.classList.remove('hidden');
 
             document.getElementById('filterForm').submit();
         }
 
-        // ============================================================
-        // Modal Export
-        // ============================================================
         function openExportModal() {
             const modal = document.getElementById('exportModal');
             modal.classList.remove('hidden');
@@ -665,12 +617,10 @@
             document.body.style.overflow = '';
         }
 
-        // Tutup modal saat klik backdrop
         document.getElementById('exportModal').addEventListener('click', function(e) {
             if (e.target === this) closeExportModal();
         });
 
-        // Tutup modal saat tekan Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeExportModal();
         });

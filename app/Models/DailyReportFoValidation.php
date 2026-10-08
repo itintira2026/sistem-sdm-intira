@@ -15,10 +15,20 @@ class DailyReportFoValidation extends Model
 
     protected $table = 'daily_report_fo_validations';
 
+    // protected $fillable = [
+    //     'daily_report_fo_id',
+    //     'manager_id',
+    //     'validation_action_id',
+    //     'status',
+    //     'catatan',
+    //     'validated_at',
+    // ];
+    // Tambahkan ke $fillable (kalau belum ada):
     protected $fillable = [
         'daily_report_fo_id',
+        'checked_by',   // BARU
+        'checked_at',   // BARU
         'manager_id',
-        'validation_action_id',
         'status',
         'catatan',
         'validated_at',
@@ -26,6 +36,7 @@ class DailyReportFoValidation extends Model
 
     protected $casts = [
         'validated_at' => 'datetime',
+        'checked_at' => 'datetime',
     ];
 
     // =========================================================
@@ -89,5 +100,11 @@ class DailyReportFoValidation extends Model
     public function getIsRejectedAttribute()
     {
         return $this->status === 'rejected';
+    }
+
+    // Tambahkan relasi baru (di samping relasi manager() yang sudah ada):
+    public function checker()
+    {
+        return $this->belongsTo(User::class, 'checked_by');
     }
 }

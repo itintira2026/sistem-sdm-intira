@@ -150,12 +150,13 @@
                                         </label>
                                         <input type="number" name="{{ $inputName }}" id="{{ $inputName }}"
                                             value="{{ old($inputName, $existingDetail?->value_number ?? '') }}"
-                                            min="0" step="1"
-                                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                            min="0" step="1" oninput="formatNumberPreview(this)"
                                             onkeydown="if(event.key==='.' || event.key===',') event.preventDefault();"
                                             placeholder="{{ $field->placeholder ?? 'Masukkan angka...' }}"
                                             {{ $field->is_required ? 'required' : '' }}
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 @error($inputName) border-red-500 @else border-gray-300 @enderror">
+                                        <p id="preview_{{ $inputName }}"
+                                            class="mt-1 text-xs font-medium text-teal-600"></p>
                                         @if ($field->help_text)
                                             <p class="mt-1 text-xs text-gray-400">{{ $field->help_text }}</p>
                                         @endif
@@ -375,7 +376,7 @@
                     div.className = 'relative';
                     div.innerHTML = `
                         <img src="${e.target.result}"
-                            class="object-cover w-full h-16 rounded-lg border border-teal-300">
+                            class="object-cover w-full h-16 border border-teal-300 rounded-lg">
                         <div class="absolute top-0.5 right-0.5 bg-teal-600 text-white text-xs rounded px-1">
                             ${index + 1}
                         </div>
@@ -385,6 +386,15 @@
 
                 reader.readAsDataURL(file);
             });
+        };
+
+        function formatNumberPreview(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+            const preview = document.getElementById('preview_' + input.id);
+            if (!preview) return;
+            preview.textContent = input.value ?
+                '= ' + new Intl.NumberFormat('id-ID').format(Number(input.value)) :
+                '';
         }
 
         // ============================================================

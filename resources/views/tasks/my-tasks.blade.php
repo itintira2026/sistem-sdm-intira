@@ -27,7 +27,7 @@
             <div class="grid items-start grid-cols-1 gap-4 mb-4 lg:grid-cols-2">
 
                 {{-- PERLU DIKERJAKAN HARI INI --}}
-                <div class="p-4 border border-teal-100 bg-teal-50 rounded-xl sm:p-5">
+                <div class="p-4 border border-teal-100 bg-teal-50 rounded-xl sm:p-5" x-data="{ limit: 5 }">
                     <h3 class="mb-3 text-sm font-semibold text-teal-800">🔥 Perlu Dikerjakan Hari Ini</h3>
 
                     @forelse ($activeAssignees as $row)
@@ -46,7 +46,7 @@
                             $pctColor =
                                 $pct >= 80 ? 'text-green-600' : ($pct >= 50 ? 'text-yellow-600' : 'text-red-600');
                         @endphp
-                        <div class="p-3 mb-2 bg-white rounded-lg last:mb-0">
+                        <div x-show="{{ $loop->index }} < limit" class="p-3 mb-2 bg-white rounded-lg last:mb-0">
                             <div class="flex items-center justify-between gap-2">
                                 <a href="{{ route('tasks.show', $task->id) }}"
                                     class="text-sm font-medium text-gray-800 truncate hover:text-teal-600">
@@ -95,6 +95,12 @@
                     @empty
                         <p class="py-8 text-sm text-center text-teal-700">🎉 Semua sudah beres hari ini.</p>
                     @endforelse
+                    @if ($activeAssignees->count() > 5)
+                        <button type="button" x-show="limit < {{ $activeAssignees->count() }}" @click="limit += 5"
+                            class="w-full py-2 mt-2 text-xs font-medium text-teal-700 rounded-lg hover:bg-teal-100">
+                            Tampilkan lainnya (<span x-text="{{ $activeAssignees->count() }} - limit"></span>)
+                        </button>
+                    @endif
                 </div>
 
                 {{-- TUGAS TAMBAHAN --}}
@@ -116,14 +122,10 @@
                     <div class="divide-y divide-gray-100">
                         @forelse ($selfRecordAssignees as $assignee)
                             @php $entry = $assignee->entries->first(); @endphp
-                            <div class="flex items-center justify-between gap-2 py-2.5">
-                                <div class="min-w-0">
-                                    <p class="text-sm font-medium text-gray-700 truncate">{{ $assignee->task->title }}
-                                    </p>
-                                    <p class="text-xs text-gray-400">{{ $assignee->task->created_at->format('d M Y') }}
-                                    </p>
-                                </div>
-                                <span class="text-xs text-gray-600 shrink-0">
+                            <div class="py-2.5">
+                                <p class="text-sm font-medium text-gray-700 truncate">{{ $assignee->task->title }}</p>
+                                <p class="text-xs text-gray-400">
+                                    {{ $assignee->task->created_at->format('d M Y') }} ·
                                     @if ($entry)
                                         @if ($assignee->task->tracking_mode === 'checklist')
                                             {{ $entry->value_checklist ? '✅ Selesai' : '⚪ Belum' }}
@@ -131,9 +133,39 @@
                                             {{ $assignee->task->formatValue($entry->value_number) }}
                                         @endif
                                     @endif
-                                </span>
+                                </p>
+
+                                @if ($assignee->canEditSelfRecord() || $assignee->canDeleteSelfRecord())
+                                    <div class="flex items-center gap-2 mt-2">
+                                        @if ($assignee->canEditSelfRecord())
+                                            <x-modal-sheet title="Ubah Tugas Tambahan">
+                                                <x-slot:trigger>
+                                                    <button type="button" @click="open = true"
+                                                        class="px-3 py-1 text-xs text-white bg-teal-500 rounded-lg hover:bg-teal-600">
+                                                        Edit
+                                                    </button>
+                                                </x-slot:trigger>
+                                                <x-self-record-form :assignee="$assignee" />
+                                            </x-modal-sheet>
+                                        @endif
+
+                                        @if ($assignee->canDeleteSelfRecord())
+                                            <form method="POST"
+                                                action="{{ route('tasks.self-record.destroy', $assignee) }}"
+                                                onsubmit="return confirm('Hapus tugas tambahan ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="px-3 py-1 text-xs text-red-600 rounded-lg bg-red-50 hover:bg-red-100">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         @empty
+                            ...
                             <p class="py-6 text-sm text-center text-gray-400">Belum ada catatan.</p>
                         @endforelse
                     </div>

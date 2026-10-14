@@ -79,4 +79,52 @@ class SelfRecordTaskController extends Controller
             ->route('tasks.self-record.create')
             ->with('success', 'Tugas Tambahan berhasil dicatat.');
     }
+
+    public function update(Request $request, TaskAssignee $assignee)
+    {
+        abort_unless($assignee->user_id === Auth::id(), 403);
+        abort_unless($assignee->canEditSelfRecord(), 403, 'Batas waktu edit (3 hari) sudah lewat.');
+
+        $task = $assignee->task;
+
+        // tracking_mode sengaja tidak bisa diubah
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'unit' => 'nullable|string|max:50',
+            'value_number' => [$task->tracking_mode === 'numeric' ? 'required' : 'nullable', 'numeric', 'min:0'],
+        ]);
+
+        DB::transaction(function () use ($task, $assignee, $validated, $request) {
+            $task->update([
+                'title' => $validated['title'],
+                'description' => $validated['description'] ?? null,
+                'unit' => $validated['unit'] ?? null,
+            ]);
+
+            $assignee->entries()->first()->update([
+                'value_number' => $task->tracking_mode === 'numeric' ? $validated['value_number'] : null,
+                'value_checklist' => $task->tracking_mode === 'checklist' ? $request->boolean('value_checklist') : null,
+            ]);
+        });
+
+        return $request->wantsJson()
+            ? response()->json(['message' => 'Tugas Tambahan berhasil diubah.'])
+            : back()->with('success', 'Tugas Tambahan berhasil diubah.');
+    }
+
+    public function destroy(Request $request, TaskAssignee $assignee)
+    {
+        abort_unless($assignee->user_id === Auth::id(), 403);
+        abort_unless($assignee->canDeleteSelfRecord(), 403, 'Batas waktu hapus (1 hari) sudah lewat.');
+
+        DB::transaction(function () use ($assignee) {
+            $task = $assignee->task;
+            $assignee->entries()->delete();
+            $assignee->delete();
+            $task->delete();
+        });
+
+        return back()->with('success', 'Tugas Tambahan dihapus.');
+    }
 }

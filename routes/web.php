@@ -154,6 +154,9 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::middleware('auth')->group(function () {
+
+    Route::get('/panduan-sistem', [App\Http\Controllers\PanduanSistemController::class, 'index'])
+        ->name('panduan-sistem.index');
     Route::get('/gaji-pokok/{gajihPokok}/export-pdf', [GajihPokokController::class, 'exportPdf'])
         ->name('gaji-pokok.export-pdf');
 
@@ -209,6 +212,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/tasks/self-record/create', [App\Http\Controllers\SelfRecordTaskController::class, 'create'])->name('tasks.self-record.create');
     Route::post('/tasks/self-record', [App\Http\Controllers\SelfRecordTaskController::class, 'store'])->name('tasks.self-record.store');
+    Route::put('/tasks/self-record/{assignee}', [App\Http\Controllers\SelfRecordTaskController::class, 'update'])->name('tasks.self-record.update');
+    Route::delete('/tasks/self-record/{assignee}', [App\Http\Controllers\SelfRecordTaskController::class, 'destroy'])->name('tasks.self-record.destroy');
 
     Route::get('/tasks/{task}/edit', [App\Http\Controllers\TaskDetailController::class, 'edit'])->name('tasks.edit');
     Route::get('/tasks/{task}', [App\Http\Controllers\TaskDetailController::class, 'show'])->name('tasks.show');
@@ -243,7 +248,6 @@ Route::middleware('auth')->group(function () {
         Route::prefix('superadmin/absensi/photo-cleanup')
             ->name('superadmin.absensi.photo-cleanup.')
             ->group(function () {
-
                 // Halaman utama: preview + riwayat
                 Route::get('/', [PresensiPhotoCleanupController::class, 'index'])
                     ->name('index');
@@ -263,7 +267,6 @@ Route::middleware('auth')->group(function () {
         Route::prefix('superadmin/daily-report-fo/photo-cleanup')
             ->name('superadmin.daily-report-fo.photo-cleanup.')
             ->group(function () {
-
                 // Halaman utama: preview + riwayat
                 Route::get('/', [DailyReportFoPhotoCleanupController::class, 'index'])
                     ->name('index');
@@ -280,6 +283,10 @@ Route::middleware('auth')->group(function () {
                 Route::post('/execute-range', [DailyReportFoPhotoCleanupController::class, 'executeRange'])
                     ->name('execute-range');
             });
+        Route::get('/superadmin/lampiran', [App\Http\Controllers\AttachmentCleanupController::class, 'index'])
+            ->name('superadmin.lampiran.index');
+        Route::post('/superadmin/lampiran/hapus', [App\Http\Controllers\AttachmentCleanupController::class, 'destroyRange'])
+            ->name('superadmin.lampiran.destroy-range');
     });
     /*
     |--------------------------------------------------------------------------

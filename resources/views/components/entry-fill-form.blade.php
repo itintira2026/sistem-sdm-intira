@@ -56,6 +56,12 @@
         }
     }
 }">
+    @if ($task->description)
+        <div class="p-3 mb-4 overflow-y-auto text-sm text-gray-600 rounded-lg bg-gray-50 max-h-40">
+            <p class="mb-1 text-xs font-semibold text-gray-500">Deskripsi tugas</p>
+            <p class="whitespace-pre-line">{{ $task->description }}</p>
+        </div>
+    @endif
     @if ($entry->validation_status === 'rejected' && $entry->rejected_reason)
         <div class="p-3 mb-3 text-xs text-red-700 border border-red-200 rounded-lg bg-red-50">
             <p class="font-semibold">❌ Ditolak</p>

@@ -39,6 +39,32 @@ class TaskAttachment extends Model
     }
 
     /**
+     * Ukuran file buat tampilan. File lama (sebelum kolom file_size ada)
+     * balikin "—", bukan "0 B", biar gak nyesatin.
+     */
+    public function formattedSize(): string
+    {
+        return $this->file_size === null ? '—' : self::formatBytes($this->file_size);
+    }
+
+    public static function formatBytes(int|float $bytes): string
+    {
+        if ($bytes >= 1073741824) {
+            return round($bytes / 1073741824, 2) . ' GB';
+        }
+
+        if ($bytes >= 1048576) {
+            return round($bytes / 1048576, 1) . ' MB';
+        }
+
+        if ($bytes >= 1024) {
+            return round($bytes / 1024, 1) . ' KB';
+        }
+
+        return $bytes . ' B';
+    }
+
+    /**
      * BARU — Cegah file yatim di storage (Part lampiran, poin 1).
      *
      * Begitu baris TaskAttachment dihapus (dari fitur hapus manual

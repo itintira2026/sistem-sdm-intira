@@ -19,26 +19,61 @@ class PanelKoreksiDataController extends Controller
     {
         $this->authorizeSuperadmin();
 
+        // --- Tugas terhapus ---
+        $deletedSearch = trim((string) $request->get('deleted_search'));
+
         $deletedTasks = Task::onlyTrashed()
             ->with('creator')
+            ->withCount('assignees')
+            ->when($deletedSearch, fn($q) => $q->where('title', 'like', "%{$deletedSearch}%"))
             ->latest('deleted_at')
-            ->paginate(15, ['*'], 'deleted_page');
+            ->paginate(10, ['*'], 'deleted_page')
+            ->withQueryString();
 
-        $entrySearch = $request->get('entry_search');
-        $entries = collect();
+        // --- Entry ---
+        $filters = [
+            'q'      => trim((string) $request->get('entry_search')),
+            'status' => $request->get('status'),
+            'from'   => $request->get('date_from'),
+            'to'     => $request->get('date_to'),
+        ];
 
-        if ($entrySearch) {
-            $entries = TaskEntry::with(['taskAssignee.task', 'taskAssignee.user'])
-                ->where(function ($q) use ($entrySearch) {
-                    $q->whereHas('taskAssignee.user', fn($q2) => $q2->where('name', 'like', "%{$entrySearch}%"))
-                        ->orWhereHas('taskAssignee.task', fn($q2) => $q2->where('title', 'like', "%{$entrySearch}%"));
-                })
-                ->latest()
-                ->limit(20)
-                ->get();
-        }
+        $entries = TaskEntry::with([
+            'taskAssignee.task' => fn($q) => $q->withTrashed(),
+            'taskAssignee.user',
+        ])
+            ->when($filters['q'], function ($query, $term) {
+                $query->whereHas('taskAssignee', function ($a) use ($term) {
+                    $a->whereHas('user', fn($u) => $u->where('name', 'like', "%{$term}%"))
+                        ->orWhereHas('task', fn($t) => $t->withTrashed()->where('title', 'like', "%{$term}%"));
+                });
+            })
+            ->when($filters['status'] === 'self', fn($q) => $q->whereNull('validation_status'))
+            ->when(
+                $filters['status'] && $filters['status'] !== 'self',
+                fn($q) => $q->where('validation_status', $filters['status'])
+            )
+            ->when($filters['from'], fn($q, $d) => $q->whereDate('entry_date', '>=', $d))
+            ->when($filters['to'], fn($q, $d) => $q->whereDate('entry_date', '<=', $d))
+            ->latest()
+            ->paginate(15, ['*'], 'entries_page')
+            ->withQueryString();
 
-        return view('superadmin.koreksi-data', compact('deletedTasks', 'entries', 'entrySearch'));
+        $statusOptions = TaskEntry::whereNotNull('validation_status')
+            ->distinct()
+            ->orderBy('validation_status')
+            ->pluck('validation_status');
+
+        $hasFilter = (bool) array_filter($filters);
+
+        return view('superadmin.koreksi-data', compact(
+            'deletedTasks',
+            'deletedSearch',
+            'entries',
+            'filters',
+            'statusOptions',
+            'hasFilter'
+        ));
     }
 
     public function restore($id)

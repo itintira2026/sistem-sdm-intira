@@ -65,4 +65,24 @@ class TaskAssignee extends Model
     {
         return $this->removed_reason !== null;
     }
+
+    public function isSelfRecord(): bool
+    {
+        $task = $this->task;
+
+        return $task->created_by === $this->user_id
+            && !$task->has_weight
+            && $task->repeat_mode === 'once'
+            && $task->period_start === null;
+    }
+
+    public function canEditSelfRecord(): bool
+    {
+        return $this->isSelfRecord() && $this->task->created_at->addDays(3)->isFuture();
+    }
+
+    public function canDeleteSelfRecord(): bool
+    {
+        return $this->isSelfRecord() && $this->task->created_at->addDay()->isFuture();
+    }
 }

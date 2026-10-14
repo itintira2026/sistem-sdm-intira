@@ -36,6 +36,15 @@ class TaskMutationFreezeService
             ->whereHas('task', function ($q) {
                 $q->where('has_weight', true)->where('status', 'active');
             })
+            // ->whereHas('task', function ($q) {
+            //     $q->where('has_weight', true)
+            //         ->where('status', 'active')
+            //         // Hanya tugas yang period_end-nya di bulan berjalan atau setelahnya.
+            //         // Tugas bulan lalu (sudah selesai & sudah jadi bagian KPI bulannya)
+            //         // JANGAN ikut dibekukan, karena yang beku dikeluarkan dari total
+            //         // bulanan dan itu akan mengubah angka KPI bulan lalu.
+            //         ->whereDate('period_end', '>=', now()->startOfMonth()->toDateString());
+            // })
             ->get();
 
         $count = 0;

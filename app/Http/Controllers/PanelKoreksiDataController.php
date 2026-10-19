@@ -31,11 +31,27 @@ class PanelKoreksiDataController extends Controller
             ->withQueryString();
 
         // --- Entry ---
+        $dateMode = $request->get('date_mode');
+        $dateMode = in_array($dateMode, ['all', 'with_date', 'without_date'], true)
+            ? $dateMode
+            : 'all';
+        $taskType = $request->get('task_type');
+        $taskType = in_array($taskType, ['kpi', 'additional', 'all'], true)
+            ? $taskType
+            : 'kpi';
+        $frozenMode = $request->get('frozen_mode') === 'include' ? 'include' : 'hide';
+        $dateBasis = $request->get('date_basis') === 'created_at' ? 'created_at' : 'entry_date';
+        $ignoreDateRange = $dateMode === 'without_date' && $dateBasis === 'entry_date';
+
         $filters = [
             'q'      => trim((string) $request->get('entry_search')),
             'status' => $request->get('status'),
-            'from'   => $request->get('date_from'),
-            'to'     => $request->get('date_to'),
+            'task_type' => $taskType,
+            'frozen_mode' => $frozenMode,
+            'date_basis' => $dateBasis,
+            'date_mode' => $dateMode,
+            'from'   => $ignoreDateRange ? null : $request->get('date_from'),
+            'to'     => $ignoreDateRange ? null : $request->get('date_to'),
         ];
 
         $entries = TaskEntry::with([
@@ -53,8 +69,19 @@ class PanelKoreksiDataController extends Controller
                 $filters['status'] && $filters['status'] !== 'self',
                 fn($q) => $q->where('validation_status', $filters['status'])
             )
-            ->when($filters['from'], fn($q, $d) => $q->whereDate('entry_date', '>=', $d))
-            ->when($filters['to'], fn($q, $d) => $q->whereDate('entry_date', '<=', $d))
+            ->when($filters['task_type'] !== 'all', function ($q) use ($filters) {
+                $q->whereHas('taskAssignee.task', fn($task) => $task
+                    ->withTrashed()
+                    ->where('has_weight', $filters['task_type'] === 'kpi'));
+            })
+            ->when($filters['frozen_mode'] === 'hide', fn($q) => $q->whereHas(
+                'taskAssignee',
+                fn($assignee) => $assignee->whereNull('finalized_at')
+            ))
+            ->when($filters['date_mode'] === 'with_date', fn($q) => $q->whereNotNull('entry_date'))
+            ->when($filters['date_mode'] === 'without_date', fn($q) => $q->whereNull('entry_date'))
+            ->when($filters['from'], fn($q, $d) => $q->whereDate($filters['date_basis'], '>=', $d))
+            ->when($filters['to'], fn($q, $d) => $q->whereDate($filters['date_basis'], '<=', $d))
             ->latest()
             ->paginate(15, ['*'], 'entries_page')
             ->withQueryString();
@@ -64,7 +91,15 @@ class PanelKoreksiDataController extends Controller
             ->orderBy('validation_status')
             ->pluck('validation_status');
 
-        $hasFilter = (bool) array_filter($filters);
+        $hasFilter = (bool) array_filter([
+            $filters['q'],
+            $filters['status'],
+            $filters['task_type'] !== 'kpi',
+            $filters['frozen_mode'] !== 'hide',
+            $filters['date_basis'] !== 'entry_date',
+            $filters['from'],
+            $filters['to'],
+        ]) || $filters['date_mode'] !== 'all';
 
         return view('superadmin.koreksi-data', compact(
             'deletedTasks',

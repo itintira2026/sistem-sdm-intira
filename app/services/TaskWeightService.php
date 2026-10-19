@@ -61,6 +61,26 @@ class TaskWeightService
     }
 
     /**
+     * Tugas berbobot yang MASIH TERBUKA milik user: belum dibekukan dan
+     * tanggal selesainya di bulan ini atau sesudahnya. Dipakai buat
+     * mengunci perubahan role (beda dari activeWeightedAssignments yang
+     * cuma bulan berjalan, karena tugas bulan depan juga tetap nempel
+     * kalau orangnya pindah jabatan).
+     */
+    public function openWeightedAssignments(User $user): Collection
+    {
+        return TaskAssignee::with('task')
+            ->where('user_id', $user->id)
+            ->whereNull('finalized_at')
+            ->whereHas('task', function ($q) {
+                $q->where('has_weight', true)
+                    ->where('status', 'active')
+                    ->whereDate('period_end', '>=', now()->startOfMonth()->toDateString());
+            })
+            ->get();
+    }
+
+    /**
      * BARU: riwayat assignee yang sudah dikunci untuk user ini — dipakai
      * buat ditampilkan read-only di halaman Atur Bobot, biar atasan bisa
      * lihat kenapa suatu tugas gak muncul lagi di daftar aktif.

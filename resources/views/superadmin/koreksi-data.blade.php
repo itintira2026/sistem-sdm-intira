@@ -71,7 +71,8 @@
                 <div class="px-6 py-4 border-b border-gray-100">
                     <h3 class="font-semibold text-gray-800">🔍 Cari Entry untuk Dikoreksi</h3>
                     <p class="mt-1 text-xs text-gray-400">
-                        {{ $hasFilter ? 'Hasil pencarian' : 'Entry terbaru' }} · {{ $entries->total() }} entry.
+                        {{ $hasFilter ? 'Hasil pencarian' : 'Entry KPI aktif terbaru' }} · {{ $entries->total() }}
+                        entry.
                         Klik Koreksi untuk membuka halaman override.
                     </p>
                 </div>
@@ -91,6 +92,32 @@
                                 <option value="{{ $status }}" @selected($filters['status'] === $status)>{{ $status }}
                                 </option>
                             @endforeach
+                        </select>
+
+                        <select name="task_type"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="kpi" @selected($filters['task_type'] === 'kpi')>Tugas KPI</option>
+                            <option value="additional" @selected($filters['task_type'] === 'additional')>Tugas Tambahan</option>
+                            <option value="all" @selected($filters['task_type'] === 'all')>Semua jenis tugas</option>
+                        </select>
+
+                        <select name="frozen_mode"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="hide" @selected($filters['frozen_mode'] === 'hide')>Sembunyikan yang freeze</option>
+                            <option value="include" @selected($filters['frozen_mode'] === 'include')>Termasuk yang freeze</option>
+                        </select>
+
+                        <select name="date_basis"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="entry_date" @selected($filters['date_basis'] === 'entry_date')>Filter tanggal entry</option>
+                            <option value="created_at" @selected($filters['date_basis'] === 'created_at')>Filter tanggal dibuat</option>
+                        </select>
+
+                        <select name="date_mode"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="all" @selected($filters['date_mode'] === 'all')>Semua entry</option>
+                            <option value="with_date" @selected($filters['date_mode'] === 'with_date')>Entry dengan tanggal</option>
+                            <option value="without_date" @selected($filters['date_mode'] === 'without_date')>Entry tanpa tanggal</option>
                         </select>
 
                         <div class="flex items-center gap-2">
@@ -119,21 +146,35 @@
                 @else
                     <div class="divide-y divide-gray-100">
                         @foreach ($entries as $entry)
-                            @php $task = $entry->taskAssignee?->task; @endphp
+                            @php
+                                $assignee = $entry->taskAssignee;
+                                $task = $assignee?->task;
+                            @endphp
                             <div class="flex items-center justify-between gap-4 px-6 py-3">
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium text-gray-800 truncate">
                                         {{ $task?->title ?? '—' }}
+                                        <span
+                                            class="ml-1 px-2 py-0.5 text-xs rounded-full {{ $task?->has_weight ? 'text-blue-700 bg-blue-50' : 'text-amber-700 bg-amber-50' }}">
+                                            {{ $task?->has_weight ? 'Tugas KPI' : 'Tugas Tambahan' }}
+                                        </span>
                                         @if ($task?->trashed())
                                             <span
                                                 class="ml-1 px-2 py-0.5 text-xs text-red-600 bg-red-50 rounded-full">terhapus</span>
+                                        @endif
+                                        @if ($assignee?->isFinalized())
+                                            <span
+                                                class="ml-1 px-2 py-0.5 text-xs text-gray-600 bg-gray-100 rounded-full">freeze</span>
                                         @endif
                                     </p>
                                     <p class="flex flex-wrap items-center text-xs text-gray-400 gap-x-1">
                                         <span>{{ $entry->taskAssignee?->user?->name ?? '—' }}</span>
                                         @if ($entry->entry_date)
-                                            <span>· {{ $entry->entry_date->format('d M Y') }}</span>
+                                            <span>· Tanggal entry {{ $entry->entry_date->format('d M Y') }}</span>
+                                        @else
+                                            <span>· Tanpa tanggal entry</span>
                                         @endif
+                                        <span>· Dibuat {{ $entry->created_at?->format('d M Y H:i') ?? '—' }}</span>
                                         <span>·</span>
                                         <span class="px-2 py-0.5 text-xs text-gray-600 bg-gray-100 rounded-full">
                                             {{ $entry->validation_status ?? 'Self-record' }}

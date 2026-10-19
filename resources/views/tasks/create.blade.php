@@ -65,52 +65,74 @@
                 repeatMode: @js(old('repeat_mode', 'once')),
             
                 selected: @js(collect(old('assignee_ids', []))->map(fn($i) => (string) $i)->values()),
-            
                 search: '',
             
-                templates: @js(
-    $previousTasks->map(
-        fn($t) => [
-            'id' => $t->id,
-
-            'title' => $t->title,
-
-            'description' => $t->description,
-
-            'tracking_mode' => $t->tracking_mode,
-
-            'unit' => $t->unit,
-
-            'unit_type' => $t->unit_type,
-
-            'repeat_mode' => $t->repeat_mode,
-
-            'division_scope' => $t->division_scope,
-        ],
-    ),
-),
+                templateSearch: '',
             
-                applyTemplate(id) {
+                templateResults: [],
+            
+                templateLoading: false,
+            
+                templateError: '',
+            
+                async searchTemplates() {
+            
+                    const query = this.templateSearch.trim();
+            
+                    if (query.length < 2) {
+                        this.templateResults = [];
+                        this.templateError = '';
+                        return;
+                    }
+            
+                    this.templateLoading = true;
+                    this.templateError = '';
+                    this.templateResults = [];
+            
+                    try {
+                        const response = await fetch(`${@js(route('tasks.templates.search'))}?q=${encodeURIComponent(query)}`, {
+                            headers: { Accept: 'application/json' },
+                        });
+                        if (!response.ok) throw new Error('Search request failed');
+                        const result = await response.json();
+                        if (this.templateSearch.trim() === query) this.templateResults = result.data;
+                    } catch {
+                        this.templateError = 'Pencarian gagal. Coba lagi.';
+                    } finally {
+                        this.templateLoading = false;
+                    }
+            
+                },
+            
+                async applyTemplate(id) {
             
                     if (!id) return;
             
-                    const t = this.templates.find(x => x.id == id);
+                    this.templateLoading = true;
+                    this.templateError = '';
             
-                    if (!t) return;
+                    try {
+                        const response = await fetch(`${@js(url('/tasks/templates'))}/${encodeURIComponent(id)}`, {
+                            headers: { Accept: 'application/json' },
+                        });
+                        if (!response.ok) throw new Error('Template request failed');
+                        const result = await response.json();
+                        const t = result.data;
             
-                    this.title = t.title;
-            
-                    this.description = t.description || '';
-            
-                    this.trackingMode = t.tracking_mode;
-            
-                    this.unit = t.unit || '';
-            
-                    this.unitType = t.unit_type || 'number';
-            
-                    this.repeatMode = t.repeat_mode;
-            
-                    this.divisionScope = t.division_scope || '';
+                        this.title = t.title;
+                        this.description = t.description || '';
+                        this.trackingMode = t.tracking_mode;
+                        this.unit = t.unit || '';
+                        this.unitType = t.unit_type || 'number';
+                        this.repeatMode = t.repeat_mode;
+                        this.divisionScope = t.division_scope || '';
+                        this.templateSearch = t.title;
+                        this.templateResults = [];
+                    } catch {
+                        this.templateError = 'Detail tugas gagal dimuat. Coba pilih lagi.';
+                    } finally {
+                        this.templateLoading = false;
+                    }
             
                 },
             
@@ -151,34 +173,38 @@
 
                 {{-- Salin dari Tugas Sebelumnya --}}
 
-                @if ($previousTasks->isNotEmpty())
+                <div
+                    class="flex flex-col gap-3 p-4 bg-white border shadow-sm border-slate-200 rounded-2xl sm:p-5 sm:flex-row sm:items-center lg:col-span-12">
 
-                    <div
-                        class="flex flex-col gap-3 p-4 bg-white border shadow-sm border-slate-200 rounded-2xl sm:p-5 sm:flex-row sm:items-center lg:col-span-12">
+                    <label for="template-search"
+                        class="flex items-center gap-2 text-sm font-semibold text-slate-700 shrink-0">
+                        📋 Salin dari
+                    </label>
 
-                        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 shrink-0">
-
-                            📋 Salin dari
-
-                        </label>
-
-                        <select @change="applyTemplate($event.target.value)"
+                    <div class="relative w-full">
+                        <input id="template-search" type="search" x-model="templateSearch"
+                            @input.debounce.300ms="searchTemplates()" autocomplete="off"
+                            placeholder="Cari tugas sebelumnya... (min. 2 huruf)"
                             class="w-full px-3 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
 
-                            <option value="">— Mulai dari kosong —</option>
-
-                            @foreach ($previousTasks as $prev)
-                                <option value="{{ $prev->id }}">{{ $prev->title }}
-
-                                    ({{ $prev->created_at->format('d M Y') }})
-                                </option>
-                            @endforeach
-
-                        </select>
-
+                        <div x-show="templateSearch.trim().length >= 2 && (templateLoading || templateError || templateResults.length > 0 || (!templateLoading && !templateError && templateResults.length === 0))"
+                            x-cloak
+                            class="absolute z-30 w-full mt-1 overflow-y-auto bg-white border shadow-lg border-slate-200 rounded-xl max-h-60">
+                            <p x-show="templateLoading" class="px-3 py-2 text-sm text-slate-500">Mencari...</p>
+                            <p x-show="templateError" x-text="templateError" class="px-3 py-2 text-sm text-red-600"></p>
+                            <template x-for="item in templateResults" :key="item.id">
+                                <button type="button" @click="applyTemplate(item.id)"
+                                    class="flex items-center justify-between w-full gap-3 px-3 py-2 text-left hover:bg-teal-50">
+                                    <span class="min-w-0 text-sm truncate text-slate-700" x-text="item.title"></span>
+                                    <span class="text-xs text-slate-400 shrink-0" x-text="item.created_at"></span>
+                                </button>
+                            </template>
+                            <p x-show="!templateLoading && !templateError && templateResults.length === 0"
+                                class="px-3 py-2 text-sm text-slate-500">Tidak ada tugas yang cocok.</p>
+                        </div>
                     </div>
 
-                @endif
+                </div>
 
                 <div class="space-y-5 lg:col-span-7">
                     {{-- Info Dasar --}}

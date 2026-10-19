@@ -1,14 +1,13 @@
 {{-- Fakta: tidak berbobot, tidak divalidasi, tidak masuk KPI; atasan tetap bisa melihat; daftar 5 per halaman dan ikut filter bulan (berdasarkan tanggal dibuat). --}}
-{{-- make an container fo hold 2 images side to side --}}
-<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-    <img src="{{ asset('assets/modul/tugas-tambahan/lampiran-1.png') }}" alt="lampiran 1" class="w-full h-auto" />
-    <img src="{{ asset('assets/modul/tugas-tambahan/lampiran-2.png') }}" alt="lampiran 2" class="w-full h-auto" />
-</div>
 <h4>Kapan dipakai</h4>
-<p>[ISI: aktivitas di luar penugasan atasan]</p>
+<p>Gunakan Tugas Tambahan untuk mencatat aktivitas yang dilakukan atas inisiatif sendiri dan bukan bagian dari Tugas KPI
+    yang diberikan atasan.</p>
 <h4>Cara mencatat</h4>
-<p>[ISI: tombol + Tambah, pilih Selesai/Tidak atau Angka]</p>
+<p>Di bagian <strong>Tugas Tambahan</strong> pada halaman Tugas Saya, klik <strong>+ Tambah</strong>, isi judul dan
+    deskripsi, lalu pilih cara catat <strong>Selesai / Tidak</strong> atau <strong>Angka</strong>. Simpan catatan
+    setelah mengisi hasilnya.</p>
 <h4>Yang perlu diketahui</h4>
-<p>[ISI: langsung final, tidak bisa diubah, tidak masuk KPI]</p>
-<p class="text-rose-500">Catatan*: tapi tetap terlihat oleh
-    atasan</p>
+<p>Catatan langsung tersimpan tanpa validasi dan tidak masuk KPI, tetapi tetap dapat dilihat atasan. Catatan dapat
+    diedit sampai 3 hari dan dihapus sampai 1 hari sejak dibuat. Saat diedit, cara catat tidak bisa diubah; jika salah
+    memilih mode, hapus lalu buat catatan baru sebelum batas waktunya lewat. Daftar mengikuti bulan tanggal dibuat dan
+    menampilkan 5 catatan per halaman.</p>

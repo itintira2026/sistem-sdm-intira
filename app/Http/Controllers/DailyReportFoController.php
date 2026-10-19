@@ -20,6 +20,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class DailyReportFoController extends Controller
 {
+    private const REJECTED_EDIT_WINDOW_HOURS = 72;
+
     // ==============================
     // FO SECTION
     // ==============================
@@ -78,7 +80,7 @@ class DailyReportFoController extends Controller
             $status = TimeHelper::getSlotStatus($slotTime, $branch->id, $today);
             $existingReport = $existingReports->get($slotNumber);
 
-            // BARU: cek apakah laporan yang ditolak ini masih dalam window 24 jam
+            // Cek apakah laporan yang ditolak masih dalam window edit 3x24 jam.
             $isRejectedReopen = $this->isRejectedEditWindowOpen($existingReport);
 
             $slotData[] = [
@@ -91,7 +93,7 @@ class DailyReportFoController extends Controller
                 'has_report' => $existingReport !== null,
                 'can_upload' => $status === 'open' && ! $existingReport,
                 // DIUBAH: tombol Edit sekarang juga muncul kalau statusnya 'rejected'
-                // dan masih dalam 24 jam sejak ditolak — walaupun window waktu
+                // dan masih dalam 3x24 jam sejak ditolak — walaupun window waktu
                 // normal ($status) sudah 'expired'.
                 'can_edit' => ($status === 'open' && $existingReport) || $isRejectedReopen,
                 'is_rejected_reopen' => $isRejectedReopen, // BARU: dipakai di Blade kalau mau kasih label beda
@@ -227,7 +229,7 @@ class DailyReportFoController extends Controller
     //         'categories' => $categories,   // dari master data
     //     ]);
     // }
-    public function showSlot($slotNumber)
+    public function showSlot(Request $request, $slotNumber)
     {
         $user = Auth::user();
         $branch = $user->branches->first();
@@ -239,11 +241,44 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $today = $branchTime->toDateString();
 
-        $selectedShift = ShiftHelper::determineShift($user->id);
+        $historyReportId = $request->query('report_id');
+        if ($historyReportId) {
+            $existingReport = DailyReportFo::where('id', $historyReportId)
+                ->where('user_id', $user->id)
+                ->where('branch_id', $branch->id)
+                ->where('slot', $slotNumber)
+                ->with([
+                    'validation',
+                    'details' => function ($q) {
+                        $q->with('field', 'photos');
+                    },
+                ])
+                ->firstOrFail();
 
-        if (! $selectedShift) {
-            return redirect()->route('daily-reports-fo.index')
-                ->with('error', 'Silakan pilih shift terlebih dahulu.');
+            if (! $this->isRejectedEditWindowOpen($existingReport)) {
+                return back()->with('error', 'Laporan ini sudah melewati batas waktu edit 3x24 jam.');
+            }
+
+            $selectedShift = $existingReport->shift;
+        } else {
+            $selectedShift = ShiftHelper::determineShift($user->id);
+
+            if (! $selectedShift) {
+                return redirect()->route('daily-reports-fo.index')
+                    ->with('error', 'Silakan pilih shift terlebih dahulu.');
+            }
+
+            $existingReport = DailyReportFo::where('user_id', $user->id)
+                ->whereDate('tanggal', $today)
+                ->where('shift', $selectedShift)
+                ->where('slot', $slotNumber)
+                ->with([
+                    'validation',
+                    'details' => function ($q) {
+                        $q->with('field', 'photos');
+                    },
+                ])
+                ->first();
         }
 
         $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
@@ -254,29 +289,20 @@ class DailyReportFoController extends Controller
 
         $slotTime = $slotConfig['slot_time'];
 
-        // DIUBAH: load existing report DULUAN (sebelum cek window waktu),
-        // dan tambah eager load 'validation' supaya validated_at ikut ke-load
-        $existingReport = DailyReportFo::where('user_id', $user->id)
-            ->whereDate('tanggal', $today)
-            ->where('shift', $selectedShift)
-            ->where('slot', $slotNumber)
-            ->with([
-                'validation', // BARU — dibutuhkan isRejectedEditWindowOpen()
-                'details' => function ($q) {
-                    $q->with('field', 'photos');
-                },
-            ])
-            ->first();
-
-        // BARU: kalau laporan ini ditolak & masih dalam 24 jam, bypass cek window waktu
+        // Laporan yang ditolak dan masih dalam 3x24 jam dapat melewati window normal.
         $isRejectedReopen = $this->isRejectedEditWindowOpen($existingReport);
 
+        if ($existingReport?->validation_status === 'rejected' && ! $isRejectedReopen) {
+            return back()->with('error', 'Window edit untuk laporan yang ditolak sudah lewat 3x24 jam. Hubungi Superadmin untuk koreksi.');
+        }
+
         if (! $isRejectedReopen) {
-            $status = TimeHelper::getSlotStatus($slotTime, $branch->id, $today);
+            $reportDate = $existingReport?->getRawOriginal('tanggal') ?? $today;
+            $status = TimeHelper::getSlotStatus($slotTime, $branch->id, $reportDate);
 
             if ($status !== 'open') {
                 $message = ($existingReport && $existingReport->validation_status === 'rejected')
-                    ? 'Window edit untuk laporan yang ditolak sudah lewat 24 jam. Hubungi Superadmin untuk koreksi.'
+                    ? 'Window edit untuk laporan yang ditolak sudah lewat 3x24 jam. Hubungi Superadmin untuk koreksi.'
                     : 'Slot ini belum dibuka atau sudah ditutup.';
 
                 return back()->with('error', $message);
@@ -295,7 +321,11 @@ class DailyReportFoController extends Controller
             $existingDetails = $existingReport->details->keyBy('field_id');
         }
 
-        $window = TimeHelper::getSlotWindowRange($slotTime, $branch->id, $today);
+        $reportDate = $existingReport?->getRawOriginal('tanggal') ?? $today;
+        $window = TimeHelper::getSlotWindowRange($slotTime, $branch->id, $reportDate);
+        $editDeadline = $isRejectedReopen
+            ? $existingReport->validation->validated_at->copy()->addHours(self::REJECTED_EDIT_WINDOW_HOURS)
+            : null;
 
         return view('daily-reports-fo.slot-form', [
             'branch' => $branch,
@@ -308,7 +338,11 @@ class DailyReportFoController extends Controller
             'existingReport' => $existingReport,
             'existingDetails' => $existingDetails,
             'isEdit' => $existingReport !== null,
-            'isRejectedReopen' => $isRejectedReopen, // BARU: dipakai di Blade kalau mau kasih banner
+            'isRejectedReopen' => $isRejectedReopen,
+            'editDeadline' => $editDeadline,
+            'editWindowRemainingSeconds' => $editDeadline
+                ? max(0, now()->diffInSeconds($editDeadline, false))
+                : null,
             'categories' => $categories,
         ]);
     }
@@ -501,9 +535,9 @@ class DailyReportFoController extends Controller
     /**
      * Edit Slot (GET)
      */
-    public function editSlot($slotNumber)
+    public function editSlot(Request $request, $slotNumber)
     {
-        return $this->showSlot($slotNumber);
+        return $this->showSlot($request, $slotNumber);
     }
 
     /**
@@ -522,45 +556,61 @@ class DailyReportFoController extends Controller
         $branchTime = TimeHelper::getBranchTime($branch->id);
         $today = $branchTime->toDateString();
 
-        $selectedShift = ShiftHelper::determineShift($user->id);
+        $historyReportId = $request->query('report_id');
+        $wasRejected = false;
 
-        if (! $selectedShift) {
-            return redirect()->route('daily-reports-fo.index')
-                ->with('error', 'Silakan pilih shift terlebih dahulu.');
-        }
+        if ($historyReportId) {
+            $report = DailyReportFo::where('id', $historyReportId)
+                ->where('user_id', $user->id)
+                ->where('branch_id', $branch->id)
+                ->where('slot', $slotNumber)
+                ->with([
+                    'validation',
+                    'details' => function ($q) {
+                        $q->with('field', 'photos');
+                    },
+                ])
+                ->firstOrFail();
 
-        $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
+            $wasRejected = $this->isRejectedEditWindowOpen($report);
+            if (! $wasRejected) {
+                return back()->with('error', 'Laporan ini sudah melewati batas waktu edit 3x24 jam atau tidak lagi ditolak.');
+            }
+        } else {
+            $selectedShift = ShiftHelper::determineShift($user->id);
 
-        if (! $slotConfig) {
-            return back()->with('error', 'Slot tidak valid.');
-        }
+            if (! $selectedShift) {
+                return redirect()->route('daily-reports-fo.index')
+                    ->with('error', 'Silakan pilih shift terlebih dahulu.');
+            }
 
-        $slotTime = $slotConfig['slot_time'];
+            $slotConfig = TimeHelper::getSlotConfig($selectedShift, $slotNumber);
 
-        // DIUBAH: load report DULUAN (sebelum cek window waktu),
-        // dan tambah eager load 'validation' supaya validated_at ikut ke-load
-        $report = DailyReportFo::where('user_id', $user->id)
-            ->whereDate('tanggal', $today)
-            ->where('shift', $selectedShift)
-            ->where('slot', $slotNumber)
-            ->with([
-                'validation', // BARU — dibutuhkan isRejectedEditWindowOpen()
-                'details' => function ($q) {
-                    $q->with('field', 'photos');
-                },
-            ])
-            ->firstOrFail();
+            if (! $slotConfig) {
+                return back()->with('error', 'Slot tidak valid.');
+            }
 
-        // BARU: kalau laporan ditolak tapi udah lewat 24 jam, tolak edit dengan pesan jelas
-        if ($report->validation_status === 'rejected' && ! $this->isRejectedEditWindowOpen($report)) {
-            return back()->with('error', 'Window edit untuk laporan yang ditolak sudah lewat 24 jam. Hubungi Superadmin untuk koreksi.');
-        }
+            $slotTime = $slotConfig['slot_time'];
+            $report = DailyReportFo::where('user_id', $user->id)
+                ->whereDate('tanggal', $today)
+                ->where('shift', $selectedShift)
+                ->where('slot', $slotNumber)
+                ->with([
+                    'validation',
+                    'details' => function ($q) {
+                        $q->with('field', 'photos');
+                    },
+                ])
+                ->firstOrFail();
 
-        $wasRejected = $this->isRejectedEditWindowOpen($report);
+            if ($report->validation_status === 'rejected' && ! $this->isRejectedEditWindowOpen($report)) {
+                return back()->with('error', 'Window edit untuk laporan yang ditolak sudah lewat 3x24 jam. Hubungi Superadmin untuk koreksi.');
+            }
 
-        // DIUBAH: bypass cek window waktu normal kalau ini resubmit dari status rejected
-        if (! $wasRejected && ! TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
-            return back()->with('error', 'Window upload untuk slot ini sudah ditutup. Tidak bisa edit.');
+            $wasRejected = $this->isRejectedEditWindowOpen($report);
+            if (! $wasRejected && ! TimeHelper::isSlotOpen($slotTime, $branch->id, $today)) {
+                return back()->with('error', 'Window upload untuk slot ini sudah ditutup. Tidak bisa edit.');
+            }
         }
 
         $fields = ReportField::active()->ordered()->get();
@@ -713,7 +763,7 @@ class DailyReportFoController extends Controller
             ? "Laporan Slot {$slotNumber} berhasil diperbaiki dan dikirim ulang untuk dicek."
             : "Laporan Slot {$slotNumber} berhasil diperbarui!";
 
-        return redirect()->route('daily-reports-fo.index')
+        return redirect()->route($historyReportId ? 'daily-reports-fo.history' : 'daily-reports-fo.index')
             ->with('success', $successMessage);
     }
 
@@ -783,6 +833,10 @@ class DailyReportFoController extends Controller
             ->orderBy('slot', 'asc')
             ->paginate($perPage)
             ->withQueryString();
+
+        $reports->getCollection()->each(function ($report) {
+            $report->rejected_edit_available = $this->isRejectedEditWindowOpen($report);
+        });
 
         // Tambah stats total_photos:
         $totalPhotos = $reports->sum(function ($report) {
@@ -1357,6 +1411,6 @@ class DailyReportFoController extends Controller
 
         $rejectedAt = $report->validation?->validated_at;
 
-        return $rejectedAt && now()->lessThanOrEqualTo($rejectedAt->copy()->addHours(24));
+        return $rejectedAt && now()->lessThanOrEqualTo($rejectedAt->copy()->addHours(self::REJECTED_EDIT_WINDOW_HOURS));
     }
 }

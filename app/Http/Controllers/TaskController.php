@@ -34,17 +34,57 @@ class TaskController extends Controller
             abort(403, 'Role Anda tidak memiliki hak untuk assign Tugas KPI ke siapapun.');
         }
 
-        // Buat fitur "Salin dari Tugas Sebelumnya" (Part C3)
         $previousTasks = Task::where('created_by', $user->id)
             ->where('has_weight', true)
             ->latest()
             ->limit(20)
-            ->get();
+            ->get(['id', 'title']);
 
         return view('tasks.create', [
             'eligibleAssignees' => $eligibleAssignees,
             'divisions' => Division::orderBy('name')->get(),
             'previousTasks' => $previousTasks,
+        ]);
+    }
+
+    public function searchTemplates(Request $request)
+    {
+        $validated = $request->validate([
+            'q' => 'required|string|min:2|max:255',
+        ]);
+
+        $tasks = Task::where('created_by', Auth::id())
+            ->where('has_weight', true)
+            ->where('title', 'like', $validated['q'] . '%')
+            ->latest()
+            ->limit(20)
+            ->get(['id', 'title', 'created_at']);
+
+        return response()->json([
+            'data' => $tasks->map(fn($task) => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'created_at' => $task->created_at->format('d M Y'),
+            ]),
+        ]);
+    }
+
+    public function template(Task $task)
+    {
+        $task = Task::where('created_by', Auth::id())
+            ->where('has_weight', true)
+            ->findOrFail($task->id);
+
+        return response()->json([
+            'data' => $task->only([
+                'title',
+                'description',
+                'tracking_mode',
+                'unit',
+                'unit_type',
+                'repeat_mode',
+                'division_scope',
+            ]),
         ]);
     }
 

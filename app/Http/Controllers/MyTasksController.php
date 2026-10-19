@@ -93,6 +93,19 @@ class MyTasksController extends Controller
             })
             ->values();
 
+        $rejectedAssignees = TaskAssignee::with(['task', 'entries.attachments'])
+            ->where('user_id', $user->id)
+            ->whereNull('finalized_at')
+            ->whereHas('task', function ($q) use ($today) {
+                $q->where('has_weight', true)
+                    ->where('status', 'active')
+                    ->whereDate('period_end', '<', $today);
+            })
+            ->whereHas('entries', fn($q) => $q->where('validation_status', 'rejected'))
+            ->latest('updated_at')
+            ->paginate(5, ['*'], 'rejected_page')
+            ->withQueryString();
+
         // =========================================================
         // 2. TUGAS SELESAI (per bulan, dipaginasi)
         // =========================================================
@@ -146,6 +159,7 @@ class MyTasksController extends Controller
 
         return view('tasks.my-tasks', [
             'activeAssignees' => $activeAssignees,
+            'rejectedAssignees' => $rejectedAssignees,
             'finishedPaginated' => $finishedPaginated,
             'finishedStats' => $finishedStats,
             'finishedOpenDefault' => $finishedOpenDefault,

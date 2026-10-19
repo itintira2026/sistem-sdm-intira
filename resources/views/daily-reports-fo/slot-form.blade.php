@@ -38,18 +38,25 @@
             @endif
 
             {{-- Window Info --}}
-            <div class="p-4 mb-6 rounded-lg bg-orange-50">
+            <div class="p-4 mb-6 rounded-lg {{ $isRejectedReopen ? 'bg-red-50' : 'bg-orange-50' }}">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-semibold text-orange-800">⏰ Window Upload</p>
-                        <p class="text-lg font-bold text-orange-600">
-                            {{ $window['start']->format('H:i') }} - {{ $window['end']->format('H:i') }}
-                        </p>
+                        @if ($isRejectedReopen)
+                            <p class="text-sm font-semibold text-red-800">⏰ Batas Edit Laporan Ditolak</p>
+                            <p class="text-lg font-bold text-red-600">Sampai {{ $editDeadline->format('d M Y H:i') }}
+                            </p>
+                        @else
+                            <p class="text-sm font-semibold text-orange-800">⏰ Window Upload</p>
+                            <p class="text-lg font-bold text-orange-600">
+                                {{ $window['start']->format('H:i') }} - {{ $window['end']->format('H:i') }}
+                            </p>
+                        @endif
                     </div>
                     <div class="text-right">
-                        <p class="text-sm text-orange-700">Waktu Tersisa:</p>
-                        <p class="text-2xl font-bold text-orange-600 countdown-timer"
-                            data-seconds="{{ \App\Helpers\TimeHelper::getRemainingTimeInSlot($slotTime, $branch->id) }}">
+                        <p class="text-sm {{ $isRejectedReopen ? 'text-red-700' : 'text-orange-700' }}">Waktu Tersisa:
+                        </p>
+                        <p class="text-2xl font-bold countdown-timer {{ $isRejectedReopen ? 'text-red-600' : 'text-orange-600' }}"
+                            data-seconds="{{ $isRejectedReopen ? $editWindowRemainingSeconds : \App\Helpers\TimeHelper::getRemainingTimeInSlot($slotTime, $branch->id) }}">
                             Loading...
                         </p>
                     </div>
@@ -57,7 +64,7 @@
             </div>
 
             <form method="POST"
-                action="{{ $isEdit ? route('daily-reports-fo.slot.update', $slotNumber) : route('daily-reports-fo.slot.store', $slotNumber) }}"
+                action="{{ $isEdit ? route('daily-reports-fo.slot.update', $isRejectedReopen ? ['slot' => $slotNumber, 'report_id' => $existingReport->id] : $slotNumber) : route('daily-reports-fo.slot.store', $slotNumber) }}"
                 enctype="multipart/form-data">
                 @csrf
                 @if ($isEdit)
@@ -228,7 +235,8 @@
                                                                 class="object-cover w-full h-16 rounded-lg">
                                                             <label
                                                                 class="absolute inset-0 flex items-center justify-center transition rounded-lg opacity-0 cursor-pointer bg-red-600/70 group-hover:opacity-100">
-                                                                <input type="checkbox" name="{{ $deletePhotoName }}[]"
+                                                                <input type="checkbox"
+                                                                    name="{{ $deletePhotoName }}[]"
                                                                     value="{{ $photo->id }}"
                                                                     class="hidden photo-delete-checkbox"
                                                                     data-field="{{ $field->id }}"

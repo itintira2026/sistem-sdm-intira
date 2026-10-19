@@ -200,6 +200,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/period-working-days/toggle', [App\Http\Controllers\PeriodWorkingDayController::class, 'toggle'])->name('period-working-days.toggle');
     });
 
+    Route::get('/tasks/templates/search', [App\Http\Controllers\TaskController::class, 'searchTemplates'])->name('tasks.templates.search');
+    Route::get('/tasks/templates/{task}', [App\Http\Controllers\TaskController::class, 'template'])
+        ->whereNumber('task')->name('tasks.templates.show');
     Route::get('/tasks/create', [App\Http\Controllers\TaskController::class, 'create'])->name('tasks.create');
     Route::post('/tasks', [App\Http\Controllers\TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}/assignees-weight-status', [App\Http\Controllers\TaskController::class, 'assigneesWeightStatus'])->name('tasks.assignees-weight-status');

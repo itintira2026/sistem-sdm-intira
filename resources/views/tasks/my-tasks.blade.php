@@ -24,6 +24,67 @@
                 </a>
             </div>
 
+            @if ($rejectedAssignees->isNotEmpty())
+                <div class="p-4 mb-4 border border-amber-200 bg-amber-50 rounded-xl sm:p-5">
+                    <h3 class="mb-1 text-sm font-semibold text-amber-900">Perlu Diperbaiki</h3>
+                    <p class="mb-3 text-xs text-amber-800">
+                        Entry yang baru ditolak tetap bisa diperbaiki meski periode tugasnya sudah berakhir.
+                    </p>
+
+                    <div class="space-y-3">
+                        @foreach ($rejectedAssignees as $assignee)
+                            @php
+                                $task = $assignee->task;
+                                $rejectedEntries = $assignee->entries
+                                    ->where('validation_status', 'rejected')
+                                    ->sortByDesc('entry_date')
+                                    ->values();
+                            @endphp
+                            <div class="p-3 bg-white border border-amber-100 rounded-lg">
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                    <a href="{{ route('tasks.show', $task->id) }}"
+                                        class="text-sm font-medium text-gray-800 hover:text-teal-600">
+                                        {{ $task->title }}
+                                    </a>
+                                    <span class="text-xs text-gray-500">
+                                        Periode {{ $task->period_start?->format('d M Y') }} -
+                                        {{ $task->period_end?->format('d M Y') }}
+                                    </span>
+                                </div>
+
+                                @foreach ($rejectedEntries as $entry)
+                                    <div
+                                        class="flex flex-wrap items-center justify-between gap-2 py-2 border-t border-gray-100 first:border-0">
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-medium text-red-700">
+                                                Ditolak · {{ $entry->entry_date?->format('d M Y') ?? 'Tanpa tanggal' }}
+                                            </p>
+                                            @if ($entry->rejected_reason)
+                                                <p class="mt-0.5 text-xs text-gray-500">Alasan:
+                                                    {{ $entry->rejected_reason }}</p>
+                                            @endif
+                                        </div>
+                                        <x-modal-sheet title="Perbaiki Entry — {{ $task->title }}">
+                                            <x-slot:trigger>
+                                                <button type="button" @click="open = true"
+                                                    class="px-3 py-1.5 text-xs text-white bg-teal-600 rounded-lg hover:bg-teal-700">
+                                                    Perbaiki
+                                                </button>
+                                            </x-slot:trigger>
+                                            <x-entry-fill-form :entry="$entry" />
+                                        </x-modal-sheet>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($rejectedAssignees->hasPages())
+                        <div class="mt-3 text-xs">{{ $rejectedAssignees->links() }}</div>
+                    @endif
+                </div>
+            @endif
+
             <div class="grid items-start grid-cols-1 gap-4 mb-4 lg:grid-cols-2">
 
                 {{-- PERLU DIKERJAKAN HARI INI --}}

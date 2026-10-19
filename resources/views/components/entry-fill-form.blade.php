@@ -62,6 +62,44 @@
             <p class="whitespace-pre-line">{{ $task->description }}</p>
         </div>
     @endif
+    @if ($entry->entry_date)
+        @php $isRejectedEntry = $entry->validation_status === 'rejected'; @endphp
+        <div
+            class="flex items-start gap-3 p-4 mb-4 border rounded-xl {{ $isRejectedEntry ? 'border-amber-200 bg-amber-50' : 'border-teal-200 bg-teal-50' }}">
+            <span
+                class="flex items-center justify-center w-10 h-10 text-lg rounded-lg shrink-0 {{ $isRejectedEntry ? 'bg-amber-100' : 'bg-teal-100' }}"
+                aria-hidden="true">📅</span>
+            <div class="min-w-0">
+                <p
+                    class="text-xs font-semibold tracking-wide uppercase {{ $isRejectedEntry ? 'text-amber-700' : 'text-teal-700' }}">
+                    Tanggal entry yang sedang diisi
+                </p>
+                <p class="mt-0.5 text-base font-semibold text-gray-900">
+                    {{ $entry->entry_date->translatedFormat('l, d F Y') }}
+                </p>
+                <p class="mt-1 text-sm {{ $isRejectedEntry ? 'text-amber-800' : 'text-teal-800' }}">
+                    @if ($isRejectedEntry)
+                        Entry tanggal ini sebelumnya ditolak. Perbaiki entry untuk tanggal yang sama, lalu kirim ulang.
+                    @elseif ($entry->entry_date->isToday())
+                        Default pengisian tugas harian adalah tanggal hari ini.
+                    @else
+                        Tanggal ini ditentukan oleh jadwal tugas.
+                    @endif
+                </p>
+            </div>
+        </div>
+    @else
+        <div class="flex items-start gap-3 p-4 mb-4 border border-gray-200 rounded-xl bg-gray-50">
+            <span class="flex items-center justify-center w-10 h-10 text-lg bg-gray-100 rounded-lg shrink-0"
+                aria-hidden="true">📝</span>
+            <div>
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Entry tugas</p>
+                <p class="mt-0.5 text-sm font-semibold text-gray-800">Tidak terikat ke tanggal harian</p>
+                <p class="mt-1 text-sm text-gray-600">Tugas Sekali atau Kumulatif menggunakan satu entry untuk seluruh
+                    periode tugas.</p>
+            </div>
+        </div>
+    @endif
     @if ($entry->validation_status === 'rejected' && $entry->rejected_reason)
         <div class="p-3 mb-3 text-xs text-red-700 border border-red-200 rounded-lg bg-red-50">
             <p class="font-semibold">❌ Ditolak</p>

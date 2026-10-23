@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
+        <h2 class="text-2xl font-bold leading-tight tracking-tight text-gray-900">
             ✍️ Perlu Saya Approve
         </h2>
-        <p class="mt-1 text-sm text-gray-500">Entry Tugas KPI yang menunggu approve final dari Anda.</p>
+        <p class="mt-2 text-sm leading-relaxed text-gray-500">Entry Tugas KPI yang menunggu approve final dari Anda.</p>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="p-6 overflow-hidden bg-white shadow-sm sm:rounded-lg" x-data="{
+    <div class="py-6 sm:py-10">
+        <div class="max-w-5xl px-4 mx-auto sm:px-6 lg:px-8">
+            <div class="p-4 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl sm:p-6 lg:p-8" x-data="{
                 selected: [],
                 result: 'approved',
                 reason: '',
@@ -18,44 +18,44 @@
             }">
 
                 @if (session('success'))
-                    <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">{{ session('success') }}</div>
+                    <div class="p-4 mb-6 text-sm leading-relaxed text-green-800 border border-green-200 bg-green-50 rounded-xl">{{ session('success') }}</div>
                 @endif
                 @if (session('error'))
-                    <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">{{ session('error') }}</div>
+                    <div class="p-4 mb-6 text-sm leading-relaxed text-red-800 border border-red-200 bg-red-50 rounded-xl">{{ session('error') }}</div>
                 @endif
 
                 @if ($entries->isEmpty())
-                    <p class="py-8 text-sm text-center text-gray-400">Tidak ada entry yang perlu di-approve saat ini. 🎉
+                    <p class="px-4 py-16 text-sm font-medium leading-relaxed text-center text-gray-500 border border-dashed border-gray-200 bg-gray-50 rounded-xl">Tidak ada entry yang perlu di-approve saat ini. 🎉
                     </p>
                 @else
                     <form action="{{ route('task-approve-queue.bulk-approve') }}" method="POST">
                         @csrf
 
                         <div
-                            class="flex items-center gap-2 px-3 py-2 mb-2 border border-gray-200 rounded-lg bg-gray-50">
+                            class="flex items-center gap-3 px-4 py-3 mb-4 border border-gray-200 rounded-xl bg-gray-50">
                             <input type="checkbox"
                                 @change="toggleAll(@js($entries->pluck('id')->map(fn($i) => (string) $i)->values()), $event.target.checked)"
-                                class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                            <label class="text-sm font-semibold text-gray-600">Pilih Semua</label>
-                            <span class="ml-auto text-xs text-teal-600 font-medium bg-teal-50 px-2 py-0.5 rounded-full"
+                                class="w-4 h-4 shrink-0 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-offset-2">
+                            <label class="text-sm font-semibold text-gray-700">Pilih Semua</label>
+                            <span class="ml-auto shrink-0 px-3 py-1 text-xs font-semibold text-teal-700 bg-teal-100 rounded-full"
                                 x-text="selected.length + ' dipilih'"></span>
                         </div>
 
                         <div
-                            class="mb-4 overflow-y-auto border border-gray-200 divide-y divide-gray-100 rounded-lg max-h-96">
+                            class="mb-6 overflow-y-auto border border-gray-200 divide-y divide-gray-100 rounded-xl max-h-[32rem]">
                             @foreach ($entries as $entry)
                                 @php
                                     $task = $entry->taskAssignee->task;
                                     $worker = $entry->taskAssignee->user;
                                     $roles = implode(', ', $worker->getRoleNames()->toArray());
                                 @endphp
-                                <label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50">
+                                <label class="flex flex-wrap items-start gap-3 p-4 transition-colors cursor-pointer sm:flex-nowrap sm:gap-4 sm:p-5 hover:bg-teal-50/40">
                                     <input type="checkbox" name="entry_ids[]" value="{{ $entry->id }}"
                                         x-model="selected"
-                                        class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                                    <div class="flex-1">
-                                        <p class="text-sm font-medium text-gray-800">{{ $task->title }}</p>
-                                        <p class="text-xs text-gray-400">
+                                        class="w-4 h-4 shrink-0 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-offset-2">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold leading-6 text-gray-900 break-words sm:text-base">{{ $task->title }}</p>
+                                        <p class="mt-1 text-xs leading-6 text-gray-500 break-words sm:text-sm">
                                             {{ $worker->name }} ({{ $roles }})
                                             @if ($entry->entry_date)
                                                 · {{ $entry->entry_date->format('d M Y') }}
@@ -67,7 +67,7 @@
                                                     : 'Belum')
                                                 : $task->formatValue($entry->value_number) }}
                                             @if ($entry->taskAssignee->individual_target)
-                                                <span class="text-gray-300">(target:
+                                                <span class="text-gray-500">(target:
                                                     {{ $task->formatValue($entry->taskAssignee->individual_target) }})</span>
                                             @endif
                                             @if ($entry->validation_status === 'checked')
@@ -92,43 +92,43 @@
                                                     default => '✅',
                                                 };
                                             @endphp
-                                            <p class="mt-1 text-xs font-semibold {{ $color }}">
+                                            <p class="mt-3 text-xs font-semibold leading-relaxed {{ $color }}">
                                                 {{ $icon }} Data dari {{ $worker->name }}
                                                 ({{ $roles }})
                                                 {{ $cmp['label'] }}
                                             </p>
                                         @endif
 
-                                        <div class="flex flex-wrap items-center gap-2 mt-1" @click.stop>
+                                        <div class="flex flex-wrap items-center gap-2 mt-3" @click.stop>
                                             @forelse ($entry->attachments as $att)
                                                 <a href="{{ Storage::url($att->file_path) }}" target="_blank"
-                                                    class="px-2 py-0.5 text-xs text-teal-700 rounded-full bg-teal-50 hover:bg-teal-100">
+                                                    class="max-w-full px-3 py-1.5 text-xs font-medium leading-5 text-teal-700 break-all transition-colors border border-teal-100 rounded-lg bg-teal-50 hover:bg-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-500">
                                                     📎 {{ $att->file_name }}
                                                 </a>
                                             @empty
-                                                <span class="text-xs text-gray-300">Tanpa lampiran</span>
+                                                <span class="text-xs text-gray-400">Tanpa lampiran</span>
                                             @endforelse
                                         </div>
                                     </div>
                                     <a href="{{ route('tasks.show', $entry->taskAssignee->task_id) }}" target="_blank"
-                                        class="text-xs text-teal-600 hover:underline shrink-0" @click.stop>
+                                        class="ml-7 px-3 py-1.5 text-xs font-semibold text-teal-700 transition-colors bg-white border border-gray-200 rounded-lg shrink-0 sm:ml-0 hover:bg-teal-50 hover:border-teal-200 focus:outline-none focus:ring-2 focus:ring-teal-500" @click.stop>
                                         Detail
                                     </a>
                                 </label>
                             @endforeach
                         </div>
 
-                        <div class="flex flex-wrap items-end gap-3 p-4 rounded-lg bg-gray-50">
+                        <div class="flex flex-col items-stretch gap-5 p-4 border border-gray-200 rounded-xl bg-gray-50 sm:flex-row sm:flex-wrap sm:items-end sm:p-5">
                             <div>
-                                <label class="block mb-1 text-xs font-medium text-gray-500">Hasil</label>
-                                <div class="flex gap-2">
-                                    <label class="flex items-center gap-1 px-3 py-2 border-2 rounded-lg cursor-pointer"
+                                <label class="block mb-2 text-xs font-semibold tracking-wide text-gray-600">Hasil</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <label class="flex items-center justify-center gap-2 px-4 py-2.5 text-gray-700 transition-colors border-2 rounded-xl cursor-pointer"
                                         :class="result === 'approved' ? 'border-green-500 bg-green-50' : 'border-gray-200'">
                                         <input type="radio" name="result" value="approved" x-model="result"
                                             class="text-green-600">
                                         <span class="text-sm">✅ Setujui</span>
                                     </label>
-                                    <label class="flex items-center gap-1 px-3 py-2 border-2 rounded-lg cursor-pointer"
+                                    <label class="flex items-center justify-center gap-2 px-4 py-2.5 text-gray-700 transition-colors border-2 rounded-xl cursor-pointer"
                                         :class="result === 'rejected' ? 'border-red-500 bg-red-50' : 'border-gray-200'">
                                         <input type="radio" name="result" value="rejected" x-model="result"
                                             class="text-red-600">
@@ -136,16 +136,16 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="flex-1 min-w-[200px]">
-                                <label class="block mb-1 text-xs font-medium text-gray-500">
+                            <div class="flex-1 min-w-0 sm:min-w-[200px]">
+                                <label class="block mb-2 text-xs font-semibold tracking-wide text-gray-600">
                                     Alasan <span x-show="result === 'rejected'" class="text-red-500">*</span>
                                 </label>
                                 <input type="text" name="reason" x-model="reason" :required="result === 'rejected'"
-                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    class="w-full px-4 py-2.5 text-sm bg-white border border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500">
                             </div>
                             <button type="submit" :disabled="selected.length === 0"
                                 :class="selected.length === 0 ? 'opacity-50 cursor-not-allowed' : ''"
-                                class="px-6 py-2 text-white transition bg-teal-500 rounded-lg hover:bg-teal-600">
+                                class="w-full px-6 py-3 text-sm font-semibold text-white transition bg-teal-600 shadow-sm rounded-xl sm:w-auto hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
                                 Proses (<span x-text="selected.length"></span>)
                             </button>
                         </div>

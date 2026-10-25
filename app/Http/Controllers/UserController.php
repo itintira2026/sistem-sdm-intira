@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use App\Models\BranchUser;
 use App\Models\User;
+use App\Services\TaskWeightService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -98,13 +99,47 @@ class UserController extends Controller
         return view('management_data.user.show', compact('user'));
     }
 
-    public function edit(User $user)
+    // public function edit(User $user)
+    // {
+    //     $roles = Role::all();
+    //     $branches = Branch::all();
+    //     $user->load(['roles', 'branches']);
+
+    //     return view('management_data.user.edit', compact('user', 'roles', 'branches'));
+    // }
+    public function edit(User $user, TaskWeightService $weightService)
     {
-        $roles = Role::all();
+        // Role KPI (struktural) diatur lewat Set Role KPI, bukan di sini.
+        $roles = Role::whereNotIn('name', [
+            'owner',
+            'ketua',
+            'direktur_utama',
+            'direktur_bisnis',
+            'direktur_operasional',
+            'kadiv',
+            'staff',
+            'korwil',
+        ])->get();
+
         $branches = Branch::all();
         $user->load(['roles', 'branches']);
 
-        return view('management_data.user.edit', compact('user', 'roles', 'branches'));
+        $openTasks = $weightService->openWeightedAssignments($user);
+        $openTaskCount = $openTasks->count();
+        $openTaskTitles = $openTasks->take(3)->map(fn($a) => $a->task->title)->all();
+
+        $activeBranchCount = BranchUser::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->count();
+
+        return view('management_data.user.edit', compact(
+            'user',
+            'roles',
+            'branches',
+            'openTaskCount',
+            'openTaskTitles',
+            'activeBranchCount'
+        ));
     }
 
     /**
@@ -161,7 +196,21 @@ class UserController extends Controller
         $user->save();
 
         // Update role using Spatie
-        $user->syncRoles([$validated['role']]);
+        // $user->syncRoles([$validated['role']]);
+        $structuralRoles = [
+            'owner',
+            'ketua',
+            'direktur_utama',
+            'direktur_bisnis',
+            'direktur_operasional',
+            'kadiv',
+            'staff',
+            'korwil'
+        ];
+
+        $keptRoles = $user->getRoleNames()->intersect($structuralRoles)->values()->all();
+
+        $user->syncRoles(array_merge([$validated['role']], $keptRoles));
 
         // Sync branches with manager status
         // First, remove all existing branch assignments

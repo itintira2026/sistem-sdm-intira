@@ -25,6 +25,7 @@ return [
             'start_time' => '08:00',
             'end_time' => '16:00',
             'slots' => [
+                // 1 => '09:00',
                 1 => '12:00',
                 2 => '16:00',
                 // 1 => '10:00',
@@ -62,7 +63,8 @@ return [
 
     // Durasi window FO untuk upload laporan (menit)
     // DIUBAH dari 60 → 15 menit
-    'upload_window_minutes' => 180,
+    // 'upload_window_minutes' => 180,
+    'upload_window_minutes' => 120,
 
     // Durasi window manager untuk validasi (menit, dihitung setelah window FO tutup)
     'validation_window_minutes' => 60,

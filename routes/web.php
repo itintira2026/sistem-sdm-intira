@@ -10,6 +10,7 @@ use App\Http\Controllers\DailyReportFoPhotoCleanupController;
 use App\Http\Controllers\ELearningKaryawanController;
 use App\Http\Controllers\FotoClosingController;
 use App\Http\Controllers\FotoPresensiController;
+use App\Http\Controllers\KpiRoleController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\Payroll\GajihPokokController;
 use App\Http\Controllers\Payroll\GajihPokokImportController;
@@ -23,6 +24,9 @@ use App\Http\Controllers\PresensiKaryawanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\PresensiPhotoCleanupController;
 use App\Http\Controllers\RankingFoController;
+use App\Http\Controllers\ReportOfficialDataController;
+use App\Http\Controllers\TaskAssigneeController;
+use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\ThreeHourReportDashboardController;
 // use App\Http\Controllers\Payroll\PotonganImportController;
 use App\Http\Controllers\ThreeHourReportManagerController;
@@ -34,6 +38,46 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('auth.login'))->middleware('guest');
+Route::get('/kanban', fn() => view('kanban'))->middleware('guest'); // v before
+
+Route::get('/superadmin-1-manajemen-role', fn() => view('kanbantest.superadmin-1-manajemen-role'))->middleware('guest');
+Route::get('/superadmin-2-koreksi-data', fn() => view('kanbantest.superadmin-2-koreksi-data'))->middleware('guest');
+
+Route::get('/owner-1-dashboard', fn() => view('kanbantest.owner-1-dashboard'))->middleware('guest');
+Route::get('/owner-2-drilldown', fn() => view('kanbantest.owner-2-drilldown'))->middleware('guest');
+
+Route::get('/ketua-1-board', fn() => view('kanbantest.ketua-1-board'))->middleware('guest');
+Route::get('/ketua-2-list-goal', fn() => view('kanbantest.ketua-2-list-goal'))->middleware('guest');
+Route::get('/ketua-3-form-goal', fn() => view('kanbantest.ketua-3-form-goal'))->middleware('guest');
+Route::get('/ketua-4-drilldown', fn() => view('kanbantest.ketua-4-drilldown'))->middleware('guest');
+
+Route::get('/direktur-1-board', fn() => view('kanbantest.direktur-1-board'))->middleware('guest');
+Route::get('/direktur-2-list-goal', fn() => view('kanbantest.direktur-2-list-goal'))->middleware('guest');
+Route::get('/direktur-3-form-breakdown', fn() => view('kanbantest.direktur-3-form-breakdown'))->middleware('guest');
+Route::get('/direktur-4-drilldown', fn() => view('kanbantest.direktur-4-drilldown'))->middleware('guest');
+
+Route::get('/spi-1-board', fn() => view('kanbantest.spi-1-board'))->middleware('guest');
+Route::get('/spi-2-list-goal', fn() => view('kanbantest.spi-2-list-goal'))->middleware('guest');
+Route::get('/spi-3-form-breakdown', fn() => view('kanbantest.spi-3-form-breakdown'))->middleware('guest');
+Route::get('/spi-4-drilldown', fn() => view('kanbantest.spi-4-drilldown'))->middleware('guest');
+
+Route::get('/kadiv-1-board', fn() => view('kanbantest.kadiv-1-board'))->middleware('guest');
+Route::get('/kadiv-2-list-goal', fn() => view('kanbantest.kadiv-2-list-goal'))->middleware('guest');
+Route::get('/kadiv-3-form-breakdown', fn() => view('kanbantest.kadiv-3-form-breakdown'))->middleware('guest');
+Route::get('/kadiv-4-drilldown', fn() => view('kanbantest.kadiv-4-drilldown'))->middleware('guest');
+
+Route::get('/korea-1-board', fn() => view('kanbantest.korea-1-board'))->middleware('guest');
+Route::get('/korea-2-list-goal', fn() => view('kanbantest.korea-2-list-goal'))->middleware('guest');
+Route::get('/korea-3-form-breakdown', fn() => view('kanbantest.korea-3-form-breakdown'))->middleware('guest');
+Route::get('/korea-4-drilldown', fn() => view('kanbantest.korea-4-drilldown'))->middleware('guest');
+
+Route::get('/am-1-board', fn() => view('kanbantest.am-1-board'))->middleware('guest');
+Route::get('/am-2-list-goal', fn() => view('kanbantest.am-2-list-goal'))->middleware('guest');
+Route::get('/am-3-form-breakdown', fn() => view('kanbantest.am-3-form-breakdown'))->middleware('guest');
+Route::get('/am-4-drilldown', fn() => view('kanbantest.am-4-drilldown'))->middleware('guest');
+
+Route::get('/staff-fo-1-board', fn() => view('kanbantest.staff-fo-1-board'))->middleware('guest');
+
 Route::get('/gd-test', function () {
     dd(gd_info());
 });
@@ -110,6 +154,9 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::middleware('auth')->group(function () {
+
+    Route::get('/panduan-sistem', [App\Http\Controllers\PanduanSistemController::class, 'index'])
+        ->name('panduan-sistem.index');
     Route::get('/gaji-pokok/{gajihPokok}/export-pdf', [GajihPokokController::class, 'exportPdf'])
         ->name('gaji-pokok.export-pdf');
 
@@ -131,11 +178,79 @@ Route::middleware('auth')->group(function () {
     Route::resource('presensi-karyawan', PresensiKaryawanController::class);
     Route::resource('e-learning-karyawan', ELearningKaryawanController::class);
 
+    Route::middleware('role:kadiv|superadmin')->group(function () {
+        Route::prefix('data-resmi')->name('data-resmi.')->group(function () {
+            Route::get('/', [ReportOfficialDataController::class, 'index'])->name('index');
+            Route::get('/template', [ReportOfficialDataController::class, 'template'])->name('template');
+            Route::post('/', [ReportOfficialDataController::class, 'store'])->name('store');
+        });
+    });
+
     Route::middleware('role:superadmin')->group(function () {
+        Route::get('/kpi-roles', [KpiRoleController::class, 'index'])->name('kpi-roles.index');
+        Route::put('/kpi-roles/{user}', [KpiRoleController::class, 'update'])->name('kpi-roles.update');
+    });
+
+    Route::middleware('role:superadmin|marketing|owner|ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|staff')->group(function () {
+        Route::get('/rekonsiliasi', [App\Http\Controllers\ReportReconciliationController::class, 'index'])->name('rekonsiliasi.index');
+    });
+
+    Route::middleware('role:superadmin|ketua|direktur_utama|direktur_bisnis|direktur_operasional')->group(function () {
+        Route::get('/period-working-days', [App\Http\Controllers\PeriodWorkingDayController::class, 'index'])->name('period-working-days.index');
+        Route::post('/period-working-days/toggle', [App\Http\Controllers\PeriodWorkingDayController::class, 'toggle'])->name('period-working-days.toggle');
+    });
+
+    Route::get('/tasks/templates/search', [App\Http\Controllers\TaskController::class, 'searchTemplates'])->name('tasks.templates.search');
+    Route::get('/tasks/templates/{task}', [App\Http\Controllers\TaskController::class, 'template'])
+        ->whereNumber('task')->name('tasks.templates.show');
+    Route::get('/tasks/create', [App\Http\Controllers\TaskController::class, 'create'])->name('tasks.create');
+    Route::post('/tasks', [App\Http\Controllers\TaskController::class, 'store'])->name('tasks.store');
+    Route::get('/tasks/{task}/assignees-weight-status', [App\Http\Controllers\TaskController::class, 'assigneesWeightStatus'])->name('tasks.assignees-weight-status');
+
+    Route::get('/tasks/weight-reinput/{user}', [App\Http\Controllers\TaskWeightController::class, 'edit'])->name('tasks.weight-reinput');
+    Route::put('/tasks/weight-reinput/{user}', [App\Http\Controllers\TaskWeightController::class, 'update'])->name('tasks.weight-reinput.update');
+
+    Route::post('/task-assignees/{taskAssignee}/remove', [TaskAssigneeController::class, 'remove'])
+        ->name('task-assignees.remove');
+
+    Route::get('/tasks/self-record/create', [App\Http\Controllers\SelfRecordTaskController::class, 'create'])->name('tasks.self-record.create');
+    Route::post('/tasks/self-record', [App\Http\Controllers\SelfRecordTaskController::class, 'store'])->name('tasks.self-record.store');
+    Route::put('/tasks/self-record/{assignee}', [App\Http\Controllers\SelfRecordTaskController::class, 'update'])->name('tasks.self-record.update');
+    Route::delete('/tasks/self-record/{assignee}', [App\Http\Controllers\SelfRecordTaskController::class, 'destroy'])->name('tasks.self-record.destroy');
+
+    Route::get('/tasks/{task}/edit', [App\Http\Controllers\TaskDetailController::class, 'edit'])->name('tasks.edit');
+    Route::get('/tasks/{task}', [App\Http\Controllers\TaskDetailController::class, 'show'])->name('tasks.show');
+    Route::delete('/tasks/{task}', [App\Http\Controllers\TaskDetailController::class, 'destroy'])->name('tasks.destroy');
+    Route::put('/tasks/{task}', [App\Http\Controllers\TaskDetailController::class, 'update'])->name('tasks.update');
+
+    Route::get('/task-entries/{entry}/edit', [App\Http\Controllers\TaskEntryController::class, 'edit'])->name('task-entries.edit');
+    Route::put('/task-entries/{entry}', [App\Http\Controllers\TaskEntryController::class, 'update'])->name('task-entries.update');
+
+    Route::get('/task-check-queue', [App\Http\Controllers\TaskCheckQueueController::class, 'index'])->name('task-check-queue.index');
+    Route::post('/task-check-queue/bulk-check', [App\Http\Controllers\TaskCheckQueueController::class, 'bulkCheck'])->name('task-check-queue.bulk-check');
+
+    Route::get('/task-approve-queue', [App\Http\Controllers\TaskApproveQueueController::class, 'index'])->name('task-approve-queue.index');
+    Route::post('/task-approve-queue/bulk-approve', [App\Http\Controllers\TaskApproveQueueController::class, 'bulkApprove'])->name('task-approve-queue.bulk-approve');
+
+    Route::get('/task-entries/{entry}/override', [App\Http\Controllers\TaskEntryOverrideController::class, 'edit'])->name('task-entries.override.edit');
+    Route::put('/task-entries/{entry}/override', [App\Http\Controllers\TaskEntryOverrideController::class, 'update'])->name('task-entries.override.update');
+
+    Route::get('/tugas-saya', [App\Http\Controllers\MyTasksController::class, 'index'])->name('tasks.my-tasks');
+    Route::get('/kpi-saya', [App\Http\Controllers\MyKpiController::class, 'index'])->name('tasks.my-kpi');
+    Route::get('/kpi-tim', [App\Http\Controllers\TeamDrilldownController::class, 'index'])->name('tasks.team-drilldown');
+    Route::get('/kpi-tim/{user}', [App\Http\Controllers\TeamMemberDetailController::class, 'index'])
+        ->name('tasks.team-member-detail');
+    Route::get('/tugas-diberikan', [App\Http\Controllers\AssignedTasksController::class, 'index'])->name('tasks.assigned');
+    Route::get('/task-attachments/{attachment}', [TaskAttachmentController::class, 'show'])
+        ->name('task-attachments.show');
+
+    Route::middleware('role:superadmin')->group(function () {
+        Route::get('/superadmin/koreksi-data', [App\Http\Controllers\PanelKoreksiDataController::class, 'index'])->name('superadmin.koreksi-data.index');
+        Route::post('/superadmin/koreksi-data/{id}/restore', [App\Http\Controllers\PanelKoreksiDataController::class, 'restore'])->name('superadmin.koreksi-data.restore');
+        Route::resource('divisions', App\Http\Controllers\DivisionController::class)->except(['show']);
         Route::prefix('superadmin/absensi/photo-cleanup')
             ->name('superadmin.absensi.photo-cleanup.')
             ->group(function () {
-
                 // Halaman utama: preview + riwayat
                 Route::get('/', [PresensiPhotoCleanupController::class, 'index'])
                     ->name('index');
@@ -155,7 +270,6 @@ Route::middleware('auth')->group(function () {
         Route::prefix('superadmin/daily-report-fo/photo-cleanup')
             ->name('superadmin.daily-report-fo.photo-cleanup.')
             ->group(function () {
-
                 // Halaman utama: preview + riwayat
                 Route::get('/', [DailyReportFoPhotoCleanupController::class, 'index'])
                     ->name('index');
@@ -172,6 +286,10 @@ Route::middleware('auth')->group(function () {
                 Route::post('/execute-range', [DailyReportFoPhotoCleanupController::class, 'executeRange'])
                     ->name('execute-range');
             });
+        Route::get('/superadmin/lampiran', [App\Http\Controllers\AttachmentCleanupController::class, 'index'])
+            ->name('superadmin.lampiran.index');
+        Route::post('/superadmin/lampiran/hapus', [App\Http\Controllers\AttachmentCleanupController::class, 'destroyRange'])
+            ->name('superadmin.lampiran.destroy-range');
     });
     /*
     |--------------------------------------------------------------------------
@@ -250,7 +368,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('daily-contents', App\Http\Controllers\DailyContentController::class);
     });
 
-    Route::middleware('role:manager|superadmin|marketing')->group(function () {
+    Route::post('/{reportId}/check', [ValidationController::class, 'check'])->name('check');
+
+    Route::middleware('role:manager|superadmin|marketing|owner|ketua|direktur_utama|direktur_bisnis|direktur_operasional|kadiv|staff')->group(function () {
         // Tambahkan di routes/web.php, di dalam middleware auth
 
         // ============================================================
@@ -268,6 +388,7 @@ Route::middleware('auth')->group(function () {
             // Detail laporan + form validasi
             Route::get('/{reportId}', [ValidationController::class, 'show'])->name('show');
 
+            Route::post('/{reportId}/check', [ValidationController::class, 'check'])->name('check'); // BARU
             // Proses validasi (approve/reject) — manager + superadmin
             Route::post('/{reportId}/validate', [ValidationController::class, 'validate'])->name('validate');
 

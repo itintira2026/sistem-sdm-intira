@@ -314,13 +314,35 @@
                                     @endif
 
                                     {{-- Info validasi jika sudah divalidasi --}}
-                                    @if ($report->validation)
+                                    {{-- @if ($report->validation)
                                         <div class="pt-3 mt-3 border-t border-gray-200">
                                             <p class="text-xs text-gray-500">
                                                 <strong>Tindakan:</strong>
                                                 {{ $report->validation->actions->pluck('name')->join(', ') }}
                                                 &nbsp;·&nbsp;
                                                 {{ $report->validation->validated_at->format('H:i') }}
+                                            </p>
+                                            @if ($report->validation->catatan)
+                                                <p class="mt-1 text-xs text-gray-500">
+                                                    <strong>Catatan:</strong> {{ $report->validation->catatan }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif --}}
+                                    {{-- Info validasi jika sudah divalidasi --}}
+                                    @if ($report->validation)
+                                        <div class="pt-3 mt-3 border-t border-gray-200">
+                                            <p class="text-xs text-gray-500">
+                                                <strong>Tindakan:</strong>
+                                                {{ $report->validation->actions->pluck('name')->join(', ') }}
+                                                &nbsp;·&nbsp;
+                                                {{-- DIUBAH: cek validated_at dulu, fallback ke checked_at kalau belum ada --}}
+                                                @if ($report->validation->validated_at)
+                                                    Divalidasi {{ $report->validation->validated_at->format('H:i') }}
+                                                @elseif ($report->validation->checked_at)
+                                                    Dicek {{ $report->validation->checked_at->format('H:i') }} —
+                                                    menunggu approve Korwil
+                                                @endif
                                             </p>
                                             @if ($report->validation->catatan)
                                                 <p class="mt-1 text-xs text-gray-500">

@@ -38,18 +38,25 @@
             @endif
 
             {{-- Window Info --}}
-            <div class="p-4 mb-6 rounded-lg bg-orange-50">
+            <div class="p-4 mb-6 rounded-lg {{ $isRejectedReopen ? 'bg-red-50' : 'bg-orange-50' }}">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-semibold text-orange-800">⏰ Window Upload</p>
-                        <p class="text-lg font-bold text-orange-600">
-                            {{ $window['start']->format('H:i') }} - {{ $window['end']->format('H:i') }}
-                        </p>
+                        @if ($isRejectedReopen)
+                            <p class="text-sm font-semibold text-red-800">⏰ Batas Edit Laporan Ditolak</p>
+                            <p class="text-lg font-bold text-red-600">Sampai {{ $editDeadline->format('d M Y H:i') }}
+                            </p>
+                        @else
+                            <p class="text-sm font-semibold text-orange-800">⏰ Window Upload</p>
+                            <p class="text-lg font-bold text-orange-600">
+                                {{ $window['start']->format('H:i') }} - {{ $window['end']->format('H:i') }}
+                            </p>
+                        @endif
                     </div>
                     <div class="text-right">
-                        <p class="text-sm text-orange-700">Waktu Tersisa:</p>
-                        <p class="text-2xl font-bold text-orange-600 countdown-timer"
-                            data-seconds="{{ \App\Helpers\TimeHelper::getRemainingTimeInSlot($slotTime, $branch->id) }}">
+                        <p class="text-sm {{ $isRejectedReopen ? 'text-red-700' : 'text-orange-700' }}">Waktu Tersisa:
+                        </p>
+                        <p class="text-2xl font-bold countdown-timer {{ $isRejectedReopen ? 'text-red-600' : 'text-orange-600' }}"
+                            data-seconds="{{ $isRejectedReopen ? $editWindowRemainingSeconds : \App\Helpers\TimeHelper::getRemainingTimeInSlot($slotTime, $branch->id) }}">
                             Loading...
                         </p>
                     </div>
@@ -57,7 +64,7 @@
             </div>
 
             <form method="POST"
-                action="{{ $isEdit ? route('daily-reports-fo.slot.update', $slotNumber) : route('daily-reports-fo.slot.store', $slotNumber) }}"
+                action="{{ $isEdit ? route('daily-reports-fo.slot.update', $isRejectedReopen ? ['slot' => $slotNumber, 'report_id' => $existingReport->id] : $slotNumber) : route('daily-reports-fo.slot.store', $slotNumber) }}"
                 enctype="multipart/form-data">
                 @csrf
                 @if ($isEdit)
@@ -150,12 +157,13 @@
                                         </label>
                                         <input type="number" name="{{ $inputName }}" id="{{ $inputName }}"
                                             value="{{ old($inputName, $existingDetail?->value_number ?? '') }}"
-                                            min="0" step="1"
-                                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                            min="0" step="1" oninput="formatNumberPreview(this)"
                                             onkeydown="if(event.key==='.' || event.key===',') event.preventDefault();"
                                             placeholder="{{ $field->placeholder ?? 'Masukkan angka...' }}"
                                             {{ $field->is_required ? 'required' : '' }}
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 @error($inputName) border-red-500 @else border-gray-300 @enderror">
+                                        <p id="preview_{{ $inputName }}"
+                                            class="mt-1 text-xs font-medium text-teal-600"></p>
                                         @if ($field->help_text)
                                             <p class="mt-1 text-xs text-gray-400">{{ $field->help_text }}</p>
                                         @endif
@@ -227,7 +235,8 @@
                                                                 class="object-cover w-full h-16 rounded-lg">
                                                             <label
                                                                 class="absolute inset-0 flex items-center justify-center transition rounded-lg opacity-0 cursor-pointer bg-red-600/70 group-hover:opacity-100">
-                                                                <input type="checkbox" name="{{ $deletePhotoName }}[]"
+                                                                <input type="checkbox"
+                                                                    name="{{ $deletePhotoName }}[]"
                                                                     value="{{ $photo->id }}"
                                                                     class="hidden photo-delete-checkbox"
                                                                     data-field="{{ $field->id }}"
@@ -375,7 +384,7 @@
                     div.className = 'relative';
                     div.innerHTML = `
                         <img src="${e.target.result}"
-                            class="object-cover w-full h-16 rounded-lg border border-teal-300">
+                            class="object-cover w-full h-16 border border-teal-300 rounded-lg">
                         <div class="absolute top-0.5 right-0.5 bg-teal-600 text-white text-xs rounded px-1">
                             ${index + 1}
                         </div>
@@ -385,6 +394,15 @@
 
                 reader.readAsDataURL(file);
             });
+        };
+
+        function formatNumberPreview(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+            const preview = document.getElementById('preview_' + input.id);
+            if (!preview) return;
+            preview.textContent = input.value ?
+                '= ' + new Intl.NumberFormat('id-ID').format(Number(input.value)) :
+                '';
         }
 
         // ============================================================

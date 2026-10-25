@@ -160,6 +160,20 @@
                                                 class="px-3 py-1 text-xs text-blue-600 transition hover:text-blue-800">
                                                 👁️ Detail
                                             </button>
+                                            @if ($report->validation_status === 'rejected')
+                                                @if ($report->rejected_edit_available)
+                                                    <a href="{{ route('daily-reports-fo.slot.edit', ['slot' => $report->slot, 'report_id' => $report->id]) }}"
+                                                        class="px-3 py-1 text-xs text-red-600 transition hover:text-red-800">
+                                                        ✏️ Edit
+                                                    </a>
+                                                @else
+                                                    <button type="button" disabled
+                                                        title="Batas edit 3x24 jam telah lewat"
+                                                        class="px-3 py-1 text-xs text-gray-400 cursor-not-allowed">
+                                                        ✏️ Edit
+                                                    </button>
+                                                @endif
+                                            @endif
                                         </td>
                                     </tr>
 
@@ -227,13 +241,19 @@
                                                                             <span
                                                                                 class="text-gray-600">{{ $detail->field->name }}:</span>
                                                                             <span class="font-medium text-gray-800">
-                                                                                @if ($detail->field->input_type === 'checkbox')
-                                                                                    {{ $detail->value_boolean ? '✅ Ya' : '❌ Tidak' }}
-                                                                                @elseif ($detail->field->input_type === 'number' || $detail->field->input_type === 'photo_number')
-                                                                                    {{ $detail->value_number ?? '-' }}
-                                                                                @else
-                                                                                    {{ $detail->value_text ?? '-' }}
-                                                                                @endif
+                                                                                @switch($detail->field->input_type)
+                                                                                    @case('checkbox')
+                                                                                        {{ $detail->value_boolean ? '✅ Ya' : '❌ Tidak' }}
+                                                                                    @break
+
+                                                                                    @case('number')
+                                                                                    @case('photo_number')
+                                                                                        {{ $detail->value_number ?? '-' }}
+                                                                                    @break
+
+                                                                                    @default
+                                                                                        {{ $detail->value_text ?? '-' }}
+                                                                                @endswitch
                                                                             </span>
                                                                         </div>
 
@@ -260,31 +280,31 @@
                                             </div>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
-                                            Belum ada history laporan.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                                Belum ada history laporan.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
 
-                        <div class="mt-6">
-                            {{ $reports->withQueryString()->links() }}
+                            <div class="mt-6">
+                                {{ $reports->withQueryString()->links() }}
+                            </div>
                         </div>
+
                     </div>
-
                 </div>
+
             </div>
-
         </div>
-    </div>
 
-    <script>
-        function showDetail(id) {
-            const row = document.getElementById(`detail-${id}`);
-            row.classList.toggle('hidden');
-        }
-    </script>
-</x-app-layout>
+        <script>
+            function showDetail(id) {
+                const row = document.getElementById(`detail-${id}`);
+                row.classList.toggle('hidden');
+            }
+        </script>
+    </x-app-layout>

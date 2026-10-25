@@ -19,6 +19,7 @@ class User extends Authenticatable
         'password',
         'profile_photo',
         'is_active',
+        'division_id', // BARU
     ];
 
     protected $hidden = [
@@ -290,5 +291,10 @@ class User extends Authenticatable
     public function getBranchAttribute()
     {
         return $this->branches()->first();
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class);
     }
 }
